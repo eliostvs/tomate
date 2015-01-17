@@ -23,7 +23,7 @@ sudo zypper ar -f http://download.opensuse.org/repositories/home:/eliostvs/openS
 sudo zypper install python-tomate
 ```
 
-## Fedora (20)
+## Fedora (20, 21)
 
 ```
 RELEASE=`cat /etc/fedora-release | grep -o '[0-9][0-9]*'`
