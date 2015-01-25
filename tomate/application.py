@@ -4,35 +4,63 @@ import logging
 from functools import partial
 
 import dbus.service
+from yapsy.ConfigurablePluginManager import ConfigurablePluginManager
+from yapsy.PluginManager import PluginManagerSingleton
+from yapsy.VersionedPluginManager import VersionedPluginManager
 
+from .plugin import AddViewPluginManager
 from .pomodoro import Pomodoro
 from .profile import ProfileManagerSingleton
+from .view import IView
 
 logger = logging.getLogger(__name__)
 
 
-class BaseApplication(dbus.service.Object):
+class Application(dbus.service.Object):
 
-    BUS_NAME = 'net.launchpad.tomate'
-    BUS_INTERFACE_NAME = 'net.launchpad.tomate.Application'
-    BUS_OBJECT_PATH = '/'
-    PLUGIN_EXT = 'plugin'
+    bus_name = 'com.github.tomate'
+    bus_interface_name = 'com.github.tomate.Application'
+    bus_object_path = '/'
+    plugin_ext = 'plugin'
+    plugin_manager_classes = (AddViewPluginManager,
+                              VersionedPluginManager,
+                              ConfigurablePluginManager,)
+    view_class = None
 
     dbus_method = partial(dbus.service.method,
-                          BUS_INTERFACE_NAME,
+                          bus_interface_name,
                           in_signature='',
                           out_signature='')
 
-    def __init__(self, bus, view, **kwargs):
-        dbus.service.Object.__init__(self, bus, self.BUS_OBJECT_PATH)
+    def __init__(self, bus, **kwargs):
+        dbus.service.Object.__init__(self, bus, self.bus_object_path)
 
         self.running = False
 
-        self.pomodoro = Pomodoro()
-
         self.profile = ProfileManagerSingleton.get()
 
-        self.view = view
+        self.pomodoro = Pomodoro()
+
+        self.view = self.initialize_view()
+
+        self.initialize_plugin_manager()
+
+    def initialize_view(self):
+        if self.view_class is None:
+            return IView()
+
+        return self.view_class()
+
+    def initialize_plugin_manager(self):
+        PluginManagerSingleton.setBehaviour(self.plugin_manager_classes)
+
+        manager = PluginManagerSingleton.get()
+        manager.setPluginPlaces(self.profile.get_plugin_paths())
+        manager.setPluginInfoExtension(self.plugin_ext)
+        manager.setView(self.view)
+        manager.setConfigParser(self.profile.config_parser,
+                                self.profile.write_config)
+        manager.collectPlugins()
 
     @dbus_method(out_signature='b')
     def is_running(self):
@@ -60,19 +88,19 @@ class BaseApplication(dbus.service.Object):
             return True
 
 
-def application_factory(application_class, view_class, **kwargs):
+def application_factory(application_class, **kwargs):
     bus_session = dbus.SessionBus()
-    request = bus_session.request_name(application_class.BUS_NAME,
+    request = bus_session.request_name(application_class.bus_name,
                                        dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
 
     if request != dbus.bus.REQUEST_NAME_REPLY_EXISTS:
-        app = application_class(bus_session, view=view_class, **kwargs)
+        app = application_class(bus_session, **kwargs)
 
     else:
-        bus_object = bus_session.get_object(application_class.BUS_NAME,
-                                            application_class.BUS_OBJECT_PATH)
+        bus_object = bus_session.get_object(application_class.bus_name,
+                                            application_class.bus_object_path)
 
         app = dbus.Interface(bus_object,
-                             application_class.BUS_INTERFACE_NAME)
+                             application_class.bus_interface_name)
 
     return app
