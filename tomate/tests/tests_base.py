@@ -33,3 +33,11 @@ class ConnectSignalMixinTestCase(unittest.TestCase):
 
         signal = mtomate_signals.__getitem__
         signal.return_value.disconnect.assert_called_once_with(self.dummy.foo)
+
+    @patch('tomate.plugin.ConnectSignalMixin.connect_signals')
+    def test_autoconnectsignalmigin(self, mconnect_signals, *args):
+        from tomate.base import AutoConnectSignalMixin
+
+        AutoConnectSignalMixin()
+
+        mconnect_signals.assert_called_once_with()

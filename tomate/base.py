@@ -24,3 +24,11 @@ class ConnectSignalMixin(object):
 
             logger.debug('method %s.%s disconnect from signal %s.',
                          self.__class__.__name__, method, signal)
+
+
+class AutoConnectSignalMixin(ConnectSignalMixin):
+
+    def __init__(self):
+        super(AutoConnectSignalMixin, self).__init__()
+
+        self.connect_signals()
