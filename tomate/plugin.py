@@ -39,15 +39,23 @@ class TomatePlugin(ConnectSignalMixin, IPlugin):
     def __init__(self):
         super(TomatePlugin, self).__init__()
 
-        self.initialize()
-
-    def initialize(self):
-        pass
+        self.on_init()
 
     def activate(self):
         super(TomatePlugin, self).activate()
         self.connect_signals()
+        self.on_activate()
 
     def deactivate(self):
         super(TomatePlugin, self).deactivate()
         self.disconnect_signals()
+        self.on_deactivate()
+
+    def on_init(self):
+        pass
+
+    def on_activate(self):
+        pass
+
+    def on_deactivate(self):
+        pass

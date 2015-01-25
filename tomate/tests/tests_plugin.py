@@ -16,27 +16,35 @@ class TomatePluginTestCase(unittest.TestCase):
         self.dummy = Dummy()
 
     @patch('tomate.plugin.ConnectSignalMixin.disconnect_signals')
-    def test_deactivate_plugin(self, mdisconnect_signals):
+    def test_deactivate_plugin(self, mock_disconnect):
+        self.assertEqual(None, self.dummy.on_deactivate())
+
+        self.dummy.on_deactivate = Mock('on_deactivate')
         self.dummy.deactivate()
 
-        mdisconnect_signals.assert_called_once_with()
+        mock_disconnect.assert_called_once_with()
+        self.dummy.on_deactivate.assert_called_once_with()
 
     @patch('tomate.plugin.ConnectSignalMixin.connect_signals')
-    def test_activate_plugin(self, mconnect_signals):
+    def test_activate_plugin(self, mock_connect):
+        self.assertEqual(None, self.dummy.on_activate())
+
+        self.dummy.on_activate = Mock('on_activate')
         self.dummy.activate()
 
-        mconnect_signals.assert_called_once_with()
+        mock_connect.assert_called_once_with()
+        self.dummy.on_activate.assert_called_once_with()
 
-    @patch('tomate.plugin.TomatePlugin.initialize')
-    def test_intialize_plugin(self, minitialize):
+    @patch('tomate.plugin.TomatePlugin.on_init')
+    def test_intialize_plugin(self, mock_init):
         from tomate.plugin import TomatePlugin
 
-        class dummy(TomatePlugin):
+        class Dummy(TomatePlugin):
             pass
 
-        dummy()
+        Dummy()
 
-        minitialize.assert_called_once_with()
+        mock_init.assert_called_once_with()
 
 
 class AddViewPluginManagerDecoratorTestCase(unittest.TestCase):
