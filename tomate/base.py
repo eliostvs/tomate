@@ -28,7 +28,7 @@ class ConnectSignalMixin(object):
 
 class AutoConnectSignalMixin(ConnectSignalMixin):
 
-    def __init__(self):
-        super(AutoConnectSignalMixin, self).__init__()
+    def __init__(self, *args, **kwargs):
+        super(AutoConnectSignalMixin, self).__init__(*args, **kwargs)
 
         self.connect_signals()
