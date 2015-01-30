@@ -60,7 +60,7 @@ class PomodoroTestCase(unittest.TestCase):
         mget_int.return_value = 25
         pomodoro = Pomodoro()
 
-        self.assertEqual(25 * 60, pomodoro.session_duration)
+        self.assertEqual(25 * 60, pomodoro.seconds_left)
         self.assertTrue(mget_int.called)
         mget_int.assert_called_once_with('Timer', 'pomodoro_duration')
 
@@ -68,7 +68,7 @@ class PomodoroTestCase(unittest.TestCase):
         mget_int.return_value = 5
         pomodoro.task = Task.shortbreak
 
-        self.assertEqual(5 * 60, pomodoro.session_duration)
+        self.assertEqual(5 * 60, pomodoro.seconds_left)
         self.assertTrue(mget_int.called)
         mget_int.assert_called_once_with('Timer', 'shortbreak_duration')
 
@@ -84,7 +84,6 @@ class PomodoroTestCase(unittest.TestCase):
         self.assertEqual(Task.shortbreak, self.pomodoro.task)
 
     def test_pomodoro_session_end(self):
-
         self.pomodoro.state = 'running'
 
         self.assertTrue(self.pomodoro.end())

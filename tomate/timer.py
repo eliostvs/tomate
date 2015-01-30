@@ -2,7 +2,7 @@ from __future__ import division, unicode_literals
 
 from gi.repository import GObject
 
-from .signals import timer_finished, timer_updated
+from .signals import tomate_signals
 
 # Borrowed from Tomatoro create by Pierre Quillery.
 # https://github.com/dandelionmood/Tomatoro
@@ -37,18 +37,14 @@ class Timer(object):
     def update(self):
         self.time_left -= 1
 
-        timer_updated.send(self.__class__,
-                           time_left=self.time_left,
-                           time_ratio=self.time_ratio)
+        self.emit('timer_updated')
 
         return True
 
     def finish(self):
         self.stop()
 
-        timer_finished.send(self.__class__,
-                            time_left=self.time_left,
-                            time_ratio=self.time_ratio)
+        self.emit('timer_finished')
 
         return False
 
@@ -67,3 +63,9 @@ class Timer(object):
             ratio = 0
 
         return ratio
+
+    def emit(self, signal_name):
+        tomate_signals[signal_name].send(
+            self.__class__,
+            time_left=self.time_left,
+            time_ratio=self.time_ratio)
