@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 import enum
-from tomate.base import AutoConnectSignalMixin
+from tomate.base import ConnectSignalMixin
 
 from .profile import ProfileManagerSingleton
 from .signals import tomate_signals
@@ -21,7 +21,7 @@ class Task(enum.Enum):
                 return k
 
 
-class Pomodoro(AutoConnectSignalMixin):
+class Pomodoro(ConnectSignalMixin):
 
     state = 'stopped'
 

@@ -101,3 +101,8 @@ class ApplicationTestCase(unittest.TestCase):
         app = Dummy(Mock())
 
         self.assertIsInstance(app.view, Mock)
+
+    def test_plugin_manager(self):
+        from yapsy.PluginManagerDecorator import PluginManagerDecorator
+
+        self.assertIsInstance(self.app.plugin, PluginManagerDecorator)

@@ -43,7 +43,7 @@ class Application(dbus.service.Object):
 
         self.view = self.initialize_view()
 
-        self.initialize_plugin_manager()
+        self.plugin = self.initialize_plugin()
 
     def initialize_view(self):
         if self.view_class is None:
@@ -51,7 +51,7 @@ class Application(dbus.service.Object):
 
         return self.view_class()
 
-    def initialize_plugin_manager(self):
+    def initialize_plugin(self):
         PluginManagerSingleton.setBehaviour(self.plugin_manager_classes)
 
         manager = PluginManagerSingleton.get()
@@ -61,6 +61,8 @@ class Application(dbus.service.Object):
         manager.setConfigParser(self.profile.config_parser,
                                 self.profile.write_config)
         manager.collectPlugins()
+
+        return manager
 
     @dbus_method(out_signature='b')
     def is_running(self):
