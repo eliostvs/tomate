@@ -107,9 +107,9 @@ class Pomodoro(ConnectSignalMixin):
         minutes = self.profile.get_int('Timer', option_name)
         return minutes * 60
 
-    def emit(self, signal_name):
-        tomate_signals[signal_name].send(
-            self.__class__,
+    def emit(self, signal):
+        tomate_signals.emit(
+            signal,
             task=self.task,
             sessions=self.sessions,
             time_left=self.seconds_left)
