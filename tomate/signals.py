@@ -27,10 +27,12 @@ session_ended = tomate_signals.signal('session_ended')
 change_task = tomate_signals.signal('change_task')
 task_changed = tomate_signals.signal('task_changed')
 
-app_exit = tomate_signals.signal('app_exit')
+# Application
+app_quit = tomate_signals.signal('app_quit')
 
 # Window
-window_visible = tomate_signals.signal('window_visibility_changed')
+window_showed = tomate_signals.signal('window_showed')
+window_hid = tomate_signals.signal('window_hid')
 
 # Settings
 session_duration_changed = tomate_signals.signal('session_duration_changed')
