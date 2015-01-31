@@ -69,7 +69,7 @@ class Application(dbus.service.Object):
         return self.running
 
     @dbus_method()
-    def start(self, *args, **kwargs):
+    def run(self, *args, **kwargs):
         if self.running:
             self.view.show()
 
