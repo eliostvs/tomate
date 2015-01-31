@@ -18,9 +18,9 @@ logger = logging.getLogger(__name__)
 
 class Application(dbus.service.Object):
 
-    bus_name = 'com.github.tomate'
-    bus_interface_name = 'com.github.tomate.Application'
+    bus_name = 'com.github.Tomate'
     bus_object_path = '/'
+    bus_interface_name = 'com.github.Tomate'
     plugin_ext = 'plugin'
     plugin_manager_classes = (AddViewPluginManager,
                               VersionedPluginManager,
