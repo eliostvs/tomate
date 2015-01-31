@@ -7,7 +7,7 @@ class Dispatcher(Namespace):
 
     def emit(self, name, **kwargs):
         signal = self[name]
-        signal.send(**kwargs)
+        return signal.send(**kwargs)
 
     def connect(self, name, method):
         signal = self[name]

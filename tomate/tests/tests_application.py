@@ -54,28 +54,28 @@ class ApplicationTestCase(unittest.TestCase):
         self.app.view = Mock(name='view')
 
     def test_application_start_for_the_first_time(self):
-        self.app.start()
+        self.app.run()
 
-        self.app.view.run_window.assert_called_once_with()
+        self.app.view.run.assert_called_once_with()
         self.app.pomodoro.change_task.assert_called_once_with()
 
     def test_application_start_when_another_instance_is_running(self):
         self.app.running = True
-        self.app.start()
+        self.app.run()
 
-        self.app.view.show_window.assert_called_once_with()
+        self.app.view.show.assert_called_once_with()
 
     def test_application_exit_when_pomodoro_is_running(self):
-        self.app.pomodoro.state = 'running'
+        self.app.pomodoro.is_running.return_value = True
+        self.app.quit()
 
-        self.assertEqual(False, self.app.exit())
-        self.app.view.hide_window.assert_called_once_with()
+        self.app.view.hide.assert_called_once_with()
 
     def test_application_exit_when_pomodoro_is_not_running(self):
-        self.app.pomodoro.state = 'stopped'
+        self.app.pomodoro.is_running.return_value = False
+        self.app.quit()
 
-        self.assertEqual(True, self.app.exit())
-        self.app.view.delete_window.assert_called_once_with()
+        self.app.view.quit.assert_called_once_with()
 
     def test_application_is_running_method(self):
         self.assertEqual(False, self.app.is_running())

@@ -100,3 +100,30 @@ class fsm(object):
                 return result
 
         return wrapper
+
+
+class ApplicationInstanceNotFound(Exception):
+    pass
+
+
+class LazyApplication(object):
+
+    def __init__(self):
+        self._wrapped = None
+
+    def __getattr__(self, func):
+        if self._wrapped is None:
+            self._setup()
+
+        return getattr(self._wrapped, func)
+
+    def _setup(self):
+        from tomate.signals import app_request
+        from tomate.application import Application
+
+        for (function, instance) in app_request.send():
+            if isinstance(instance, Application):
+                self._wrapped = instance
+                return True
+
+        raise ApplicationInstanceNotFound

@@ -27,10 +27,6 @@ class Pomodoro(ConnectSignalMixin):
 
     signals = (
         ('timer_finished', 'end'),
-        ('start_session', 'start'),
-        ('interrupt_session', 'interrupt'),
-        ('reset_sessions', 'reset'),
-        ('change_task', 'change_task'),
     )
 
     def __init__(self, *args, **kwargs):
@@ -94,7 +90,7 @@ class Pomodoro(ConnectSignalMixin):
         return True
 
     @fsm(target='stopped', source=['stopped'])
-    def change_task(self, sender=None, **kwargs):
+    def change_task(self, *args, **kwargs):
         self.task = kwargs.pop('task', Task.pomodoro)
 
         self.emit('task_changed')

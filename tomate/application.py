@@ -82,12 +82,29 @@ class Application(dbus.service.Object):
     @dbus_method(out_signature='b')
     def quit(self, *args, **kwargs):
         if self.pomodoro.is_running():
-            self.view.hide()
-            return False
+            return self.hide()
 
         else:
-            self.view.quit()
-            return True
+            return self.view.quit()
+
+    def hide(self):
+        return self.view.hide()
+
+    def show(self):
+        return self.view.show()
+
+    def start(self):
+        return self.pomodoro.start()
+
+    def interrupt(self):
+        return self.pomodoro.interrupt()
+
+    def reset(self):
+        return self.pomodoro.reset()
+
+    def change_task(self, *args, **kwargs):
+        task = kwargs.pop('task', None)
+        return self.pomodoro.change_task(task=task)
 
 
 def application_factory(application_class, **kwargs):

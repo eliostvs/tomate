@@ -13,22 +13,15 @@ timer_updated = tomate_signals.signal('timer_updated')
 timer_finished = tomate_signals.signal('timer_finished')
 
 # Pomodoro
-start_session = tomate_signals.signal('start_session')
 session_started = tomate_signals.signal('session_started')
-
-reset_sessions = tomate_signals.signal('reset_sessions')
 sessions_reseted = tomate_signals.signal('sessions_reseted')
-
-interrupt_session = tomate_signals.signal('interrupt_session')
 session_interrupted = tomate_signals.signal('session_interrupted')
-
 session_ended = tomate_signals.signal('session_ended')
-
-change_task = tomate_signals.signal('change_task')
 task_changed = tomate_signals.signal('task_changed')
 
 # Application
 app_quit = tomate_signals.signal('app_quit')
+app_request = tomate_signals.signal('app_request')
 
 # Window
 window_showed = tomate_signals.signal('window_showed')
