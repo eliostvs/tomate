@@ -64,8 +64,8 @@ class Timer(object):
 
         return ratio
 
-    def emit(self, signal_name):
-        tomate_signals[signal_name].send(
-            self.__class__,
+    def emit(self, signal):
+        tomate_signals.emit(
+            signal,
             time_left=self.time_left,
             time_ratio=self.time_ratio)

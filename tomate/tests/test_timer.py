@@ -1,3 +1,5 @@
+from __future__ import division, unicode_literals
+
 import unittest
 
 from mock import patch
@@ -7,6 +9,7 @@ class TimerTestCase(unittest.TestCase):
 
     def setUp(self):
         from tomate.timer import Timer
+
         self.timer = Timer()
 
     def test_timer_running(self):
@@ -77,27 +80,30 @@ class TimerTestCase(unittest.TestCase):
         self.assertEqual(0, self.timer.time_left)
         self.assertFalse(self.timer.running)
 
-    @patch('tomate.timer.tomate_signals')
-    def test_should_emit_time_finished_signal(self, mock_signal):
-        self.timer.start(1)
-        self.timer._Timer__update()
-        self.timer._Timer__update()
-        signal = mock_signal.__getitem__
 
-        signal.assert_called_with('timer_finished')
+@patch('tomate.timer.tomate_signals')
+class TestTimerSignals(unittest.TestCase):
 
-        signal.return_value.send.assert_called(self.timer.__class__,
-                                               time_left=0,
-                                               time_ratio=0)
+    def make_timer(self):
+        from tomate.timer import Timer
 
-    @patch('tomate.timer.tomate_signals')
-    def test_should_emit_time_updated_signal(self, mock_signal):
-        self.timer.start(10)
-        self.timer._Timer__update()
-        signal = mock_signal.__getitem__
+        return Timer()
 
-        signal.assert_called_once_with('timer_updated')
+    def test_should_emit_time_finished_signal(self, mock_signals):
+        timer = self.make_timer()
+        timer.start(1)
+        timer._Timer__update()
+        timer._Timer__update()
 
-        signal.return_value.send.assert_called_once_with(self.timer.__class__,
-                                                         time_left=9,
-                                                         time_ratio=0.1)
+        mock_signals.emit.assert_called('timer_finished',
+                                        time_left=0,
+                                        time_ratio=0)
+
+    def test_should_emit_time_updated_signal(self, mock_signals):
+        timer = self.make_timer()
+        timer.start(10)
+        timer._Timer__update()
+
+        mock_signals.emit.assert_called_once_with('timer_updated',
+                                                  time_left=9,
+                                                  time_ratio=0.1)

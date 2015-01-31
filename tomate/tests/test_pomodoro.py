@@ -113,72 +113,62 @@ class PomodoroTestCase(unittest.TestCase):
 @patch('tomate.pomodoro.tomate_signals')
 class PomodoroSignalTestCase(unittest.TestCase):
 
-    def setUp(self):
+    def make_pomodoro(self):
         from tomate.pomodoro import Pomodoro
 
-        self.pomodoro = Pomodoro()
+        return Pomodoro()
 
     @patch('tomate.profile.ProfileManager.get_int', return_value=25)
-    def test_should_emit_session_started(self, mget_int, mtomate_signals):
-        self.pomodoro.start()
+    def test_should_emit_session_started(self, mget_int, mock_signals):
+        pomodoro = self.make_pomodoro()
+        pomodoro.start()
 
-        signal = mtomate_signals.__getitem__
-
-        signal.assert_called_once_with('session_started')
-        signal.return_value.send.assert_called_once_with(self.pomodoro.__class__,
-                                                         task=Task.pomodoro,
-                                                         sessions=0,
-                                                         time_left=1500)
+        mock_signals.emit.assert_called_once_with('session_started',
+                                                  task=Task.pomodoro,
+                                                  sessions=0,
+                                                  time_left=1500)
 
     @patch('tomate.profile.ProfileManager.get_int', return_value=25)
-    def test_should_emit_session_interrupt(self, mget_int, mtomate_signals):
-        self.pomodoro.state = 'running'
-        self.pomodoro._timer.running = True
-        self.pomodoro.interrupt()
+    def test_should_emit_session_interrupt(self, mget_int, mock_signals):
+        pomodoro = self.make_pomodoro()
+        pomodoro.state = 'running'
+        pomodoro._timer.running = True
+        pomodoro.interrupt()
 
-        signal = mtomate_signals.__getitem__
-
-        signal.assert_called_once_with('session_interrupted')
-        signal.return_value.send.assert_called_once_with(self.pomodoro.__class__,
-                                                         task=Task.pomodoro,
-                                                         sessions=0,
-                                                         time_left=1500)
+        mock_signals.emit.assert_called_once_with('session_interrupted',
+                                                  task=Task.pomodoro,
+                                                  sessions=0,
+                                                  time_left=1500)
 
     @patch('tomate.profile.ProfileManager.get_int', return_value=25)
-    def test_should_emit_session_reseted(self, mget_int, mtomate_signals):
-        self.pomodoro.sessions = 2
-        self.pomodoro.reset()
+    def test_should_emit_session_reseted(self, mget_int, mock_signals):
+        pomodoro = self.make_pomodoro()
+        pomodoro.sessions = 2
+        pomodoro.reset()
 
-        signal = mtomate_signals.__getitem__
-
-        signal.assert_called_once_with('sessions_reseted')
-        signal.return_value.send.assert_called_once_with(self.pomodoro.__class__,
-                                                         task=Task.pomodoro,
-                                                         sessions=0,
-                                                         time_left=1500)
+        mock_signals.emit.assert_called_once_with('sessions_reseted',
+                                                  task=Task.pomodoro,
+                                                  sessions=0,
+                                                  time_left=1500)
 
     @patch('tomate.profile.ProfileManager.get_int', return_value=5)
-    def test_should_emit_session_end(self, mget_int, mtomate_signals):
-        self.pomodoro.state = 'running'
-        self.pomodoro._timer.running = False
-        self.pomodoro.end()
+    def test_should_emit_session_end(self, mget_int, mock_signals):
+        pomodoro = self.make_pomodoro()
+        pomodoro.state = 'running'
+        pomodoro._timer.running = False
+        pomodoro.end()
 
-        signal = mtomate_signals.__getitem__
-
-        signal.assert_called_once_with('session_ended')
-        signal.return_value.send.assert_called_once_with(self.pomodoro.__class__,
-                                                         task=Task.shortbreak,
-                                                         sessions=1,
-                                                         time_left=300)
+        mock_signals.emit.assert_called_once_with('session_ended',
+                                                  task=Task.shortbreak,
+                                                  sessions=1,
+                                                  time_left=300)
 
     @patch('tomate.profile.ProfileManager.get_int', return_value=15)
-    def test_should_emit_task_changed(self, mget_int, mtomate_signals):
-        self.pomodoro.change_task(task=Task.longbreak)
+    def test_should_emit_task_changed(self, mget_int, mock_signals):
+        pomodoro = self.make_pomodoro()
+        pomodoro.change_task(task=Task.longbreak)
 
-        signal = mtomate_signals.__getitem__
-
-        signal.assert_called_once_with('task_changed')
-        signal.return_value.send.assert_called_once_with(self.pomodoro.__class__,
-                                                         task=Task.longbreak,
-                                                         sessions=0,
-                                                         time_left=900)
+        mock_signals.emit.assert_called_once_with('task_changed',
+                                                  task=Task.longbreak,
+                                                  sessions=0,
+                                                  time_left=900)
