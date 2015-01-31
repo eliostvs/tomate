@@ -6,6 +6,8 @@ from ConfigParser import SafeConfigParser
 
 from xdg import BaseDirectory, IconTheme
 
+from .signals import tomate_signals
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_OPTIONS = {
@@ -116,6 +118,14 @@ class ProfileManager(object):
         self.config_parser.set(section_name, option_name, value)
 
         self.write_config()
+
+        tomate_signals.emit('setting_changed',
+                            section=section,
+                            option=option,
+                            value=value)
+
+        logger.debug('Setting change: Section=%s Option=%s Value=%s',
+                     section, option, value)
 
 
 class ProfileManagerSingleton(object):
