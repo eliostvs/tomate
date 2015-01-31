@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from tomate.base import ConnectSignalMixin
+from tomate.signals import ConnectSignalMixin
 from yapsy.IPlugin import IPlugin
 from yapsy.PluginManagerDecorator import PluginManagerDecorator
 

@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 import enum
-from tomate.base import ConnectSignalMixin
+from tomate.signals import ConnectSignalMixin
 
 from .profile import ProfileManagerSingleton
 from .signals import tomate_signals
