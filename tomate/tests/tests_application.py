@@ -86,7 +86,7 @@ class ApplicationTestCase(unittest.TestCase):
 
     def test_should_instantiate_iview_class(self):
         from tomate.application import Application
-        from tomate.view import IView
+        from tomate.interfaces import IView
 
         app = Application(Mock())
 

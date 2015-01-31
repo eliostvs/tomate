@@ -11,7 +11,7 @@ from yapsy.VersionedPluginManager import VersionedPluginManager
 from .plugin import AddViewPluginManager
 from .pomodoro import Pomodoro
 from .profile import ProfileManagerSingleton
-from .view import IView
+from .interfaces import IView
 
 logger = logging.getLogger(__name__)
 
