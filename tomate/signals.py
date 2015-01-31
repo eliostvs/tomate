@@ -20,7 +20,6 @@ session_ended = tomate_signals.signal('session_ended')
 task_changed = tomate_signals.signal('task_changed')
 
 # Application
-app_quit = tomate_signals.signal('app_quit')
 app_request = tomate_signals.signal('app_request')
 
 # Window
