@@ -3,14 +3,14 @@ from __future__ import unicode_literals
 
 class IView(object):
 
-    def run_window(self):
+    def run(self):
         pass
 
-    def delete_window(self):
+    def quit(self):
         pass
 
-    def show_window(self):
+    def show(self):
         pass
 
-    def hide_window(self):
+    def hide(self):
         pass
