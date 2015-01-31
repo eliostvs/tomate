@@ -63,11 +63,10 @@ class Pomodoro(ConnectSignalMixin):
 
         return True
 
-    @fsm(target='stopped', source=['stopped'])
+    @fsm(target='stopped', source=['stopped'],
+         exit=lambda s: s.emit('sessions_reseted'))
     def reset(self, sender=None, **kwargs):
         self.sessions = 0
-
-        self.emit('sessions_reseted')
 
         return True
 
@@ -89,11 +88,10 @@ class Pomodoro(ConnectSignalMixin):
 
         return True
 
-    @fsm(target='stopped', source=['stopped'])
+    @fsm(target='stopped', source=['stopped'],
+         exit=lambda s: s.emit('task_changed'))
     def change_task(self, *args, **kwargs):
         self.task = kwargs.pop('task', Task.pomodoro)
-
-        self.emit('task_changed')
 
         return True
 
