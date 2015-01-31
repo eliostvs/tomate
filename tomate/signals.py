@@ -35,7 +35,7 @@ window_showed = tomate_signals.signal('window_showed')
 window_hid = tomate_signals.signal('window_hid')
 
 # Settings
-session_duration_changed = tomate_signals.signal('session_duration_changed')
+setting_changed = tomate_signals.signal('setting_changed')
 
 
 class ConnectSignalMixin(object):
