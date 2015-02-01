@@ -8,10 +8,11 @@ from yapsy.ConfigurablePluginManager import ConfigurablePluginManager
 from yapsy.PluginManager import PluginManagerSingleton
 from yapsy.VersionedPluginManager import VersionedPluginManager
 
+from .interfaces import IView
 from .plugin import AddViewPluginManager
 from .pomodoro import Pomodoro
 from .profile import ProfileManagerSingleton
-from .interfaces import IView
+from .utils import suppress_errors
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,7 @@ class Application(dbus.service.Object):
 
         return self.view_class()
 
+    @suppress_errors
     def initialize_plugin(self):
         PluginManagerSingleton.setBehaviour(self.plugin_manager_classes)
 
@@ -75,7 +77,7 @@ class Application(dbus.service.Object):
 
         else:
             self.running = True
-            self.pomodoro.change_task()
+            self.change_task()
             self.view.run()
             self.running = False
 
@@ -103,8 +105,7 @@ class Application(dbus.service.Object):
         return self.pomodoro.reset()
 
     def change_task(self, *args, **kwargs):
-        task = kwargs.pop('task', None)
-        return self.pomodoro.change_task(task=task)
+        return self.pomodoro.change_task(**kwargs)
 
 
 def application_factory(application_class, **kwargs):

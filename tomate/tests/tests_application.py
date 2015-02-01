@@ -44,6 +44,7 @@ class ApplicationFactoryTestCase(unittest.TestCase):
                                            'bus_interface_name')
 
 
+@patch('tomate.profile.ProfileManager.get_plugin_paths', spec_set=True, return_value=[])
 class ApplicationTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -53,38 +54,38 @@ class ApplicationTestCase(unittest.TestCase):
         self.app.pomodoro = Mock(name='pomodoro')
         self.app.view = Mock(name='view')
 
-    def test_application_start_for_the_first_time(self):
+    def test_application_start_for_the_first_time(self, *args):
         self.app.run()
 
         self.app.view.run.assert_called_once_with()
         self.app.pomodoro.change_task.assert_called_once_with()
 
-    def test_application_start_when_another_instance_is_running(self):
+    def test_application_start_when_another_instance_is_running(self, *args):
         self.app.running = True
         self.app.run()
 
         self.app.view.show.assert_called_once_with()
 
-    def test_application_exit_when_pomodoro_is_running(self):
+    def test_application_exit_when_pomodoro_is_running(self, *args):
         self.app.pomodoro.is_running.return_value = True
         self.app.quit()
 
         self.app.view.hide.assert_called_once_with()
 
-    def test_application_exit_when_pomodoro_is_not_running(self):
+    def test_application_exit_when_pomodoro_is_not_running(self, *args):
         self.app.pomodoro.is_running.return_value = False
         self.app.quit()
 
         self.app.view.quit.assert_called_once_with()
 
-    def test_application_is_running_method(self):
+    def test_application_is_running_method(self, *args):
         self.assertEqual(False, self.app.is_running())
 
         self.app.running = True
 
         self.assertEqual(True, self.app.is_running())
 
-    def test_should_instantiate_iview_class(self):
+    def test_should_instantiate_iview_class(self, *args):
         from tomate.application import Application
         from tomate.interfaces import IView
 
@@ -92,7 +93,7 @@ class ApplicationTestCase(unittest.TestCase):
 
         self.assertIsInstance(app.view, IView)
 
-    def test_initialize_with_a_custom_class(self):
+    def test_initialize_with_a_custom_class(self, *args):
         from tomate.application import Application
 
         class Dummy(Application):
@@ -101,8 +102,3 @@ class ApplicationTestCase(unittest.TestCase):
         app = Dummy(Mock())
 
         self.assertIsInstance(app.view, Mock)
-
-    def test_plugin_manager(self):
-        from yapsy.PluginManagerDecorator import PluginManagerDecorator
-
-        self.assertIsInstance(self.app.plugin, PluginManagerDecorator)
