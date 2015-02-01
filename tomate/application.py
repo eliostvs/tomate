@@ -9,7 +9,7 @@ from yapsy.PluginManager import PluginManagerSingleton
 from yapsy.VersionedPluginManager import VersionedPluginManager
 
 from .interfaces import IView
-from .plugin import AddViewPluginManager
+from .plugin import TomatePluginManager
 from .pomodoro import Pomodoro
 from .profile import ProfileManagerSingleton
 from .utils import suppress_errors
@@ -23,7 +23,7 @@ class Application(dbus.service.Object):
     bus_object_path = '/'
     bus_interface_name = 'com.github.Tomate'
     plugin_ext = 'plugin'
-    plugin_manager_classes = (AddViewPluginManager,
+    plugin_manager_classes = (TomatePluginManager,
                               VersionedPluginManager,
                               ConfigurablePluginManager,)
     view_class = None
@@ -59,7 +59,7 @@ class Application(dbus.service.Object):
         manager = PluginManagerSingleton.get()
         manager.setPluginPlaces(self.profile.get_plugin_paths())
         manager.setPluginInfoExtension(self.plugin_ext)
-        manager.setView(self.view)
+        manager.setApplication(self)
         manager.setConfigParser(self.profile.config_parser,
                                 self.profile.write_config)
         manager.collectPlugins()

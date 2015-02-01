@@ -49,34 +49,34 @@ class TomatePluginTestCase(unittest.TestCase):
 
 class AddViewPluginManagerDecoratorTestCase(unittest.TestCase):
 
-    def setUp(self):
-        self.mock_view = Mock(name='View')
-
     def test_should_set_view_property_on_init(self):
-        from tomate.plugin import AddViewPluginManager
+        from tomate.plugin import TomatePluginManager
 
-        pm = AddViewPluginManager(view=self.mock_view)
+        app = Mock()
+        pm = TomatePluginManager(application=app)
 
-        self.assertEqual(self.mock_view, pm._view)
+        self.assertEqual(app, pm._application)
 
-    def test_set_view_property_by_setView(self):
-        from tomate.plugin import AddViewPluginManager
+    def test_set_view_property_by_setApplication(self):
+        from tomate.plugin import TomatePluginManager
 
-        pm = AddViewPluginManager()
+        pm = TomatePluginManager()
+        app = Mock()
 
-        self.assertEqual(None, pm._view)
+        self.assertEqual(None, pm._application)
 
-        pm.setView(self.mock_view)
+        pm.setApplication(app)
 
-        self.assertEqual(self.mock_view, pm._view)
+        self.assertEqual(app, pm._application)
 
     def test_should_add_view_instance_to_all_plugins(self):
-        from tomate.plugin import AddViewPluginManager
+        from tomate.plugin import TomatePluginManager
 
         plugin = Mock(name='plugin')
-        pm = AddViewPluginManager(view=self.mock_view)
+        app = Mock()
+        pm = TomatePluginManager(application=app)
         pm._component = Mock()
         pm._component.loadPlugins.return_value = [plugin]
         pm.loadPlugins()
 
-        self.assertEqual(self.mock_view, plugin.plugin_object.view)
+        self.assertEqual(app, plugin.plugin_object.application)

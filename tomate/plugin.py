@@ -5,14 +5,14 @@ from yapsy.IPlugin import IPlugin
 from yapsy.PluginManagerDecorator import PluginManagerDecorator
 
 
-class AddViewPluginManager(PluginManagerDecorator):
+class TomatePluginManager(PluginManagerDecorator):
 
     def __init__(self,
                  decorated_manager=None,
                  categories_filter={'Default': IPlugin},
                  directories_list=None,
                  plugin_info_ext=None,
-                 view=None):
+                 application=None):
 
         PluginManagerDecorator.__init__(self,
                                         decorated_manager,
@@ -20,18 +20,18 @@ class AddViewPluginManager(PluginManagerDecorator):
                                         directories_list,
                                         plugin_info_ext)
 
-        self.setView(view)
+        self.setApplication(application)
 
     def loadPlugins(self, callback=None):
         processed_plugins = self._component.loadPlugins(callback)
 
         for plugin in processed_plugins:
-            plugin.plugin_object.view = self._view
+            plugin.plugin_object.application = self._application
 
         return processed_plugins
 
-    def setView(self, view):
-        self._view = view
+    def setApplication(self, application):
+        self._application = application
 
 
 class TomatePlugin(ConnectSignalMixin, IPlugin):
