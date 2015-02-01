@@ -57,8 +57,8 @@ class ProfileManagerTestCase(unittest.TestCase):
     def test_get_resource_path_should_raise_exception(self, *args):
         self.assertRaises(EnvironmentError, self.pm.get_resource_path, '/file/not/exist/')
 
-    @patch('xdg.IconTheme.icondirs', return_value=['/usr/mock/icons'])
-    def test_get_icon_path_should_raise_exception(self, mock_icondirs, *args):
+    @patch('tomate.profile.IconTheme.getIconPath', return_value=None)
+    def test_get_icon_path_should_raise_exception(self, mgetIconPath, *args):
         self.assertRaises(EnvironmentError, self.pm.get_icon_path, 'tomate', 22)
 
     @patch('tomate.profile.IconTheme.getIconPath', spec_set=True)
