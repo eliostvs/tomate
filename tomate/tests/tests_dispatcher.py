@@ -8,7 +8,7 @@ from mock import patch
 class ConnectSignalMixinTestCase(unittest.TestCase):
 
     def make_dummy(self):
-        from tomate.signals import ConnectSignalMixin
+        from tomate.mixins import ConnectSignalMixin
 
         class Dummy(ConnectSignalMixin):
             signals = (
