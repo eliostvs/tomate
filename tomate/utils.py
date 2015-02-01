@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 import functools
 import logging
 
+logger = logging.getLogger(__name__)
+
 
 def setup_logging(options):
     fmt = '%(levelname)s:%(asctime)s:%(name)s:%(message)s'
@@ -101,3 +103,23 @@ class LazyApplication(object):
                 return True
 
         raise ApplicationInstanceNotFound
+
+
+class LazyApplicationSingleton(object):
+
+    __instance = None
+
+    def __init__(self):
+        if self.__instance is not None:
+            raise Exception("Singleton can't be created twice!")
+
+    @classmethod
+    def get(cls):
+        if cls.__instance is None:
+            cls.__instance = LazyApplication()
+
+            logger.debug('LazyApplicationSingleton initialised')
+
+        logger.debug('LazyApplicationSingleton requested')
+
+        return cls.__instance
