@@ -1,15 +1,9 @@
 from __future__ import unicode_literals
 
 import unittest
-
 from mock import patch
-from tomate.pomodoro import Task
 
-
-class PomodoroTaskTestCase(unittest.TestCase):
-
-    def test_get_task_by_index(self):
-        self.assertEqual(Task.pomodoro, Task.get_by_index(0))
+from tomate.constants import Task
 
 
 class PomodoroTestCase(unittest.TestCase):

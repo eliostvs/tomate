@@ -127,13 +127,14 @@ class ApplicationTestCase(unittest.TestCase):
         self.app.pomodoro.reset.assert_called_once_with()
 
     def test_should_change_pomodoro_task(self, *args):
-        from tomate.pomodoro import Task
+        from tomate.constants import Task
+
         self.app.change_task(task=Task.longbreak)
 
         self.app.pomodoro.change_task.assert_called_once_with(task=Task.longbreak)
 
     def test_should_return_overall_status(self, *args):
-        from tomate.pomodoro import Task
+        from tomate.constants import Task
 
         status = {
             'pomodoro': {

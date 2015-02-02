@@ -58,7 +58,8 @@ class DispatcherTestCase(unittest.TestCase):
     def test_connect_signal(self, mNamedSignal):
         namespace = self.make_namespace()
 
-        def function(): pass
+        def function():
+            pass
 
         namespace.connect('test', function)
 
@@ -67,7 +68,8 @@ class DispatcherTestCase(unittest.TestCase):
     def test_disconnect_signal(self, mNamedSignal):
         namespace = self.make_namespace()
 
-        def function(): pass
+        def function():
+            pass
 
         namespace.disconnect('test', function)
 

@@ -1,24 +1,12 @@
 from __future__ import unicode_literals
 
-import enum
 from tomate.mixins import ConnectSignalMixin
 
 from .profile import ProfileManagerSingleton
 from .signals import tomate_signals
 from .timer import Timer
 from .utils import fsm
-
-
-class Task(enum.Enum):
-    pomodoro = 0
-    shortbreak = 1
-    longbreak = 2
-
-    @classmethod
-    def get_by_index(cls, index):
-        for i, k in enumerate(cls):
-            if i == index:
-                return k
+from .constants import Task
 
 
 class Pomodoro(ConnectSignalMixin):
