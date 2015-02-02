@@ -50,9 +50,9 @@ class ApplicationTestCase(unittest.TestCase):
     def setUp(self):
         from tomate.application import Application
 
-        self.app = Application(Mock(name='dbus'))
-        self.app.pomodoro = Mock(name='pomodoro')
-        self.app.view = Mock(name='view')
+        self.app = Application(Mock())
+        self.app.pomodoro = Mock()
+        self.app.view = Mock()
 
     def test_should_run_view_when_not_running(self, *args):
         self.app.run()
@@ -134,15 +134,18 @@ class ApplicationTestCase(unittest.TestCase):
         self.app.pomodoro.change_task.assert_called_once_with(task=Task.longbreak)
 
     def test_should_return_overall_status(self, *args):
-        from tomate.constants import Task
+        from tomate.constants import Task, State
+        from tomate.application import Application
+
+        app = Application(Mock())
 
         status = {
             'pomodoro': {
-                'state': 'stopped',
+                'state': State.stopped,
                 'time_left': 25 * 60,
                 'task': Task.pomodoro,
                 'sessions': 0
             }
         }
 
-        self.assertItemsEqual(status, self.app.status())
+        self.assertItemsEqual(status, app.status())
