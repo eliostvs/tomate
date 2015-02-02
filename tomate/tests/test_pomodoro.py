@@ -19,11 +19,11 @@ class PomodoroTestCase(unittest.TestCase):
 
         self.pomodoro = Pomodoro()
 
-    def test_pomodoro_init_values(self):
+    def test_should_return_pomodoro_task_and_zero_sessions(self):
         self.assertEqual(Task.pomodoro, self.pomodoro.task)
         self.assertEqual(0, self.pomodoro.sessions)
 
-    def test_change_pomodoro_states(self):
+    def test_pomodoro_states(self):
         self.assertEqual('stopped', self.pomodoro.state)
 
         self.assertTrue(self.pomodoro.start())
@@ -46,15 +46,15 @@ class PomodoroTestCase(unittest.TestCase):
         self.assertTrue(self.pomodoro.end())
         self.assertEqual('stopped', self.pomodoro.state)
 
-    def test_reset_sessions(self):
+    def test_should_reset_pomodoro_sessions(self):
         self.pomodoro.sessions = 10
+        self.assertEqual(10, self.pomodoro.sessions)
 
         self.pomodoro.reset()
-
         self.assertEqual(0, self.pomodoro.sessions)
 
     @patch('tomate.profile.ProfileManager.get_int')
-    def test_session_duration(self, mget_int):
+    def test_should_return_time_left_in_seconds(self, mget_int):
         from tomate.pomodoro import Pomodoro
 
         mget_int.return_value = 25
@@ -64,26 +64,17 @@ class PomodoroTestCase(unittest.TestCase):
         self.assertTrue(mget_int.called)
         mget_int.assert_called_once_with('Timer', 'pomodoro_duration')
 
-        mget_int.reset_mock()
-        mget_int.return_value = 5
-        pomodoro.task = Task.shortbreak
-
-        self.assertEqual(5 * 60, pomodoro.seconds_left)
-        self.assertTrue(mget_int.called)
-        mget_int.assert_called_once_with('Timer', 'shortbreak_duration')
-
-    def test_change_pomodoro_task(self):
-        self.assertEqual(Task.pomodoro, self.pomodoro.task)
-
+    def test_should_not_change_task_when_pomodoro_is_running(self):
         self.pomodoro.state = 'running'
         self.assertEqual(None, self.pomodoro.change_task())
         self.assertEqual(Task.pomodoro, self.pomodoro.task)
 
+    def test_should_change_task_when_pomodoro_is_stopped(self):
         self.pomodoro.state = 'stopped'
         self.assertTrue(self.pomodoro.change_task(task=Task.shortbreak))
         self.assertEqual(Task.shortbreak, self.pomodoro.task)
 
-    def test_pomodoro_session_end(self):
+    def test_should_increment_sessions_in_the_end_of_the_pomodoro_task(self):
         self.pomodoro.state = 'running'
 
         self.assertTrue(self.pomodoro.end())
@@ -109,6 +100,18 @@ class PomodoroTestCase(unittest.TestCase):
         self.assertEqual(4, self.pomodoro.sessions)
         self.assertEqual(Task.longbreak, self.pomodoro.task)
 
+    def test_should_return_pomodoro_status(self):
+        self.pomodoro.sessions = 2
+        self.pomodoro.task = Task.shortbreak
+        self.pomodoro.state = 'running'
+
+        status = dict(task=Task.shortbreak,
+                      sessions=2,
+                      state='running',
+                      time_left=5 * 60)
+
+        self.assertEqual(status, self.pomodoro.status)
+
 
 @patch('tomate.pomodoro.tomate_signals')
 class PomodoroSignalTestCase(unittest.TestCase):
@@ -126,6 +129,7 @@ class PomodoroSignalTestCase(unittest.TestCase):
         mock_signals.emit.assert_called_once_with('session_started',
                                                   task=Task.pomodoro,
                                                   sessions=0,
+                                                  state='running',
                                                   time_left=1500)
 
     @patch('tomate.profile.ProfileManager.get_int', return_value=25)
@@ -138,6 +142,7 @@ class PomodoroSignalTestCase(unittest.TestCase):
         mock_signals.emit.assert_called_once_with('session_interrupted',
                                                   task=Task.pomodoro,
                                                   sessions=0,
+                                                  state='stopped',
                                                   time_left=1500)
 
     @patch('tomate.profile.ProfileManager.get_int', return_value=25)
@@ -149,6 +154,7 @@ class PomodoroSignalTestCase(unittest.TestCase):
         mock_signals.emit.assert_called_once_with('sessions_reseted',
                                                   task=Task.pomodoro,
                                                   sessions=0,
+                                                  state='stopped',
                                                   time_left=1500)
 
     @patch('tomate.profile.ProfileManager.get_int', return_value=5)
@@ -161,6 +167,7 @@ class PomodoroSignalTestCase(unittest.TestCase):
         mock_signals.emit.assert_called_once_with('session_ended',
                                                   task=Task.shortbreak,
                                                   sessions=1,
+                                                  state='stopped',
                                                   time_left=300)
 
     @patch('tomate.profile.ProfileManager.get_int', return_value=15)
@@ -171,4 +178,5 @@ class PomodoroSignalTestCase(unittest.TestCase):
         mock_signals.emit.assert_called_once_with('task_changed',
                                                   task=Task.longbreak,
                                                   sessions=0,
+                                                  state='stopped',
                                                   time_left=900)

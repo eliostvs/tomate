@@ -54,25 +54,25 @@ class ApplicationTestCase(unittest.TestCase):
         self.app.pomodoro = Mock(name='pomodoro')
         self.app.view = Mock(name='view')
 
-    def test_application_start_for_the_first_time(self, *args):
+    def test_should_run_view_when_not_running(self, *args):
         self.app.run()
 
         self.app.view.run.assert_called_once_with()
         self.app.pomodoro.change_task.assert_called_once_with()
 
-    def test_application_start_when_another_instance_is_running(self, *args):
+    def test_should_show_view_when_already_running(self, *args):
         self.app.running = True
         self.app.run()
 
         self.app.view.show.assert_called_once_with()
 
-    def test_application_exit_when_pomodoro_is_running(self, *args):
+    def test_should_hide_view_when_pomodoro_is_running(self, *args):
         self.app.pomodoro.is_running.return_value = True
         self.app.quit()
 
         self.app.view.hide.assert_called_once_with()
 
-    def test_application_exit_when_pomodoro_is_not_running(self, *args):
+    def test_should_quit_when_pomodoro_is_not_running(self, *args):
         self.app.pomodoro.is_running.return_value = False
         self.app.quit()
 
@@ -85,7 +85,7 @@ class ApplicationTestCase(unittest.TestCase):
 
         self.assertEqual(True, self.app.is_running())
 
-    def test_should_instantiate_iview_class(self, *args):
+    def test_should_instantiate_the_default_view_class(self, *args):
         from tomate.application import Application
         from tomate.interfaces import IView
 
@@ -93,7 +93,7 @@ class ApplicationTestCase(unittest.TestCase):
 
         self.assertIsInstance(app.view, IView)
 
-    def test_initialize_with_a_custom_class(self, *args):
+    def test_should_instantiate_a_custom_view_class(self, *args):
         from tomate.application import Application
 
         class Dummy(Application):
@@ -102,3 +102,46 @@ class ApplicationTestCase(unittest.TestCase):
         app = Dummy(Mock())
 
         self.assertIsInstance(app.view, Mock)
+
+    def test_should_hide_view(self, *args):
+        self.app.hide()
+
+        self.app.view.hide.assert_called_once_with()
+
+    def test_should_show_view(self, *args):
+        self.app.show()
+
+        self.app.view.show.assert_called_once_with()
+
+    def test_should_start_pomodoro(self, *args):
+        self.app.start()
+        self.app.pomodoro.start.assert_called_once_with()
+
+    def test_should_interrupt_pomodoro(self, *args):
+        self.app.interrupt()
+        self.app.pomodoro.interrupt.assert_called_once_with()
+
+    def test_should_reset_pomodoros(self, *args):
+        self.app.reset()
+
+        self.app.pomodoro.reset.assert_called_once_with()
+
+    def test_should_change_pomodoro_task(self, *args):
+        from tomate.pomodoro import Task
+        self.app.change_task(task=Task.longbreak)
+
+        self.app.pomodoro.change_task.assert_called_once_with(task=Task.longbreak)
+
+    def test_should_return_overall_status(self, *args):
+        from tomate.pomodoro import Task
+
+        status = {
+            'pomodoro': {
+                'state': 'stopped',
+                'time_left': 25 * 60,
+                'task': Task.pomodoro,
+                'sessions': 0
+            }
+        }
+
+        self.assertItemsEqual(status, self.app.status())

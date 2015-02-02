@@ -73,7 +73,7 @@ class Application(dbus.service.Object):
     @dbus_method()
     def run(self, *args, **kwargs):
         if self.running:
-            self.view.show()
+            self.show()
 
         else:
             self.running = True
@@ -105,7 +105,10 @@ class Application(dbus.service.Object):
         return self.pomodoro.reset()
 
     def change_task(self, *args, **kwargs):
-        return self.pomodoro.change_task(**kwargs)
+        return self.pomodoro.change_task(*args, **kwargs)
+
+    def status(self):
+        return dict(pomodoro=self.pomodoro.status)
 
 
 def application_factory(application_class, **kwargs):
