@@ -6,12 +6,12 @@ from .profile import ProfileManagerSingleton
 from .signals import tomate_signals
 from .timer import Timer
 from .utils import fsm
-from .constants import Task
+from .constants import Task, State
 
 
 class Pomodoro(ConnectSignalMixin):
 
-    state = 'stopped'
+    state = State.stopped
 
     signals = (
         ('timer_finished', 'end'),
@@ -36,14 +36,14 @@ class Pomodoro(ConnectSignalMixin):
     def is_stopped(self):
         return not self.is_running()
 
-    @fsm(target='running', source=['stopped'],
+    @fsm(target=State.running, source=[State.stopped],
          exit=lambda s: s.emit('session_started'))
     def start(self, sender=None, **kwargs):
         self._timer.start(self.seconds_left)
 
         return True
 
-    @fsm(target='stopped', source=['running'],
+    @fsm(target=State.stopped, source=[State.running],
          conditions=[is_running],
          exit=lambda s: s.emit('session_interrupted'))
     def interrupt(self, sender=None, **kwargs):
@@ -51,14 +51,14 @@ class Pomodoro(ConnectSignalMixin):
 
         return True
 
-    @fsm(target='stopped', source=['stopped'],
+    @fsm(target=State.stopped, source=[State.stopped],
          exit=lambda s: s.emit('sessions_reseted'))
     def reset(self, sender=None, **kwargs):
         self.sessions = 0
 
         return True
 
-    @fsm(target='stopped', source=['running'],
+    @fsm(target=State.stopped, source=[State.running],
          conditions=[is_stopped],
          exit=lambda s: s.emit('session_ended'))
     def end(self, sender=None, **kwargs):
@@ -76,7 +76,7 @@ class Pomodoro(ConnectSignalMixin):
 
         return True
 
-    @fsm(target='stopped', source=['stopped'],
+    @fsm(target=State.stopped, source=[State.stopped],
          exit=lambda s: s.emit('task_changed'))
     def change_task(self, *args, **kwargs):
         self.task = kwargs.pop('task', Task.pomodoro)

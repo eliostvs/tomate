@@ -17,3 +17,8 @@ class Task(BaseEnum):
     pomodoro = 0
     shortbreak = 1
     longbreak = 2
+
+
+class State(BaseEnum):
+    stopped = 0
+    running = 1
