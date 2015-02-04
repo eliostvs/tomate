@@ -11,7 +11,7 @@ from yapsy.VersionedPluginManager import VersionedPluginManager
 from .interfaces import IView
 from .plugin import TomatePluginManager
 from .pomodoro import Pomodoro
-from .profile import ProfileManagerSingleton
+from .profile import ProfileManager
 from .utils import suppress_errors
 
 logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ class Application(dbus.service.Object):
 
         self.running = False
 
-        self.profile = ProfileManagerSingleton.get()
+        self.profile = ProfileManager()
 
         self.pomodoro = Pomodoro()
 

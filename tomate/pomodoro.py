@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 from tomate.mixins import ConnectSignalMixin
 
-from .profile import ProfileManagerSingleton
+from .profile import ProfileManager
 from .signals import tomate_signals
 from .timer import Timer
 from .utils import fsm
@@ -26,7 +26,7 @@ class Pomodoro(ConnectSignalMixin):
 
         self.task = Task.pomodoro
 
-        self.profile = ProfileManagerSingleton.get()
+        self.profile = ProfileManager()
 
         self.connect_signals()
 
