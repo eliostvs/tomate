@@ -18,6 +18,7 @@ Depends: ${misc:Depends},
  python-dbus,
  python-enum34,
  python-gi,
+ python-six,
  python-xdg,
  python-yapsy
 Description: A pomodoro timer. Core classes.
