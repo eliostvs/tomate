@@ -2,7 +2,6 @@ from __future__ import unicode_literals
 
 import logging
 import weakref
-from abc import ABCMeta
 
 import six
 
@@ -31,15 +30,19 @@ class ServiceLocator(object):
 
     def add(self, service, instance):
         self.__cache[hash(service)] = instance
+        logger.debug('%s is providing the %s service', instance, service)
 
     def _lookup(self, service):
         try:
-            return self.__cache[service]
+            return self.__cache[hash(service)]
 
         except KeyError as e:
             logger.error(e, exc_info=True)
 
-            raise ServiceNotFound(service)
+            raise ServiceNotFound(service.__name__)
+
+    def clear(self):
+        self.__cache.clear()
 
 
 cache = ServiceLocator()
@@ -58,22 +61,22 @@ class LazyService(object):
         return getattr(self._wrapped, func)
 
     def _setup(self):
-        self._wrapped = cache._lookup(hash(self.interface))
+        self._wrapped = cache._lookup(self.interface)
 
     def __repr__(self):
         return '<LazyService: (%s)>' % self.interface.__name__
 
 
-def provider_service(interface):
+def provider_service(service):
 
     def decorator(cls):
-        if not issubclass(cls, interface):
-            raise ServiceProviderInvalid('Class %s is not subclass of %s!' %
-                                         (cls.__name__, interface.__name__))
+        if not issubclass(cls, service):
+            raise ServiceProviderInvalid("%s doesn't implement %s!" %
+                                         (cls.__name__, service.__name__))
 
         def wrapped(*args, **kwargs):
             instance = cls(*args, **kwargs)
-            cache.add(interface, instance)
+            cache.add(service, instance)
             return instance
 
         return wrapped
