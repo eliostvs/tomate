@@ -1,58 +1,33 @@
 from __future__ import unicode_literals
 
 import logging
-import weakref
-
-import six
-
-from .base import Singleton
 
 logger = logging.getLogger(__name__)
 
 
-class ServiceNotFound(Exception):
+class ProviderError(Exception):
     pass
 
 
-class ServiceProviderInvalid(Exception):
-    pass
+class ServiceLocator(dict):
+
+    def get(self, key, default=None):
+        value = super(ServiceLocator, self).get(key, None)
+
+        if value is None:
+            value = LazyObject(key)
+
+        return value
 
 
-@six.add_metaclass(Singleton)
-class ServiceLocator(object):
-
-    def __init__(self, *args, **kwargs):
-        super(ServiceLocator, self).__init__(*args, **kwargs)
-        self.__cache = weakref.WeakValueDictionary()
-
-    def lookup(self, service):
-        return LazyService(service)
-
-    def add(self, service, instance):
-        self.__cache[hash(service)] = instance
-        logger.debug('%s is providing the %s service', instance, service)
-
-    def _lookup(self, service):
-        try:
-            return self.__cache[hash(service)]
-
-        except KeyError as e:
-            logger.error(e, exc_info=True)
-
-            raise ServiceNotFound(service.__name__)
-
-    def clear(self):
-        self.__cache.clear()
+Cache = ServiceLocator()
 
 
-cache = ServiceLocator()
+class LazyObject(object):
 
-
-class LazyService(object):
-
-    def __init__(self, interface):
+    def __init__(self, name):
+        self.name = name
         self._wrapped = None
-        self.interface = interface
 
     def __getattr__(self, func):
         if self._wrapped is None:
@@ -61,23 +36,33 @@ class LazyService(object):
         return getattr(self._wrapped, func)
 
     def _setup(self):
-        self._wrapped = cache._lookup(self.interface)
+        self._wrapped = Cache[self.name]
 
     def __repr__(self):
-        return '<LazyService: (%s)>' % self.interface.__name__
+        return '<LazyObject: (%s)>' % self.name
 
 
-def provider_service(service):
+def provider_service(interface):
+    def _decorator(cls):
+        if not issubclass(cls, interface):
+            raise ProviderError("%s doesn't implement %s!" %
+                                (cls.__name__, interface.__name__))
 
-    def decorator(cls):
-        if not issubclass(cls, service):
-            raise ServiceProviderInvalid("%s doesn't implement %s!" %
-                                         (cls.__name__, service.__name__))
+        def _wrapped(*args, **kwargs):
+            service = cls.__name__
 
-        def wrapped(*args, **kwargs):
-            instance = cls(*args, **kwargs)
-            cache.add(service, instance)
+            if service not in Cache:
+                instance = cls(*args, **kwargs)
+                Cache.setdefault(service, instance)
+
+            else:
+                instance = Cache[service]
+
+                if not isinstance(instance, cls):
+                    raise ProviderError('Service %s is already provided by %s' %
+                                        (service, instance.__class__.__name__))
+
             return instance
 
-        return wrapped
-    return decorator
+        return _wrapped
+    return _decorator

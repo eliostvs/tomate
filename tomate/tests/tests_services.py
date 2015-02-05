@@ -1,22 +1,19 @@
 from __future__ import unicode_literals
 
 import unittest
-from abc import ABCMeta, abstractmethod
-
-import six
-from tomate.base import Singleton
 
 
-@six.add_metaclass(ABCMeta)
 class IDummy(object):
-
-    @abstractmethod
     def foo():
         pass
 
 
-@six.add_metaclass(Singleton)
-class Dummy(object):
+class Dummy(IDummy):
+    def foo(self):
+        return 'bar'
+
+
+class NonDummy(object):
     def foo(self):
         return 'bar'
 
@@ -24,46 +21,43 @@ class Dummy(object):
 class ServiceLocatorTestCase(unittest.TestCase):
 
     def setUp(self):
-        from tomate.services import cache
-        cache.clear()
+        from tomate.services import Cache
+        Cache.clear()
 
     def test_should_fail_when_concrete_service_dont_implement_the_service_interface(self):
-        from tomate.services import provider_service, ServiceProviderInvalid
+        from tomate.services import provider_service, ProviderError
 
-        with self.assertRaises(ServiceProviderInvalid) as context:
-            provider_service(IDummy)(Dummy)()
+        with self.assertRaises(ProviderError) as context:
+            provider_service(IDummy)(NonDummy)()
 
-        self.assertEqual("Dummy doesn't implement IDummy!", context.exception.message)
+        self.assertEqual("NonDummy doesn't implement IDummy!", context.exception.message)
 
-    def test_should_lazy_evaluate_the_service(self):
-        from tomate.services import provider_service, cache, LazyService
+    def test_should_return_the_service_object(self):
+        from tomate.services import provider_service, Cache
 
-        IDummy.register(Dummy)
+        dummy = provider_service(interface=IDummy)(Dummy)()
+        dummy_obj = Cache.get('Dummy')
 
-        dummy = provider_service(IDummy)(Dummy)()
-        lazy = cache.lookup(IDummy)
-
-        self.assertIsInstance(lazy,  LazyService)
-        self.assertEqual('<LazyService: (IDummy)>', str(lazy))
-
-        self.assertEqual(None, lazy._wrapped)
-        self.assertEqual('bar', lazy.foo())
-        self.assertEqual(dummy, lazy._wrapped)
+        self.assertEqual(dummy, dummy_obj)
 
     def test_should_raise_when_the_client_not_found_the_service(self):
-        from tomate.services import ServiceNotFound, cache
+        from tomate.services import Cache
 
-        with self.assertRaises(ServiceNotFound) as ctx:
-            fail = cache.lookup(IDummy)
+        with self.assertRaises(KeyError) as ctx:
+            fail = Cache.get('Dummy')
             fail.foo()
 
-        self.assertEqual('IDummy', ctx.exception.message)
+        self.assertEqual('Dummy', ctx.exception.message)
 
     def test_should_success_when_the_service_is_create_after_the_lazy_service(self):
-        from tomate.services import provider_service, cache
-        lazy = cache.lookup(IDummy)
+        from tomate.services import provider_service, Cache, LazyObject
+        lazy = Cache.get('Dummy')
 
-        IDummy.register(Dummy)
+        self.assertIsInstance(lazy,  LazyObject)
+        self.assertEqual('<LazyObject: (Dummy)>', str(lazy))
+
+        self.assertEqual(None, lazy._wrapped)
+
         provider_service(IDummy)(Dummy)()
 
         self.assertEqual('bar', lazy.foo())

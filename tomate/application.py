@@ -8,6 +8,7 @@ from yapsy.ConfigurablePluginManager import ConfigurablePluginManager
 from yapsy.PluginManager import PluginManagerSingleton
 from yapsy.VersionedPluginManager import VersionedPluginManager
 
+from .interfaces import IApplication
 from .plugin import TomatePluginManager
 from .pomodoro import Pomodoro
 from .profile import ProfileManager
@@ -16,7 +17,8 @@ from .utils import suppress_errors
 logger = logging.getLogger(__name__)
 
 
-class Application(dbus.service.Object):
+class Application(IApplication,
+                  dbus.service.Object):
 
     bus_name = 'com.github.Tomate'
     bus_object_path = '/'
