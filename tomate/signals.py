@@ -15,9 +15,6 @@ session_interrupted = tomate_signals.signal('session_interrupted')
 session_ended = tomate_signals.signal('session_ended')
 task_changed = tomate_signals.signal('task_changed')
 
-# Application
-app_request = tomate_signals.signal('app_request')
-
 # Window
 window_showed = tomate_signals.signal('window_showed')
 window_hid = tomate_signals.signal('window_hid')
