@@ -49,7 +49,7 @@ class LazyService(object):
 
     def __init__(self, interface):
         self._wrapped = None
-        self.interface = hash(interface)
+        self.interface = interface
 
     def __getattr__(self, func):
         if self._wrapped is None:
@@ -58,10 +58,10 @@ class LazyService(object):
         return getattr(self._wrapped, func)
 
     def _setup(self):
-        self._wrapped = cache._lookup(self.interface)
+        self._wrapped = cache._lookup(hash(self.interface))
 
     def __repr__(self):
-        return '<LazyService: (%s)>' % self.interface
+        return '<LazyService: (%s)>' % self.interface.__name__
 
 
 def provider_service(interface):

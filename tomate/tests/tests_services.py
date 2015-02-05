@@ -21,15 +21,17 @@ class Dummy(object):
 
 class ServiceLocatorTestCase(unittest.TestCase):
 
-    def test_provider_service_which_is_not_a_abc_class_should_raise(self):
+    def test_should_fail_when_provider_is_not_a_subclass_of_the_interface(self):
         from tomate.services import ServiceProviderInvalid
 
         with self.assertRaises(ServiceProviderInvalid) as context:
-            provider_service(object)(Dummy)()
+            provider_service(IDummy)(Dummy)()
 
-        self.assertEqual('Class Dummy is not subclass of object!', context.exception.message)
+        self.assertEqual('Class Dummy is not subclass of IDummy!', context.exception.message)
 
-    def test_should_only_evaluate_when_needed(self):
+    def test_should_lazy_evaluate(self):
+        IDummy.register(Dummy)
+
         dummy = provider_service(IDummy)(Dummy)()
         lazy_dummy = cache.lookup(IDummy)
 
