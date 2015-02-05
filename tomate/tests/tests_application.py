@@ -18,7 +18,7 @@ class ApplicationFactoryTestCase(unittest.TestCase):
         import dbus.bus
         from tomate.application import application_factory
 
-        application_factory(self.application_class)
+        application_factory(self.application_class, Mock)
 
         self.assertTrue(mSessionBus.called)
 
@@ -34,7 +34,7 @@ class ApplicationFactoryTestCase(unittest.TestCase):
 
         mSessionBus.return_value.request_name.return_value = dbus.bus.REQUEST_NAME_REPLY_EXISTS
 
-        application_factory(self.application_class)
+        application_factory(self.application_class, Mock)
 
         mSessionBus.return_value.get_object.assert_called_once_with(
             'bus_name', 'bus_object_path'
@@ -50,7 +50,7 @@ class ApplicationTestCase(unittest.TestCase):
     def setUp(self):
         from tomate.application import Application
 
-        self.app = Application(Mock())
+        self.app = Application(Mock, Mock())
         self.app.pomodoro = Mock()
         self.app.view = Mock()
 
@@ -85,21 +85,13 @@ class ApplicationTestCase(unittest.TestCase):
 
         self.assertEqual(True, self.app.is_running())
 
-    def test_should_instantiate_the_default_view_class(self, *args):
-        from tomate.application import Application
-        from tomate.interfaces import IView
-
-        app = Application(Mock())
-
-        self.assertIsInstance(app.view, IView)
-
     def test_should_instantiate_a_custom_view_class(self, *args):
         from tomate.application import Application
 
         class Dummy(Application):
             view_class = Mock
 
-        app = Dummy(Mock())
+        app = Dummy(Mock, Mock())
 
         self.assertIsInstance(app.view, Mock)
 
@@ -137,7 +129,7 @@ class ApplicationTestCase(unittest.TestCase):
         from tomate.constants import Task, State
         from tomate.application import Application
 
-        app = Application(Mock())
+        app = Application(Mock, Mock())
 
         status = {
             'pomodoro': {

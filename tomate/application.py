@@ -8,7 +8,6 @@ from yapsy.ConfigurablePluginManager import ConfigurablePluginManager
 from yapsy.PluginManager import PluginManagerSingleton
 from yapsy.VersionedPluginManager import VersionedPluginManager
 
-from .interfaces import IView
 from .plugin import TomatePluginManager
 from .pomodoro import Pomodoro
 from .profile import ProfileManager
@@ -33,7 +32,7 @@ class Application(dbus.service.Object):
                           in_signature='',
                           out_signature='')
 
-    def __init__(self, bus, **kwargs):
+    def __init__(self, view, bus, **kwargs):
         dbus.service.Object.__init__(self, bus, self.bus_object_path)
 
         self.running = False
@@ -42,15 +41,9 @@ class Application(dbus.service.Object):
 
         self.pomodoro = Pomodoro()
 
-        self.view = self.initialize_view()
+        self.view = view()
 
         self.plugin = self.initialize_plugin()
-
-    def initialize_view(self):
-        if self.view_class is None:
-            return IView()
-
-        return self.view_class()
 
     @suppress_errors
     def initialize_plugin(self):
@@ -111,13 +104,13 @@ class Application(dbus.service.Object):
         return dict(pomodoro=self.pomodoro.status)
 
 
-def application_factory(application_class, **kwargs):
+def application_factory(application_class, view_class, **kwargs):
     bus_session = dbus.SessionBus()
     request = bus_session.request_name(application_class.bus_name,
                                        dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
 
     if request != dbus.bus.REQUEST_NAME_REPLY_EXISTS:
-        app = application_class(bus_session, **kwargs)
+        app = application_class(view_class, bus_session, **kwargs)
 
     else:
         bus_object = bus_session.get_object(application_class.bus_name,
