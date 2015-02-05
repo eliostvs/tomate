@@ -5,6 +5,7 @@ import unittest
 from mock import patch
 
 
+@patch('tomate.timer.tomate_signals')
 class TimerTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -12,7 +13,7 @@ class TimerTestCase(unittest.TestCase):
 
         self.timer = Timer()
 
-    def test_timer_running(self):
+    def test_timer_running(self, *args):
         self.assertFalse(self.timer.running)
 
         self.timer.start(10)
@@ -25,7 +26,7 @@ class TimerTestCase(unittest.TestCase):
         self.timer.finish()
         self.assertFalse(self.timer.running)
 
-    def test_timer_seconds(self):
+    def test_timer_seconds(self, *args):
         self.assertEqual(0, self.timer._Timer__seconds)
 
         self.timer.start(10)
@@ -38,7 +39,7 @@ class TimerTestCase(unittest.TestCase):
         self.timer.finish()
         self.assertEqual(0, self.timer._Timer__seconds)
 
-    def test_timer_time_left(self):
+    def test_timer_time_left(self, *args):
         self.assertEqual(0, self.timer.time_left)
 
         self.timer.start(10)
@@ -54,7 +55,7 @@ class TimerTestCase(unittest.TestCase):
         self.timer.finish()
         self.assertEqual(0, self.timer.time_left)
 
-    def test_timer_ratio(self):
+    def test_timer_ratio(self, *args):
         self.assertEqual(0, self.timer.time_ratio)
 
         self.timer.start(10)
@@ -67,7 +68,7 @@ class TimerTestCase(unittest.TestCase):
         self.timer.update()
         self.assertEqual(0.3, self.timer.time_ratio)
 
-    def test_timer_private_update(self):
+    def test_timer_private_update(self, *args):
         self.assertFalse(False, self.timer._Timer__update())
 
         self.timer.start(2)

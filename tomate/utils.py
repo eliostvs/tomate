@@ -65,7 +65,7 @@ class fsm(object):
 
     def __call__(self, method):
         @functools.wraps(method)
-        def wrapper(instance, *args, **kwargs):
+        def _wrapped(instance, *args, **kwargs):
             if self.valid_transition(instance) and self.valid_conditions(instance):
                 result = method(instance, *args, **kwargs)
 
@@ -75,7 +75,7 @@ class fsm(object):
 
                 return result
 
-        return wrapper
+        return _wrapped
 
 
 class ApplicationInstanceNotFound(Exception):
