@@ -20,12 +20,12 @@ class ServiceLocatorTestCase(unittest.TestCase):
         dummy = Dummy()
         Cache.setdefault('Dummy', dummy)
 
-        self.assertEqual(dummy, Cache.get('Dummy'))
+        self.assertEqual(dummy, Cache.lookup('Dummy'))
 
     def test_should_return_a_lazy_object(self):
         from tomate.services import Cache, LazyObject
 
-        lazy = Cache.get('Dummy')
+        lazy = Cache.lookup('Dummy')
 
         self.assertIsInstance(lazy,  LazyObject)
         self.assertEqual('<LazyObject: (Dummy)>', str(lazy))
@@ -43,7 +43,7 @@ class ServiceLocatorTestCase(unittest.TestCase):
         from tomate.services import Cache
 
         with self.assertRaises(KeyError) as ctx:
-            fail = Cache.get('Dummy')
+            fail = Cache.lookup('Dummy')
             fail.foo()
 
         self.assertEqual('Dummy', ctx.exception.message)
