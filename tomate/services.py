@@ -2,12 +2,13 @@ from __future__ import unicode_literals
 
 import logging
 
+
 logger = logging.getLogger(__name__)
 
 
 class ServiceLocator(dict):
 
-    def get(self, key, default=None):
+    def lookup(self, key):
         value = super(ServiceLocator, self).get(key, None)
 
         if value is None:
