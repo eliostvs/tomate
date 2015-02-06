@@ -72,11 +72,11 @@ class AddViewPluginManagerDecoratorTestCase(unittest.TestCase):
     def test_should_add_view_instance_to_all_plugins(self):
         from tomate.plugin import TomatePluginManager
 
-        plugin = Mock(name='plugin')
+        plugin = Mock()
         app = Mock()
         pm = TomatePluginManager(application=app)
         pm._component = Mock()
         pm._component.loadPlugins.return_value = [plugin]
         pm.loadPlugins()
 
-        self.assertEqual(app, plugin.plugin_object.application)
+        self.assertEqual(app, plugin.plugin_object.app)

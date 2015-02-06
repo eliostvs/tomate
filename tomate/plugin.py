@@ -26,7 +26,7 @@ class TomatePluginManager(PluginManagerDecorator):
         processed_plugins = self._component.loadPlugins(callback)
 
         for plugin in processed_plugins:
-            plugin.plugin_object.application = self._application
+            plugin.plugin_object.app = self._application
 
         return processed_plugins
 
