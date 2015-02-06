@@ -14,3 +14,21 @@ class IView(object):
 
     def hide(self):
         pass
+
+
+class IApplication(IView):
+
+    def start(self):
+        pass
+
+    def interrupt(self):
+        pass
+
+    def reset(self):
+        pass
+
+    def change_task(self):
+        pass
+
+    def status(self):
+        pass
