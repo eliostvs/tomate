@@ -30,9 +30,16 @@ def test(options):
 
 @task
 def docker_build():
+    sh('docker rmi --force eliostvs/python-tomate', ignore_error=True)
     sh('docker build -t eliostvs/python-tomate .')
 
 
 @task
 def docker_run():
     sh('docker run --rm -v $PWD:/code eliostvs/python-tomate')
+
+
+@task
+@needs(['docker_build', 'docker_run'])
+def docker_test():
+    pass
