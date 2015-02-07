@@ -20,4 +20,3 @@ build
 dist
 docs/*
 sdist
-*.sublime*

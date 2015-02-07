@@ -1,6 +1,6 @@
 FROM ubuntu:14.04
 
-ADD ./ /code/
+COPY ./ /code/
 
 RUN apt-get update -qq && cat /code/packages.txt | xargs apt-get -yqq install
 
