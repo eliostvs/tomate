@@ -32,6 +32,7 @@ BuildRequires: python-setuptools
 
 Requires: python-blinker
 Requires: python-enum34
+Requires: python-six
 
 %if 0%{?fedora}
 BuildArch: noarch

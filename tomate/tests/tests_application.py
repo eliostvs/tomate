@@ -10,34 +10,22 @@ class ApplicationFactoryTestCase(unittest.TestCase):
 
     def setUp(self):
         self.application_class = Mock()
-        self.application_class.BUS_NAME = 'bus_name'
-        self.application_class.BUS_OBJECT_PATH = 'bus_object_path'
-        self.application_class.BUS_INTERFACE_NAME = 'bus_interface_name'
-        self.view_class = Mock()
+        self.application_class.bus_name = 'bus_name'
+        self.application_class.bus_object_path = 'bus_object_path'
+        self.application_class.bus_interface_name = 'bus_interface_name'
 
     def test_bus_request_name(self, mSessionBus):
         import dbus.bus
         from tomate.application import application_factory
 
-        application_factory(self.application_class, self.view_class)
+        application_factory(self.application_class, Mock)
 
         self.assertTrue(mSessionBus.called)
 
         mSessionBus.return_value.request_name.assert_called_once_with(
-            self.application_class.BUS_NAME,
+            self.application_class.bus_name,
             dbus.bus.NAME_FLAG_DO_NOT_QUEUE
         )
-
-    def test_should_instantiate_the_application_class(self, mSessionBus):
-        import dbus.bus
-        from tomate.application import application_factory
-
-        mSessionBus.return_value.request_name.return_value = dbus.bus.REQUEST_NAME_REPLY_PRIMARY_OWNER
-
-        application_factory(self.application_class, self.view_class)
-
-        self.application_class.assert_called_once_with(mSessionBus.return_value,
-                                                       view=self.view_class)
 
     @patch('tomate.application.dbus.Interface')
     def test_should_get_bus_object(self, mInterface, mSessionBus):
@@ -46,7 +34,7 @@ class ApplicationFactoryTestCase(unittest.TestCase):
 
         mSessionBus.return_value.request_name.return_value = dbus.bus.REQUEST_NAME_REPLY_EXISTS
 
-        application_factory(self.application_class, self.view_class)
+        application_factory(self.application_class, Mock)
 
         mSessionBus.return_value.get_object.assert_called_once_with(
             'bus_name', 'bus_object_path'
@@ -56,43 +44,100 @@ class ApplicationFactoryTestCase(unittest.TestCase):
                                            'bus_interface_name')
 
 
+@patch('tomate.profile.ProfileManager.get_plugin_paths', spec_set=True, return_value=[])
 class ApplicationTestCase(unittest.TestCase):
 
     def setUp(self):
-        from tomate.application import BaseApplication
+        from tomate.application import Application
 
-        self.view = Mock()
-        self.app = BaseApplication(Mock(), self.view)
+        self.app = Application(Mock, Mock())
         self.app.pomodoro = Mock()
+        self.app.view = Mock()
 
-    def test_application_start_for_the_first_time(self):
-        self.app.start()
+    def test_should_run_view_when_not_running(self, *args):
+        self.app.run()
 
-        self.view.run_window.assert_called_once_with()
+        self.app.view.run.assert_called_once_with()
         self.app.pomodoro.change_task.assert_called_once_with()
 
-    def test_application_start_when_another_instance_is_running(self):
+    def test_should_show_view_when_already_running(self, *args):
         self.app.running = True
+        self.app.run()
 
-        self.app.start()
+        self.app.view.show.assert_called_once_with()
 
-        self.view.show_window.assert_called_once_with()
+    def test_should_hide_view_when_pomodoro_is_running(self, *args):
+        self.app.pomodoro.is_running.return_value = True
+        self.app.quit()
 
-    def test_application_exit_when_pomodoro_is_running(self):
-        self.app.pomodoro.state = 'running'
+        self.app.view.hide.assert_called_once_with()
 
-        self.assertEqual(False, self.app.exit())
-        self.view.hide_window.assert_called_once_with()
+    def test_should_quit_when_pomodoro_is_not_running(self, *args):
+        self.app.pomodoro.is_running.return_value = False
+        self.app.quit()
 
-    def test_application_exit_when_pomodoro_is_not_running(self):
-        self.app.pomodoro.state = 'stopped'
+        self.app.view.quit.assert_called_once_with()
 
-        self.assertEqual(True, self.app.exit())
-        self.view.delete_window.assert_called_once_with()
-
-    def test_application_is_running_method(self):
+    def test_application_is_running_method(self, *args):
         self.assertEqual(False, self.app.is_running())
 
         self.app.running = True
 
         self.assertEqual(True, self.app.is_running())
+
+    def test_should_instantiate_a_custom_view_class(self, *args):
+        from tomate.application import Application
+
+        class Dummy(Application):
+            view_class = Mock
+
+        app = Dummy(Mock, Mock())
+
+        self.assertIsInstance(app.view, Mock)
+
+    def test_should_hide_view(self, *args):
+        self.app.hide()
+
+        self.app.view.hide.assert_called_once_with()
+
+    def test_should_show_view(self, *args):
+        self.app.show()
+
+        self.app.view.show.assert_called_once_with()
+
+    def test_should_start_pomodoro(self, *args):
+        self.app.start()
+        self.app.pomodoro.start.assert_called_once_with()
+
+    def test_should_interrupt_pomodoro(self, *args):
+        self.app.interrupt()
+        self.app.pomodoro.interrupt.assert_called_once_with()
+
+    def test_should_reset_pomodoros(self, *args):
+        self.app.reset()
+
+        self.app.pomodoro.reset.assert_called_once_with()
+
+    def test_should_change_pomodoro_task(self, *args):
+        from tomate.constants import Task
+
+        self.app.change_task(task=Task.longbreak)
+
+        self.app.pomodoro.change_task.assert_called_once_with(task=Task.longbreak)
+
+    def test_should_return_overall_status(self, *args):
+        from tomate.constants import Task, State
+        from tomate.application import Application
+
+        app = Application(Mock, Mock())
+
+        status = {
+            'pomodoro': {
+                'state': State.stopped,
+                'time_left': 25 * 60,
+                'task': Task.pomodoro,
+                'sessions': 0
+            }
+        }
+
+        self.assertItemsEqual(status, app.status())

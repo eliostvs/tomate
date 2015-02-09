@@ -2,7 +2,8 @@ from __future__ import unicode_literals
 
 import functools
 import logging
-import os
+
+logger = logging.getLogger(__name__)
 
 
 def setup_logging(options):
@@ -35,31 +36,6 @@ def suppress_errors(function):
     return wrapper
 
 
-def find_xdg_data_files(install_path, topdir, pkgname, data_files=[]):
-    for (dirpath, _, filenames) in os.walk(topdir):
-        if filenames:
-            install_path = install_path.format(pkgname=pkgname)
-
-            subpath = dirpath.split(topdir)[1]
-            if subpath.startswith('/'):
-                subpath = subpath[1:]
-
-            files = [os.path.join(dirpath, f) for f in filenames]
-
-            data_files.append((os.path.join(install_path, subpath), files))
-
-    return data_files
-
-
-def find_data_files(data_map, pkgname):
-    data_files = []
-
-    for (system_path, local_path) in data_map:
-        find_xdg_data_files(system_path, local_path, pkgname, data_files)
-
-    return data_files
-
-
 class fsm(object):
 
     def __init__(self, target, **kwargs):
@@ -67,7 +43,7 @@ class fsm(object):
         self.source = kwargs.pop('source', '*')
         self.attr = kwargs.pop('attr', 'state')
         self.conditions = kwargs.pop('conditions', [])
-        self.exit = kwargs.pop('exit', [])
+        self.exit_action = kwargs.pop('exit', None)
 
     def valid_transition(self, instance):
         if self.source == '*' or getattr(instance, self.attr) in self.source:
@@ -83,18 +59,20 @@ class fsm(object):
     def change_state(self, instance):
         setattr(instance, self.attr, self.target)
 
-    def run_exit(self, instance):
-        map(lambda function: function(instance), self.exit)
+    def call_exit_action(self, instance):
+        if self.exit_action is not None:
+            self.exit_action(instance)
 
     def __call__(self, method):
         @functools.wraps(method)
-        def wrapper(instance, *args, **kwargs):
+        def _wrapped(instance, *args, **kwargs):
             if self.valid_transition(instance) and self.valid_conditions(instance):
                 result = method(instance, *args, **kwargs)
 
                 self.change_state(instance)
 
-                self.run_exit(instance)
+                self.call_exit_action(instance)
 
                 return result
-        return wrapper
+
+        return _wrapped

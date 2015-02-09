@@ -1,15 +1,19 @@
+from __future__ import division, unicode_literals
+
 import unittest
 
 from mock import patch
 
 
+@patch('tomate.timer.tomate_signals')
 class TimerTestCase(unittest.TestCase):
 
     def setUp(self):
         from tomate.timer import Timer
+
         self.timer = Timer()
 
-    def test_timer_running(self):
+    def test_timer_running(self, *args):
         self.assertFalse(self.timer.running)
 
         self.timer.start(10)
@@ -22,7 +26,7 @@ class TimerTestCase(unittest.TestCase):
         self.timer.finish()
         self.assertFalse(self.timer.running)
 
-    def test_timer_seconds(self):
+    def test_timer_seconds(self, *args):
         self.assertEqual(0, self.timer._Timer__seconds)
 
         self.timer.start(10)
@@ -35,7 +39,7 @@ class TimerTestCase(unittest.TestCase):
         self.timer.finish()
         self.assertEqual(0, self.timer._Timer__seconds)
 
-    def test_timer_time_left(self):
+    def test_timer_time_left(self, *args):
         self.assertEqual(0, self.timer.time_left)
 
         self.timer.start(10)
@@ -51,7 +55,7 @@ class TimerTestCase(unittest.TestCase):
         self.timer.finish()
         self.assertEqual(0, self.timer.time_left)
 
-    def test_timer_ratio(self):
+    def test_timer_ratio(self, *args):
         self.assertEqual(0, self.timer.time_ratio)
 
         self.timer.start(10)
@@ -64,7 +68,7 @@ class TimerTestCase(unittest.TestCase):
         self.timer.update()
         self.assertEqual(0.3, self.timer.time_ratio)
 
-    def test_timer_private_update(self):
+    def test_timer_private_update(self, *args):
         self.assertFalse(False, self.timer._Timer__update())
 
         self.timer.start(2)
@@ -77,25 +81,30 @@ class TimerTestCase(unittest.TestCase):
         self.assertEqual(0, self.timer.time_left)
         self.assertFalse(self.timer.running)
 
-    @patch('tomate.timer.timer_finished')
-    def test_should_emit_time_finished_signal(self, mtimer_finished):
-        self.timer.start(1)
-        self.timer._Timer__update()
-        self.timer._Timer__update()
 
-        self.assertTrue(mtimer_finished.send.called)
+@patch('tomate.timer.tomate_signals')
+class TestTimerSignals(unittest.TestCase):
 
-        mtimer_finished.send.assert_called_once_with(self.timer.__class__,
-                                                     time_left=0,
-                                                     time_ratio=0)
+    def make_timer(self):
+        from tomate.timer import Timer
 
-    @patch('tomate.timer.timer_updated')
-    def test_should_emit_time_updated_signal(self, mtimer_updated):
-        self.timer.start(10)
-        self.timer._Timer__update()
+        return Timer()
 
-        self.assertTrue(mtimer_updated.send.called)
+    def test_should_emit_time_finished_signal(self, mock_signals):
+        timer = self.make_timer()
+        timer.start(1)
+        timer._Timer__update()
+        timer._Timer__update()
 
-        mtimer_updated.send.assert_called_once_with(self.timer.__class__,
-                                                    time_left=9,
-                                                    time_ratio=0.1)
+        mock_signals.emit.assert_called('timer_finished',
+                                        time_left=0,
+                                        time_ratio=0)
+
+    def test_should_emit_time_updated_signal(self, mock_signals):
+        timer = self.make_timer()
+        timer.start(10)
+        timer._Timer__update()
+
+        mock_signals.emit.assert_called_once_with('timer_updated',
+                                                  time_left=9,
+                                                  time_ratio=0.1)

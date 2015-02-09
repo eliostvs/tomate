@@ -1,95 +1,66 @@
 from __future__ import unicode_literals
 
-import enum
-from tomate.base import ConnectSignalMixin
+from tomate.mixins import ConnectSignalMixin
 
-from .profile import ProfileManagerSingleton
+from .profile import ProfileManager
 from .signals import tomate_signals
 from .timer import Timer
 from .utils import fsm
-
-
-class Task(enum.Enum):
-    pomodoro = 0
-    shortbreak = 1
-    longbreak = 2
-
-    @classmethod
-    def get_by_index(cls, index):
-        for i, k in enumerate(cls):
-            if i == index:
-                return k
-
-
-def _timer_is_running(instance):
-    return instance._timer.running
-
-
-def _timer_is_stopped(instance):
-    return not instance._timer.running
-
-
-def _send_session_ended_signal(instance):
-    instance.send_signal('session_ended')
-
-
-def _send_session_started_signal(instance):
-    instance.send_signal('session_started')
-
-
-def _send_session_interrupt_signal(instance):
-    instance.send_signal('session_interrupted')
+from .constants import Task, State
 
 
 class Pomodoro(ConnectSignalMixin):
 
-    state = 'stopped'
+    state = State.stopped
 
     signals = (
         ('timer_finished', 'end'),
-        ('start_session', 'start'),
-        ('interrupt_session', 'interrupt'),
-        ('reset_sessions', 'reset'),
-        ('change_task', 'change_task'),
     )
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super(Pomodoro, self).__init__(*args, **kwargs)
+
         self._timer = Timer()
 
         self.sessions = 0
 
         self.task = Task.pomodoro
 
-        self.profile = ProfileManagerSingleton.get()
+        self.profile = ProfileManager()
 
         self.connect_signals()
 
-    @fsm(target='running', source=['stopped'],
-         exit=[_send_session_started_signal])
+    def is_running(self):
+        return self._timer.running
+
+    def is_stopped(self):
+        return not self.is_running()
+
+    @fsm(target=State.running, source=[State.stopped],
+         exit=lambda s: s.emit('session_started'))
     def start(self, sender=None, **kwargs):
-        self._timer.start(self.session_duration)
+        self._timer.start(self.seconds_left)
 
         return True
 
-    @fsm(target='stopped', source=['running'],
-         conditions=[_timer_is_running],
-         exit=[_send_session_interrupt_signal])
+    @fsm(target=State.stopped, source=[State.running],
+         conditions=[is_running],
+         exit=lambda s: s.emit('session_interrupted'))
     def interrupt(self, sender=None, **kwargs):
         self._timer.stop()
 
         return True
 
-    @fsm(target='stopped', source=['stopped'])
+    @fsm(target=State.stopped, source=[State.stopped],
+         exit=lambda s: s.emit('sessions_reseted'))
     def reset(self, sender=None, **kwargs):
         self.sessions = 0
 
-        self.send_signal('sessions_reseted')
-
         return True
 
-    @fsm(target='stopped', source=['running'],
-         conditions=[_timer_is_stopped],
-         exit=[_send_session_ended_signal])
+    @fsm(target=State.stopped, source=[State.running],
+         conditions=[is_stopped],
+         exit=lambda s: s.emit('session_ended'))
     def end(self, sender=None, **kwargs):
         if self.task == Task.pomodoro:
             self.sessions += 1
@@ -105,23 +76,25 @@ class Pomodoro(ConnectSignalMixin):
 
         return True
 
-    @fsm(target='stopped', source=['stopped'])
-    def change_task(self, sender=None, **kwargs):
+    @fsm(target=State.stopped, source=[State.stopped],
+         exit=lambda s: s.emit('task_changed'))
+    def change_task(self, *args, **kwargs):
         self.task = kwargs.pop('task', Task.pomodoro)
-
-        self.send_signal('task_changed')
 
         return True
 
     @property
-    def session_duration(self):
+    def seconds_left(self):
         option_name = self.task.name + '_duration'
         minutes = self.profile.get_int('Timer', option_name)
         return minutes * 60
 
-    def send_signal(self, signal_name):
-        tomate_signals[signal_name].send(
-            self.__class__,
-            task=self.task,
-            sessions=self.sessions,
-            time_left=self.session_duration)
+    def emit(self, signal):
+        tomate_signals.emit(signal, **self.status)
+
+    @property
+    def status(self):
+        return dict(task=self.task,
+                    sessions=self.sessions,
+                    state=self.state,
+                    time_left=self.seconds_left)

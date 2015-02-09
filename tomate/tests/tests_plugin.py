@@ -7,42 +7,76 @@ from mock import Mock, patch
 
 class TomatePluginTestCase(unittest.TestCase):
 
-    @patch('tomate.plugin.ConnectSignalMixin.disconnect_signals')
-    @patch('tomate.plugin.ConnectSignalMixin.connect_signals')
-    def test_plugin_inherit(self, mconnect_signals, mdisconnect_signals):
-        from yapsy.IPlugin import IPlugin
+    def setUp(self):
         from tomate.plugin import TomatePlugin
-        from tomate.base import ConnectSignalMixin
 
         class Dummy(TomatePlugin):
             pass
 
-        dummy = Dummy()
+        self.dummy = Dummy()
 
-        self.assertIsInstance(dummy, IPlugin)
-        self.assertIsInstance(dummy, ConnectSignalMixin)
+    @patch('tomate.plugin.ConnectSignalMixin.disconnect_signals')
+    def test_deactivate_plugin(self, mock_disconnect):
+        self.assertEqual(None, self.dummy.on_deactivate())
 
-        dummy.activate()
-        mconnect_signals.assert_called_once_with()
+        self.dummy.on_deactivate = Mock('on_deactivate')
+        self.dummy.deactivate()
 
-        dummy.deactivate()
-        mdisconnect_signals.assert_called_once_with()
+        mock_disconnect.assert_called_once_with()
+        self.dummy.on_deactivate.assert_called_once_with()
+
+    @patch('tomate.plugin.ConnectSignalMixin.connect_signals')
+    def test_activate_plugin(self, mock_connect):
+        self.assertEqual(None, self.dummy.on_activate())
+
+        self.dummy.on_activate = Mock('on_activate')
+        self.dummy.activate()
+
+        mock_connect.assert_called_once_with()
+        self.dummy.on_activate.assert_called_once_with()
+
+    @patch('tomate.plugin.TomatePlugin.on_init')
+    def test_intialize_plugin(self, mock_init):
+        from tomate.plugin import TomatePlugin
+
+        class Dummy(TomatePlugin):
+            pass
+
+        Dummy()
+
+        mock_init.assert_called_once_with()
 
 
-class AddViewInstancePluginManagerDecoratorTestCase(unittest.TestCase):
+class AddViewPluginManagerDecoratorTestCase(unittest.TestCase):
+
+    def test_should_set_view_property_on_init(self):
+        from tomate.plugin import TomatePluginManager
+
+        app = Mock()
+        pm = TomatePluginManager(application=app)
+
+        self.assertEqual(app, pm._application)
+
+    def test_set_view_property_by_setApplication(self):
+        from tomate.plugin import TomatePluginManager
+
+        pm = TomatePluginManager()
+        app = Mock()
+
+        self.assertEqual(None, pm._application)
+
+        pm.setApplication(app)
+
+        self.assertEqual(app, pm._application)
 
     def test_should_add_view_instance_to_all_plugins(self):
-        from tomate.plugin import AddViewInstancePluginManager
+        from tomate.plugin import TomatePluginManager
 
-        view = Mock(name='View')
-        plugin = Mock(name='plugin')
-        pm = AddViewInstancePluginManager()
-        pm.setViewInstance(view)
-
-        self.assertEqual(view, pm.view_instance)
-
+        plugin = Mock()
+        app = Mock()
+        pm = TomatePluginManager(application=app)
         pm._component = Mock()
         pm._component.loadPlugins.return_value = [plugin]
         pm.loadPlugins()
 
-        self.assertEqual(view, plugin.plugin_object.view)
+        self.assertEqual(app, plugin.plugin_object.app)

@@ -4,7 +4,11 @@ import logging
 import os
 from ConfigParser import SafeConfigParser
 
+import six
 from xdg import BaseDirectory, IconTheme
+
+from .base import Singleton
+from .signals import tomate_signals
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +20,7 @@ DEFAULT_OPTIONS = {
 }
 
 
+@six.add_metaclass(Singleton)
 class ProfileManager(object):
 
     app = 'tomate'
@@ -117,20 +122,10 @@ class ProfileManager(object):
 
         self.write_config()
 
+        tomate_signals.emit('setting_changed',
+                            section=section,
+                            option=option,
+                            value=value)
 
-class ProfileManagerSingleton(object):
-
-    __instance = None
-
-    def __init__(self):
-        if self.__instance is not None:
-            raise Exception("Singleton can't be created twice!")
-
-    @classmethod
-    def get(cls):
-        if cls.__instance is None:
-            cls.__instance = ProfileManager()
-
-            logger.debug('ProfileManagerSingleton initialised')
-
-        return cls.__instance
+        logger.debug('Setting change: Section=%s Option=%s Value=%s',
+                     section, option, value)
