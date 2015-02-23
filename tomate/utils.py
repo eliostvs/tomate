@@ -1,7 +1,8 @@
 from __future__ import unicode_literals
 
-import functools
 import logging
+
+import wrapt
 
 logger = logging.getLogger(__name__)
 
@@ -23,17 +24,16 @@ def format_time_left(seconds):
     return '{0:0>2}:{1:0>2}'.format(minutes, seconds)
 
 
-def suppress_errors(function):
-    @functools.wraps(function)
-    def wrapper(*args, **kwargs):
-        try:
-            return function(*args, **kwargs)
+@wrapt.decorator
+def suppress_errors(wrapped, instance, args, kwargs):
+    try:
+        return wrapped(*args, **kwargs)
 
-        except Exception as e:
-            logger = logging.getLogger(function.__module__)
-            logger.error(e, exc_info=True)
+    except Exception as e:
+        logger = logging.getLogger(wrapped.__module__)
+        logger.error(e, exc_info=True)
 
-    return wrapper
+    return wrapped
 
 
 class fsm(object):
@@ -63,16 +63,15 @@ class fsm(object):
         if self.exit_action is not None:
             self.exit_action(instance)
 
-    def __call__(self, method):
-        @functools.wraps(method)
-        def _wrapped(instance, *args, **kwargs):
-            if self.valid_transition(instance) and self.valid_conditions(instance):
-                result = method(instance, *args, **kwargs)
+    @wrapt.decorator
+    def __call__(self, wrapped, instance, args, kwargs):
+        if self.valid_transition(instance) and self.valid_conditions(instance):
+            result = wrapped(*args, **kwargs)
 
-                self.change_state(instance)
+            self.change_state(instance)
 
-                self.call_exit_action(instance)
+            self.call_exit_action(instance)
 
-                return result
+            return result
 
-        return _wrapped
+        return None

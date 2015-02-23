@@ -24,7 +24,7 @@ def test(options):
 
 @task
 def clean():
-    sh('pyclean tomate')
+    sh('pyclean tomate tests')
 
 
 @task

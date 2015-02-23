@@ -2,17 +2,15 @@ from __future__ import unicode_literals
 
 import logging
 import os
-from ConfigParser import SafeConfigParser
 
-import six
+from wiring import injects
 from xdg import BaseDirectory, IconTheme
 
-from .base import Singleton
 from .signals import tomate_signals
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_OPTIONS = {
+DEFAULTS = {
     'pomodoro_duration': '25',
     'shortbreak_duration': '5',
     'longbreak_duration': '15',
@@ -20,19 +18,17 @@ DEFAULT_OPTIONS = {
 }
 
 
-@six.add_metaclass(Singleton)
-class ProfileManager(object):
+class Config(object):
 
     app = 'tomate'
 
-    def __init__(self):
-        self.config_parser = SafeConfigParser(DEFAULT_OPTIONS)
-        self.parser_config()
+    @injects(config_parser='config_parser')
+    def __init__(self, config_parser):
+        self.config_parser = config_parser
 
-    def parser_config(self):
+        self.config_parser.read(self.get_config_path())
+
         logger.debug('reading config file %s', self.get_config_path())
-
-        return self.config_parser.read(self.get_config_path())
 
     def get_plugin_paths(self):
         return self.get_resource_paths(self.app, 'plugins')

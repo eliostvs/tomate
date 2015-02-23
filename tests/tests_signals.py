@@ -5,7 +5,7 @@ import unittest
 from mock import patch
 
 
-class ConnectSignalMixinTestCase(unittest.TestCase):
+class TestConnectSignalMixin(unittest.TestCase):
 
     def make_dummy(self):
         from tomate.mixins import ConnectSignalMixin
@@ -20,14 +20,14 @@ class ConnectSignalMixinTestCase(unittest.TestCase):
 
         return Dummy()
 
-    @patch('tomate.signals.Dispatcher.connect')
+    @patch('tomate.signals.TomateNamespace.connect')
     def test_connect_signal(self, mconnect):
         dummy = self.make_dummy()
         dummy.connect_signals()
 
         mconnect.assert_called_once_with('updated_timer', dummy.foo)
 
-    @patch('tomate.signals.Dispatcher.disconnect')
+    @patch('tomate.signals.TomateNamespace.disconnect')
     def test_disconnect_signal(self, mdisconnect):
         dummy = self.make_dummy()
         dummy.disconnect_signals()
@@ -36,12 +36,12 @@ class ConnectSignalMixinTestCase(unittest.TestCase):
 
 
 @patch('blinker.base.NamedSignal')
-class DispatcherTestCase(unittest.TestCase):
+class TestTomateNamespace(unittest.TestCase):
 
     def make_namespace(self):
-        from tomate.dispatcher import Dispatcher
+        from tomate.signals import TomateNamespace
 
-        namespace = Dispatcher()
+        namespace = TomateNamespace()
         namespace.signal('test')
 
         return namespace

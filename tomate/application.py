@@ -4,21 +4,40 @@ import logging
 from functools import partial
 
 import dbus.service
+from wiring import inject
+from wiring.interface import implements, Interface
 from yapsy.ConfigurablePluginManager import ConfigurablePluginManager
 from yapsy.PluginManager import PluginManagerSingleton
 from yapsy.VersionedPluginManager import VersionedPluginManager
 
-from .interfaces import IApplication
+from .constants import State
 from .plugin import TomatePluginManager
-from .pomodoro import Pomodoro
-from .profile import ProfileManager
 from .utils import suppress_errors
 
 logger = logging.getLogger(__name__)
 
 
-class Application(IApplication,
-                  dbus.service.Object):
+class IApplication(Interface):
+
+    state = ''
+    bus_name = ''
+    bus_object_path = ''
+    bus_interface_name = ''
+    plugin_ext = ''
+    pluign_manager_classes = ''
+
+    def is_running():
+        pass
+
+    def run():
+        pass
+
+    def quit():
+        pass
+
+
+@implements(IApplication)
+class Application(dbus.service.Object):
 
     bus_name = 'com.github.Tomate'
     bus_object_path = '/'
@@ -27,24 +46,20 @@ class Application(IApplication,
     plugin_manager_classes = (TomatePluginManager,
                               VersionedPluginManager,
                               ConfigurablePluginManager,)
-    view_class = None
 
     dbus_method = partial(dbus.service.method,
                           bus_interface_name,
                           in_signature='',
                           out_signature='')
 
-    def __init__(self, view, bus, **kwargs):
+    @inject(session='session', bus='bus_session', profile='profile', view='view')
+    def __init__(self, session=None, profile=None, view=None, bus=None):
         dbus.service.Object.__init__(self, bus, self.bus_object_path)
 
-        self.running = False
-
-        self.profile = ProfileManager()
-
-        self.pomodoro = Pomodoro()
-
-        self.view = view()
-
+        self.state = State.stopped
+        self.profile = profile
+        self.session = session
+        self.view = view
         self.plugin = self.initialize_plugin()
 
     @suppress_errors
@@ -63,47 +78,28 @@ class Application(IApplication,
 
     @dbus_method(out_signature='b')
     def is_running(self):
-        return self.running
+        return self.state == State.running
 
     @dbus_method()
-    def run(self, *args, **kwargs):
-        if self.running:
+    def run(self):
+        if self.is_running():
             self.show()
 
         else:
-            self.running = True
-            self.change_task()
+            self.state = State.running
+            self.session.change_task()
             self.view.run()
-            self.running = False
+            self.state = State.stopped
+
+        return True
 
     @dbus_method(out_signature='b')
-    def quit(self, *args, **kwargs):
-        if self.pomodoro.is_running():
-            return self.hide()
+    def quit(self):
+        if self.session.timer_is_running():
+            return self.view.hide()
 
         else:
             return self.view.quit()
-
-    def hide(self):
-        return self.view.hide()
-
-    def show(self):
-        return self.view.show()
-
-    def start(self):
-        return self.pomodoro.start()
-
-    def interrupt(self):
-        return self.pomodoro.interrupt()
-
-    def reset(self):
-        return self.pomodoro.reset()
-
-    def change_task(self, *args, **kwargs):
-        return self.pomodoro.change_task(*args, **kwargs)
-
-    def status(self):
-        return dict(pomodoro=self.pomodoro.status)
 
 
 def application_factory(application_class, view_class, **kwargs):

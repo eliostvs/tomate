@@ -15,9 +15,9 @@ BaseDirectory_attrs = {
 class ProfileManagerTestCase(unittest.TestCase):
 
     def setUp(self):
-        from tomate.profile import ProfileManager
+        from tomate.config import Config
 
-        self.pm = ProfileManager()
+        self.pm = Config()
 
     def test_get_config_path(self, *args):
         self.assertEqual('/home/mock/.config/tomate/tomate.conf', self.pm.get_config_path())
@@ -26,9 +26,9 @@ class ProfileManagerTestCase(unittest.TestCase):
         self.assertEqual(['/usr/mock/tomate/plugins'], self.pm.get_plugin_paths())
 
     def test_write_config(self, *args):
-        from tomate.profile import ProfileManager
+        from tomate.config import Config
 
-        pm = ProfileManager()
+        pm = Config()
         pm.config_parser = Mock()
         mo = mock_open()
 
@@ -40,17 +40,17 @@ class ProfileManagerTestCase(unittest.TestCase):
 
     @patch('tomate.profile.os.path.exists', return_value=True)
     def test_get_media_file(self, mpath, *args):
-        from tomate.profile import ProfileManager
+        from tomate.config import Config
 
-        pm = ProfileManager()
+        pm = Config()
 
         self.assertEqual('file:///usr/mock/tomate/media/alarm.mp3', pm.get_media_uri('alarm.mp3'))
 
     @patch('tomate.profile.os.path.exists', return_value=True)
     def test_get_help_uri(self, mpath, *args):
-        from tomate.profile import ProfileManager
+        from tomate.config import Config
 
-        pm = ProfileManager()
+        pm = Config()
 
         self.assertEqual('ghelp:/usr/mock/help/C/tomate', pm.get_ghelp_uri())
 
@@ -63,7 +63,7 @@ class ProfileManagerTestCase(unittest.TestCase):
 
     @patch('tomate.profile.IconTheme.getIconPath', spec_set=True)
     def test_get_icon_path_should_success(self, mgetIconPath, *args):
-        from tomate.profile import ProfileManager
+        from tomate.config import Config
 
         mgetIconPath.side_effect = (
             lambda name, size, theme, extensions:
@@ -71,7 +71,7 @@ class ProfileManagerTestCase(unittest.TestCase):
             .format(name=name, size=size)
         )
 
-        pm = ProfileManager()
+        pm = Config()
 
         self.assertEqual('/usr/mock/icons/hicolor/22x22/apps/tomate.png',
                          pm.get_icon_path('tomate', 22))
@@ -80,12 +80,12 @@ class ProfileManagerTestCase(unittest.TestCase):
         self.assertEqual(['/usr/mock/icons'], self.pm.get_icon_paths())
 
     def makeProfileA(self):
-        from tomate.profile import ProfileManager
-        return ProfileManager()
+        from tomate.config import Config
+        return Config()
 
     def makeProfileB(self):
-        from tomate.profile import ProfileManager
-        return ProfileManager()
+        from tomate.config import Config
+        return Config()
 
     def test_singleton(self, *args):
         instanceA = self.makeProfileA()
@@ -98,9 +98,9 @@ class ProfileManagerTestCase(unittest.TestCase):
 class TestProfileManagerReadWriteOptions(unittest.TestCase):
 
     def test_get_option(self, *args):
-        from tomate.profile import ProfileManager
+        from tomate.config import Config
 
-        pm = ProfileManager()
+        pm = Config()
         pm.write_config = Mock()
         pm.config_parser = Mock()
         pm.config_parser.has_section.return_value = False
@@ -123,9 +123,9 @@ class TestProfileManagerReadWriteOptions(unittest.TestCase):
         pm.write_config.assert_called_once_with()
 
     def test_get_options(self, *args):
-        from tomate.profile import ProfileManager
+        from tomate.config import Config
 
-        pm = ProfileManager()
+        pm = Config()
         pm.config_parser = Mock()
 
         pm.get('section', 'option', type=str)
@@ -144,9 +144,9 @@ class TestProfileManagerReadWriteOptions(unittest.TestCase):
         pm.config_parser.get.assert_called_with('section', 'option')
 
     def test_set_option(self, *args):
-        from tomate.profile import ProfileManager
+        from tomate.config import Config
 
-        pm = ProfileManager()
+        pm = Config()
         pm.config_parser = Mock()
         pm.write_config = Mock()
         pm.config_parser.has_section.return_value = False
