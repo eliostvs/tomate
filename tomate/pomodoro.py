@@ -39,7 +39,7 @@ class Pomodoro(ConnectSignalMixin):
     @fsm(target=State.running, source=[State.stopped],
          exit=lambda s: s.emit('session_started'))
     def start(self, sender=None, **kwargs):
-        self._timer.start(self.seconds_left)
+        self._timer.start(self.session_duration)
 
         return True
 
@@ -84,7 +84,7 @@ class Pomodoro(ConnectSignalMixin):
         return True
 
     @property
-    def seconds_left(self):
+    def session_duration(self):
         option_name = self.task.name + '_duration'
         minutes = self.profile.get_int('Timer', option_name)
         return minutes * 60
@@ -97,4 +97,4 @@ class Pomodoro(ConnectSignalMixin):
         return dict(task=self.task,
                     sessions=self.sessions,
                     state=self.state,
-                    time_left=self.seconds_left)
+                    time_left=self.session_duration)

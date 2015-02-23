@@ -14,88 +14,49 @@ class PomodoroTestCase(unittest.TestCase):
 
         self.pomodoro = Pomodoro()
 
-    def test_should_return_pomodoro_task_and_zero_sessions(self):
+    def test_default_state(self):
         self.assertEqual(Task.pomodoro, self.pomodoro.task)
         self.assertEqual(0, self.pomodoro.sessions)
 
-    def test_pomodoro_states(self):
-        self.assertEqual(State.stopped, self.pomodoro.state)
+    def test_session_start(self):
+        self.pomodoro.state = State.running
+        self.assertFalse(self.pomodoro.start())
 
+        self.pomodoro.state = State.stopped
         self.assertTrue(self.pomodoro.start())
         self.assertEqual(State.running, self.pomodoro.state)
 
+    def test_session_interrupt(self):
+        self.pomodoro.state = State.stopped
+        self.assertFalse(self.pomodoro.interrupt())
+
+        self.pomodoro.state = State.running
+        self.pomodoro._timer.running = True
         self.assertTrue(self.pomodoro.interrupt())
         self.assertEqual(State.stopped, self.pomodoro.state)
 
-        self.assertEqual(None, self.pomodoro.interrupt())
-        self.assertEqual(State.stopped, self.pomodoro.state)
-
-        self.assertTrue(self.pomodoro.start())
-        self.assertEqual(State.running, self.pomodoro.state)
-
-        self.pomodoro._timer.running = True
-        self.assertEqual(None, self.pomodoro.end())
-        self.assertEqual(State.running, self.pomodoro.state)
-
-        self.pomodoro._timer.running = False
-        self.assertTrue(self.pomodoro.end())
-        self.assertEqual(State.stopped, self.pomodoro.state)
-
-    def test_should_reset_pomodoro_sessions(self):
+    def test_session_reset(self):
+        self.pomodoro.state = State.running
         self.pomodoro.sessions = 10
-        self.assertEqual(10, self.pomodoro.sessions)
 
-        self.pomodoro.reset()
+        self.assertFalse(self.pomodoro.reset())
+
+        self.pomodoro.state = State.stopped
+
+        self.assertTrue(self.pomodoro.reset())
         self.assertEqual(0, self.pomodoro.sessions)
 
-    @patch('tomate.profile.ProfileManager.get_int')
-    def test_should_return_time_left_in_seconds(self, mget_int):
-        from tomate.pomodoro import Pomodoro
-
-        mget_int.return_value = 25
-        pomodoro = Pomodoro()
-
-        self.assertEqual(25 * 60, pomodoro.seconds_left)
-        self.assertTrue(mget_int.called)
-        mget_int.assert_called_once_with('Timer', 'pomodoro_duration')
-
-    def test_should_not_change_task_when_pomodoro_is_running(self):
-        self.pomodoro.state = State.running
-        self.assertEqual(None, self.pomodoro.change_task())
-        self.assertEqual(Task.pomodoro, self.pomodoro.task)
-
-    def test_should_change_task_when_pomodoro_is_stopped(self):
+    def test_session_end(self):
         self.pomodoro.state = State.stopped
-        self.assertTrue(self.pomodoro.change_task(task=Task.shortbreak))
-        self.assertEqual(Task.shortbreak, self.pomodoro.task)
+        self.pomodoro.sessions = 0
+        self.assertFalse(self.pomodoro.end())
 
-    def test_should_increment_sessions_in_the_end_of_the_pomodoro_task(self):
         self.pomodoro.state = State.running
-
         self.assertTrue(self.pomodoro.end())
+        self.assertEqual(State.stopped, self.pomodoro.state)
         self.assertEqual(1, self.pomodoro.sessions)
-        self.assertEqual(Task.shortbreak, self.pomodoro.task)
 
-        self.pomodoro.state = State.running
-
-        self.assertTrue(self.pomodoro.end())
-        self.assertEqual(1, self.pomodoro.sessions)
-        self.assertEqual(Task.pomodoro, self.pomodoro.task)
-
-        self.pomodoro.state = State.running
-        self.pomodoro.task = Task.longbreak
-
-        self.assertTrue(self.pomodoro.end())
-        self.assertEqual(1, self.pomodoro.sessions)
-        self.assertEqual(Task.pomodoro, self.pomodoro.task)
-
-        self.pomodoro.state = State.running
-        self.pomodoro.sessions = 3
-        self.assertTrue(self.pomodoro.end())
-        self.assertEqual(4, self.pomodoro.sessions)
-        self.assertEqual(Task.longbreak, self.pomodoro.task)
-
-    def test_should_return_pomodoro_status(self):
+    def test_session_status(self):
         self.pomodoro.sessions = 2
         self.pomodoro.task = Task.shortbreak
         self.pomodoro.state = State.running
@@ -107,9 +68,28 @@ class PomodoroTestCase(unittest.TestCase):
 
         self.assertEqual(status, self.pomodoro.status)
 
+    @patch('tomate.profile.ProfileManager.get_int')
+    def test_session_duration(self, mget_int):
+        from tomate.pomodoro import Pomodoro
+
+        mget_int.return_value = 25
+        pomodoro = Pomodoro()
+
+        self.assertEqual(25 * 60, pomodoro.session_duration)
+        self.assertTrue(mget_int.called)
+        mget_int.assert_called_once_with('Timer', 'pomodoro_duration')
+
+    def test_change_task(self):
+        self.pomodoro.state = State.running
+        self.assertEqual(None, self.pomodoro.change_task())
+
+        self.pomodoro.state = State.stopped
+        self.assertTrue(self.pomodoro.change_task(task=Task.shortbreak))
+        self.assertEqual(Task.shortbreak, self.pomodoro.task)
+
 
 @patch('tomate.pomodoro.tomate_signals')
-class PomodoroSignalTestCase(unittest.TestCase):
+class TestPomodoroSignals(unittest.TestCase):
 
     def make_pomodoro(self):
         from tomate.pomodoro import Pomodoro
