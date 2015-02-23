@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import unittest
 
 from mock import Mock, patch
-from tomate.constants import State
+from tomate.enums import State
 
 
 class TestApplicationInterface(unittest.TestCase):

@@ -5,7 +5,7 @@ from wiring.interface import implements, Interface
 
 from tomate.mixins import ConnectSignalMixin
 
-from .constants import State, Task
+from .enums import State, Task
 from .utils import fsm
 
 

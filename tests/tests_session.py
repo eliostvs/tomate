@@ -4,7 +4,7 @@ import unittest
 
 from mock import Mock
 
-from tomate.constants import State, Task
+from tomate.enums import State, Task
 
 
 class TestSessionInterface(unittest.TestCase):

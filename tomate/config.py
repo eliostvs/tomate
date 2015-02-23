@@ -3,10 +3,8 @@ from __future__ import unicode_literals
 import logging
 import os
 
-from wiring import injects
+from wiring import implements, inject, Interface
 from xdg import BaseDirectory, IconTheme
-
-from .signals import tomate_signals
 
 logger = logging.getLogger(__name__)
 
@@ -18,41 +16,78 @@ DEFAULTS = {
 }
 
 
+class IConfig(Interface):
+    app_name = ''
+
+    def get_config_path():
+        pass
+
+    def get_resource_paths(*resources):
+        pass
+
+    def get_resource_path(*resources):
+        pass
+
+    def get_plugin_paths():
+        pass
+
+    def get_icon_paths():
+        pass
+
+    def get_icon_path(iconname, size=None, theme=None):
+        pass
+
+    def get_media_uri(*resources):
+        pass
+
+    def get(section, option):
+        pass
+
+    def get_int(section, option):
+        pass
+
+    def set(section, option, value):
+        pass
+
+    def load():
+        pass
+
+    def save():
+        pass
+
+
+@implements(IConfig)
 class Config(object):
 
-    app = 'tomate'
+    app_name = 'tomate'
 
-    @injects(config_parser='config_parser')
-    def __init__(self, config_parser):
-        self.config_parser = config_parser
+    @inject(parser='tomate.config.parser', tomate_signals='tomate.signals')
+    def __init__(self, parser=None, tomate_signals=None):
+        self.parser = parser
+        self.tomate_signals = tomate_signals
 
-        self.config_parser.read(self.get_config_path())
+        self.load()
 
         logger.debug('reading config file %s', self.get_config_path())
 
-    def get_plugin_paths(self):
-        return self.get_resource_paths(self.app, 'plugins')
+    def load(self):
+        self.parser.read(self.get_config_path())
+        logger.debug('load config file %s', self.get_config_path())
 
-    def get_resource_paths(self, *resources):
-        return [p for p in BaseDirectory.load_data_paths(*resources)]
-
-    def get_config_path(self):
-        BaseDirectory.save_config_path(self.app)
-        return os.path.join(BaseDirectory.xdg_config_home, self.app, self.app + '.conf')
-
-    def write_config(self):
+    def save(self):
         logger.debug('writing config file %s', self.get_config_path())
 
         with open(self.get_config_path(), 'w') as f:
-            self.config_parser.write(f)
+            self.parser.write(f)
 
-    def get_media_uri(self, *resources):
-        return 'file://' + self.get_resource_path(self.app, 'media', *resources)
+    def get_config_path(self):
+        BaseDirectory.save_config_path(self.app_name)
+        return os.path.join(BaseDirectory.xdg_config_home, self.app_name, self.app_name + '.conf')
 
-    def get_ghelp_uri(self, language='C'):
-        return 'ghelp:' + self.get_resource_path('help', language, self.app)
+    def get_plugin_paths(self):
+        return self.get_resource_paths(self.app_name, 'plugins')
 
-    def get_resource_path(self, *resources, **kwargs):
+    def get_resource_path(self, *resources):
         for resource in self.get_resource_paths(*resources):
             if os.path.exists(resource):
                 return resource
@@ -60,6 +95,12 @@ class Config(object):
             logger.debug('resource not found: %s', resource)
 
         raise EnvironmentError('resource with path %s not found!' % os.path.join(*resources))
+
+    def get_resource_paths(self, *resources):
+        return [p for p in BaseDirectory.load_data_paths(*resources)]
+
+    def get_media_uri(self, *resources):
+        return 'file://' + self.get_resource_path(self.app_name, 'media', *resources)
 
     def get_icon_path(self, iconname, size=None, theme=None):
         iconpath = IconTheme.getIconPath(iconname, size, theme, extensions=['png', 'svg', 'xpm'])
@@ -73,55 +114,45 @@ class Config(object):
         return self.get_resource_paths('icons')
 
     def get_int(self, section, option):
-        return self.get(section, option, int)
+        return self._get(section, option, 'getint')
 
-    def get(self, section, option, type=str):
-        section_name = section.lower()
-        if not self.config_parser.has_section(section_name):
-            self.config_parser.add_section(section_name)
+    def get(self, section, option):
+        return self._get(section, option)
 
-        option_name = self._get_option_name(option)
-        if not self.config_parser.has_option(section_name, option_name):
-            option_value = self.config_parser.get(section_name, option_name)
+    def _get(self, section, option, method='get'):
+        section = Config.normalize(section)
+        option = Config.normalize(option)
 
-            self.config_parser.set(section_name, option_name, option_value)
+        if not self.parser.has_section(section):
+            self.parser.add_section(section)
 
-            self.write_config()
+        if not self.parser.has_option(section, option):
+            value = self.parser.get(section, option)
 
-        return self._get_parser_method(type)(section_name, option_name)
+            self.parser.set(section, option, value)
 
-    def _get_parser_method(self, type):
-        methods = {
-            str: 'get',
-            int: 'getint',
-            float: 'getfloat',
-            bool: 'getboolean',
-        }
+            self.save()
 
-        try:
-            method = methods[type]
-        except Exception:
-            method = 'get'
-
-        return getattr(self.config_parser, method)
-
-    def _get_option_name(self, option_name):
-        return option_name.replace(" ", "_").lower()
+        return getattr(self.parser, method)(section, option)
 
     def set(self, section, option, value):
-        section_name = section.lower()
-        if not self.config_parser.has_section(section_name):
-            self.config_parser.add_section(section_name)
+        section = Config.normalize(section)
 
-        option_name = self._get_option_name(option)
-        self.config_parser.set(section_name, option_name, value)
+        if not self.parser.has_section(section):
+            self.parser.add_section(section)
 
-        self.write_config()
+        self.parser.set(section, Config.normalize(option), value)
 
-        tomate_signals.emit('setting_changed',
-                            section=section,
-                            option=option,
-                            value=value)
+        self.save()
+
+        self.tomate_signals.emit('setting_changed',
+                                 section=section,
+                                 option=option,
+                                 value=value)
 
         logger.debug('Setting change: Section=%s Option=%s Value=%s',
                      section, option, value)
+
+    @staticmethod
+    def normalize(name):
+        return name.replace(' ', '_').lower()

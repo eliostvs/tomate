@@ -10,7 +10,7 @@ from yapsy.ConfigurablePluginManager import ConfigurablePluginManager
 from yapsy.PluginManager import PluginManagerSingleton
 from yapsy.VersionedPluginManager import VersionedPluginManager
 
-from .constants import State
+from .enums import State
 from .plugin import TomatePluginManager
 from .utils import suppress_errors
 
@@ -71,7 +71,7 @@ class Application(dbus.service.Object):
         manager.setPluginInfoExtension(self.plugin_ext)
         manager.setApplication(self)
         manager.setConfigParser(self.profile.config_parser,
-                                self.profile.write_config)
+                                self.profile.save)
         manager.collectPlugins()
 
         return manager

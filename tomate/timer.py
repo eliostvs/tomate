@@ -3,7 +3,7 @@ from __future__ import division, unicode_literals
 from gi.repository import GObject
 from wiring import implements, inject, Interface
 
-from .constants import State
+from .enums import State
 from .utils import fsm
 
 # Borrowed from Tomatoro create by Pierre Quillery.

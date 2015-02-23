@@ -3,7 +3,7 @@ from __future__ import division, unicode_literals
 import unittest
 
 from mock import Mock
-from tomate.constants import State
+from tomate.enums import State
 
 
 class TestTimerInterface(unittest.TestCase):
