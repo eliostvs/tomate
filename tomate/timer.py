@@ -1,7 +1,7 @@
 from __future__ import division, unicode_literals
 
 from gi.repository import GObject
-from wiring import implements, inject, Interface
+from wiring import implements, inject, Interface, Module, SingletonScope
 
 from .enums import State
 from .utils import fsm
@@ -97,3 +97,9 @@ class Timer(object):
 
     def reset(self):
         self.__seconds = self.time_left = 0
+
+
+class TimerModule(Module):
+    factories = {
+        'tomate.timer': (Timer, SingletonScope),
+    }

@@ -1,8 +1,5 @@
 from __future__ import unicode_literals
 
-import logging
-from functools import partial
-
 import dbus.service
 from wiring import inject
 from wiring.interface import implements, Interface
@@ -12,9 +9,6 @@ from yapsy.VersionedPluginManager import VersionedPluginManager
 
 from .enums import State
 from .plugin import TomatePluginManager
-from .utils import suppress_errors
-
-logger = logging.getLogger(__name__)
 
 
 class IApplication(Interface):
@@ -23,8 +17,8 @@ class IApplication(Interface):
     bus_name = ''
     bus_object_path = ''
     bus_interface_name = ''
+    plugin_manager_classes = ''
     plugin_ext = ''
-    pluign_manager_classes = ''
 
     def is_running():
         pass
@@ -47,43 +41,35 @@ class Application(dbus.service.Object):
                               VersionedPluginManager,
                               ConfigurablePluginManager,)
 
-    dbus_method = partial(dbus.service.method,
-                          bus_interface_name,
-                          in_signature='',
-                          out_signature='')
-
-    @inject(session='session', bus='bus_session', profile='profile', view='view')
-    def __init__(self, session=None, profile=None, view=None, bus=None):
+    @inject(session='tomate.session', view='tomate.view',
+            bus='bus.session', confi='tomate.config')
+    def __init__(self, session=None, view=None, bus=None, config=None):
         dbus.service.Object.__init__(self, bus, self.bus_object_path)
 
-        self.state = State.stopped
-        self.profile = profile
+        self.config = config
         self.session = session
+        self.state = State.stopped
         self.view = view
-        self.plugin = self.initialize_plugin()
 
-    @suppress_errors
-    def initialize_plugin(self):
+    def setup_plugin(self):
         PluginManagerSingleton.setBehaviour(self.plugin_manager_classes)
 
         manager = PluginManagerSingleton.get()
-        manager.setPluginPlaces(self.profile.get_plugin_paths())
+        manager.setPluginPlaces(self.config.get_plugin_paths())
         manager.setPluginInfoExtension(self.plugin_ext)
         manager.setApplication(self)
-        manager.setConfigParser(self.profile.config_parser,
-                                self.profile.save)
+        manager.setConfigParser(self.config.parser,
+                                self.config.save)
         manager.collectPlugins()
 
-        return manager
-
-    @dbus_method(out_signature='b')
+    @dbus.service.method(bus_interface_name, out_signature='b')
     def is_running(self):
         return self.state == State.running
 
-    @dbus_method()
+    @dbus.service.method(bus_interface_name, out_signature='b')
     def run(self):
         if self.is_running():
-            self.show()
+            self.view.show()
 
         else:
             self.state = State.running
@@ -91,9 +77,6 @@ class Application(dbus.service.Object):
             self.view.run()
             self.state = State.stopped
 
-        return True
-
-    @dbus_method(out_signature='b')
     def quit(self):
         if self.session.timer_is_running():
             return self.view.hide()

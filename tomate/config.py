@@ -18,6 +18,7 @@ DEFAULTS = {
 
 class IConfig(Interface):
     app_name = ''
+    parser = ''
 
     def get_config_path():
         pass

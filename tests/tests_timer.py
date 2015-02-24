@@ -4,6 +4,8 @@ import unittest
 
 from mock import Mock
 from tomate.enums import State
+from tomate.signals import tomate_signals
+from wiring import FactoryProvider, Graph, SingletonScope
 
 
 class TestTimerInterface(unittest.TestCase):
@@ -90,3 +92,24 @@ class TestTimerSignals(unittest.TestCase):
         self.timer.update()
 
         self.timer.signals.emit.assert_called_once_with('timer_updated', time_left=9, time_ratio=0.1)
+
+
+class TestTimerModule(unittest.TestCase):
+
+    def test_module(self):
+        from tomate.timer import Timer
+
+        graph = Graph()
+        graph.register_scope(SingletonScope, SingletonScope())
+        graph.register_instance('tomate.signals', tomate_signals)
+
+        self.assertEqual(TimerModule.providers.keys(), ['tomate.timer'])
+        TimerModule().add_to(self.graph)
+
+        self.assertIn(graph.providers.keys(), ['tomate.timer', 'tomate.signals'])
+
+        provider = graph.providers['tomate.timer']
+
+        self.assertIsInstance(provider, FactoryProvider)
+        self.assertIsInstance(provider.scope, SingletonScope)
+        self.assertEqual(provider.dependencies, {'signals': 'tomate.signals'})
