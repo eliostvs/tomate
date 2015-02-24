@@ -26,7 +26,9 @@ class TestConfig(unittest.TestCase):
     def setUp(self):
         from tomate.config import Config
 
-        self.pm = Config(parser=Mock())
+        self.pm = Config(tomate_signals=Mock(), parser=Mock())
+
+        self.mo = mock_open()
 
     def test_get_config_path(self, *args):
         self.assertEqual('/home/mock/.config/tomate/tomate.conf', self.pm.get_config_path())
@@ -35,13 +37,11 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(['/usr/mock/tomate/plugins'], self.pm.get_plugin_paths())
 
     def test_write_config(self, *args):
-        mo = mock_open()
-
-        with patch('tomate.config.open', mo, create=True):
+        with patch('tomate.config.open', self.mo, create=True):
             self.pm.save()
 
         self.assertTrue(self.pm.parser.write.called)
-        self.pm.parser.write.assert_called_once_with(mo())
+        self.pm.parser.write.assert_called_once_with(self.mo())
 
     @patch('tomate.config.os.path.exists', return_value=True)
     def test_get_media_file(self, mpath, *args):
@@ -68,34 +68,26 @@ class TestConfig(unittest.TestCase):
     def test_icon_paths_should_success(self, *args):
         self.assertEqual(['/usr/mock/icons'], self.pm.get_icon_paths())
 
-
-@patch('tomate.config.BaseDirectory', spec_set=True, **BaseDirectory_attrs)
-class TestProfileManagerReadWriteOptions(unittest.TestCase):
-
-    def setUp(self, *args):
-        from tomate.config import Config
-
-        self.pm = Config(parser=Mock())
-
     def test_get_option(self, *args):
         self.pm.parser.has_section.return_value = False
         self.pm.parser.has_option.return_value = False
         self.pm.parser.get.return_value = '25'
         self.pm.parser.getint.return_value = 25
 
-        self.assertEqual(25, self.pm.get_int('Timer', 'pomodoro duration'))
+        with patch('tomate.config.open', self.mo, create=True):
+            self.assertEqual(25, self.pm.get_int('Timer', 'pomodoro duration'))
 
-        self.pm.parser.has_section.assert_called_once_with('timer')
+            self.pm.parser.has_section.assert_called_once_with('timer')
 
-        self.pm.parser.add_section.assert_called_once_with('timer')
+            self.pm.parser.add_section.assert_called_once_with('timer')
 
-        self.pm.parser.has_option.assert_called_once_with('timer', 'pomodoro_duration')
+            self.pm.parser.has_option.assert_called_once_with('timer', 'pomodoro_duration')
 
-        self.pm.parser.get.assert_called_once_with('timer', 'pomodoro_duration')
+            self.pm.parser.get.assert_called_once_with('timer', 'pomodoro_duration')
 
-        self.pm.parser.set.assert_called_once_with('timer', 'pomodoro_duration', '25')
+            self.pm.parser.set.assert_called_once_with('timer', 'pomodoro_duration', '25')
 
-        self.pm.save.assert_called_once_with()
+            self.pm.parser.write.assert_called_once_with(self.mo())
 
     def test_get_options(self, *args):
         self.pm.get('section', 'option')
@@ -107,10 +99,11 @@ class TestProfileManagerReadWriteOptions(unittest.TestCase):
     def test_set_option(self, *args):
         self.pm.parser.has_section.return_value = False
 
-        self.pm.set('Timer', 'Shortbreak Duration', 4)
+        with patch('tomate.config.open', self.mo, create=True):
+            self.pm.set('Timer', 'Shortbreak Duration', 4)
 
-        self.pm.parser.has_section.assert_called_once_with('timer')
-        self.pm.parser.add_section.assert_called_once_with('timer')
-        self.pm.parser.set.assert_called_once_with('timer', 'shortbreak_duration', 4)
+            self.pm.parser.has_section.assert_called_once_with('timer')
+            self.pm.parser.add_section.assert_called_once_with('timer')
+            self.pm.parser.set.assert_called_once_with('timer', 'shortbreak_duration', 4)
 
-        self.pm.save.assert_called_once_with()
+            self.pm.parser.write.assert_called_once_with(self.mo())

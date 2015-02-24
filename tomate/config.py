@@ -84,8 +84,14 @@ class Config(object):
         BaseDirectory.save_config_path(self.app_name)
         return os.path.join(BaseDirectory.xdg_config_home, self.app_name, self.app_name + '.conf')
 
+    def get_media_uri(self, *resources):
+        return 'file://' + self.get_resource_path(self.app_name, 'media', *resources)
+
     def get_plugin_paths(self):
         return self.get_resource_paths(self.app_name, 'plugins')
+
+    def get_icon_paths(self):
+        return self.get_resource_paths('icons')
 
     def get_resource_path(self, *resources):
         for resource in self.get_resource_paths(*resources):
@@ -99,9 +105,6 @@ class Config(object):
     def get_resource_paths(self, *resources):
         return [p for p in BaseDirectory.load_data_paths(*resources)]
 
-    def get_media_uri(self, *resources):
-        return 'file://' + self.get_resource_path(self.app_name, 'media', *resources)
-
     def get_icon_path(self, iconname, size=None, theme=None):
         iconpath = IconTheme.getIconPath(iconname, size, theme, extensions=['png', 'svg', 'xpm'])
 
@@ -109,9 +112,6 @@ class Config(object):
             return iconpath
 
         raise EnvironmentError('Icon %s not found!' % iconpath)
-
-    def get_icon_paths(self):
-        return self.get_resource_paths('icons')
 
     def get_int(self, section, option):
         return self._get(section, option, 'getint')
