@@ -68,8 +68,6 @@ class Config(object):
 
         self.load()
 
-        logger.debug('reading config file %s', self.get_config_path())
-
     def load(self):
         self.parser.read(self.get_config_path())
         logger.debug('load config file %s', self.get_config_path())
