@@ -14,7 +14,7 @@ class TestSessionInterface(unittest.TestCase):
         from tomate.session import ISession, Session
 
         session = Session(timer=Mock(),
-                          profile=Mock(**{'get_int.return_value': 25}),
+                          config=Mock(**{'get_int.return_value': 25}),
                           signals=Mock())
         ISession.check_compliance(session)
 
@@ -25,7 +25,7 @@ class TestSession(unittest.TestCase):
         from tomate.session import Session
 
         self.session = Session(timer=Mock(),
-                               profile=Mock(**{'get_int.return_value': 25}),
+                               config=Mock(**{'get_int.return_value': 25}),
                                signals=Mock())
 
     def test_default_state(self):
@@ -75,7 +75,7 @@ class TestSession(unittest.TestCase):
         self.session.count = 2
         self.session.task = Task.shortbreak
         self.session.state = State.running
-        self.session.profile.get_int.return_value = 5
+        self.session.config.get_int.return_value = 5
 
         status = dict(task=Task.shortbreak,
                       sessions=2,
@@ -86,7 +86,7 @@ class TestSession(unittest.TestCase):
 
     def test_session_duration(self):
         self.assertEqual(25 * 60, self.session.duration)
-        self.session.profile.get_int.assert_called_once_with('Timer', 'pomodoro_duration')
+        self.session.config.get_int.assert_called_once_with('Timer', 'pomodoro_duration')
 
     def test_change_task(self):
         self.session.state = State.running
@@ -103,7 +103,7 @@ class TestSessionSignals(unittest.TestCase):
         from tomate.session import Session
 
         self.session = Session(timer=Mock(),
-                               profile=Mock(**{'get_int.return_value': 25}),
+                               config=Mock(**{'get_int.return_value': 25}),
                                signals=Mock())
 
     def test_should_emit_session_started(self):
@@ -139,7 +139,7 @@ class TestSessionSignals(unittest.TestCase):
     def test_should_emit_session_end(self):
         self.session.state = State.running
         self.session.timer.State = State.stopped
-        self.session.profile.get_int.return_value = 5
+        self.session.config.get_int.return_value = 5
         self.session.end()
 
         self.session.tomate_signals.emit.assert_called_once_with('session_ended',
@@ -149,7 +149,7 @@ class TestSessionSignals(unittest.TestCase):
                                                                  time_left=300)
 
     def test_should_emit_task_changed(self):
-        self.session.profile.get_int.return_value = 15
+        self.session.config.get_int.return_value = 15
         self.session.change_task(task=Task.longbreak)
 
         self.session.tomate_signals.emit.assert_called_once_with('task_changed',
@@ -184,10 +184,10 @@ class TestSessionModule(unittest.TestCase):
         self.assertEqual(provider.scope, SingletonScope)
         self.assertEqual(provider.dependencies,
                          dict(signals='tomate.signals',
-                              profile='tomate.profile',
+                              config='tomate.config',
                               timer='tomate.timer'))
 
         graph.register_instance('tomate.signals', Mock())
         graph.register_instance('tomate.timer', Mock())
-        graph.register_instance('tomate.profile', Mock())
+        graph.register_instance('tomate.config', Mock())
         self.assertIsInstance(graph.get('tomate.session'), Session)

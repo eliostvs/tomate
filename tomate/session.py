@@ -35,12 +35,12 @@ class Session(ConnectSignalMixin):
         ('timer_finished', 'end'),
     )
 
-    @inject(timer='tomate.timer', profile='tomate.profile', signals='tomate.signals')
-    def __init__(self, timer=None, profile=None, signals=None):
+    @inject(timer='tomate.timer', config='tomate.config', signals='tomate.signals')
+    def __init__(self, timer=None, config=None, signals=None):
         super(Session, self).__init__()
 
         self.count = 0
-        self.profile = profile
+        self.config = config
         self.state = State.stopped
         self.task = Task.pomodoro
         self.timer = timer
@@ -87,7 +87,7 @@ class Session(ConnectSignalMixin):
         if self.task == Task.pomodoro:
             self.count += 1
 
-            if self.count % self.profile.get_int('Timer', 'Long Break Interval'):
+            if self.count % self.config.get_int('Timer', 'Long Break Interval'):
                 self.task = Task.shortbreak
 
             else:
@@ -110,7 +110,7 @@ class Session(ConnectSignalMixin):
     @property
     def duration(self):
         option_name = self.task.name + '_duration'
-        minutes = self.profile.get_int('Timer', option_name)
+        minutes = self.config.get_int('Timer', option_name)
         return minutes * 60
 
     def status(self):

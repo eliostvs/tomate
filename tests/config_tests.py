@@ -4,6 +4,7 @@ import os
 import unittest
 
 from mock import Mock, mock_open, patch
+from wiring import FactoryProvider, Graph, SingletonScope
 
 BaseDirectory_attrs = {
     'xdg_config_home': '/home/mock/.config',
@@ -26,7 +27,7 @@ class TestConfig(unittest.TestCase):
     def setUp(self):
         from tomate.config import Config
 
-        self.pm = Config(tomate_signals=Mock(), parser=Mock())
+        self.pm = Config(signals=Mock(), parser=Mock())
 
         self.mo = mock_open()
 
@@ -107,3 +108,25 @@ class TestConfig(unittest.TestCase):
             self.pm.parser.set.assert_called_once_with('timer', 'shortbreak_duration', 4)
 
             self.pm.parser.write.assert_called_once_with(self.mo())
+
+
+class TestConfigModule(unittest.TestCase):
+
+    def test_module(self):
+        from tomate.config import Config, ConfigModule
+
+        graph = Graph()
+
+        self.assertEqual(['tomate.config'], ConfigModule.providers.keys())
+        ConfigModule().add_to(graph)
+
+        provider = graph.providers['tomate.config']
+
+        self.assertIsInstance(provider, FactoryProvider)
+        self.assertEqual(provider.scope, SingletonScope)
+        self.assertEqual(provider.dependencies,
+                         dict(parser='parser', signals='tomate.signals'))
+
+        graph.register_instance('tomate.signals', Mock())
+        graph.register_instance('parser', Mock())
+        self.assertIsInstance(graph.get('tomate.config'), Config)

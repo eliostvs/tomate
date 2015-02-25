@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import logging
 import os
 
-from wiring import implements, inject, Interface
+from wiring import implements, inject, Interface, Module, SingletonScope
 from xdg import BaseDirectory, IconTheme
 
 logger = logging.getLogger(__name__)
@@ -62,10 +62,10 @@ class Config(object):
 
     app_name = 'tomate'
 
-    @inject(parser='tomate.config.parser', tomate_signals='tomate.signals')
-    def __init__(self, parser=None, tomate_signals=None):
+    @inject(parser='parser', signals='tomate.signals')
+    def __init__(self, parser=None, signals=None):
         self.parser = parser
-        self.tomate_signals = tomate_signals
+        self.signals = signals
 
         self.load()
 
@@ -144,10 +144,10 @@ class Config(object):
 
         self.save()
 
-        self.tomate_signals.emit('setting_changed',
-                                 section=section,
-                                 option=option,
-                                 value=value)
+        self.signals.emit('setting_changed',
+                          section=section,
+                          option=option,
+                          value=value)
 
         logger.debug('Setting change: Section=%s Option=%s Value=%s',
                      section, option, value)
@@ -155,3 +155,10 @@ class Config(object):
     @staticmethod
     def normalize(name):
         return name.replace(' ', '_').lower()
+
+
+class ConfigModule(Module):
+
+    factories = {
+        'tomate.config': (Config, SingletonScope)
+    }
