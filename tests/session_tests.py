@@ -156,3 +156,12 @@ class TestSessionSignals(unittest.TestCase):
                                                                  sessions=0,
                                                                  state=State.stopped,
                                                                  time_left=900)
+
+        self.session.tomate_signals.reset_mock()
+        self.session.change_task()
+
+        self.session.tomate_signals.emit.assert_called_once_with('task_changed',
+                                                                 task=Task.longbreak,
+                                                                 sessions=0,
+                                                                 state=State.stopped,
+                                                                 time_left=900)

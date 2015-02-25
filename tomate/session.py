@@ -23,7 +23,7 @@ class ISession(Interface):
     def end():
         pass
 
-    def change_task(task):
+    def change_task(task=None):
         pass
 
     def status():
@@ -103,8 +103,9 @@ class Session(ConnectSignalMixin):
     @fsm(target=State.stopped,
          source=[State.stopped],
          exit=lambda s: s.emit('task_changed'))
-    def change_task(self, task):
-        self.task = task or Task.pomodoro
+    def change_task(self, task=None):
+        if task is not None:
+            self.task = task
 
         return True
 
