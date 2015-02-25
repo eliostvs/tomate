@@ -3,7 +3,8 @@ from __future__ import unicode_literals
 import logging
 import os
 
-from wiring import implements, inject, Interface, Module, SingletonScope
+from wiring import (implements, inject, Interface, Module, provides, scope,
+                    SingletonScope)
 from xdg import BaseDirectory, IconTheme
 
 logger = logging.getLogger(__name__)
@@ -70,8 +71,9 @@ class Config(object):
         self.load()
 
     def load(self):
-        self.parser.read(self.get_config_path())
         logger.debug('load config file %s', self.get_config_path())
+
+        self.parser.read(self.get_config_path())
 
     def save(self):
         logger.debug('writing config file %s', self.get_config_path())
@@ -130,17 +132,18 @@ class Config(object):
 
             self.parser.set(section, option, value)
 
-            self.save()
-
         return getattr(self.parser, method)(section, option)
 
     def set(self, section, option, value):
         section = Config.normalize(section)
+        option = Config.normalize(option)
+
+        logger.debug('change setting: s=%s o=%s v=%s', section, option, value)
 
         if not self.parser.has_section(section):
             self.parser.add_section(section)
 
-        self.parser.set(section, Config.normalize(option), value)
+        self.parser.set(section, option, value)
 
         self.save()
 
@@ -148,9 +151,6 @@ class Config(object):
                           section=section,
                           option=option,
                           value=value)
-
-        logger.debug('Setting change: Section=%s Option=%s Value=%s',
-                     section, option, value)
 
     @staticmethod
     def normalize(name):
@@ -162,3 +162,10 @@ class ConfigModule(Module):
     factories = {
         'tomate.config': (Config, SingletonScope)
     }
+
+    @provides('parser')
+    @scope(SingletonScope)
+    def provide_parser(self):
+        from ConfigParser import SafeConfigParser
+
+        return SafeConfigParser(DEFAULTS)
