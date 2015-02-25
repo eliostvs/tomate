@@ -56,7 +56,7 @@ class Session(ConnectSignalMixin):
 
     @fsm(target=State.running,
          source=[State.stopped],
-         exit=lambda s: s.emit('session_started'))
+         exit=lambda i: i.emit('session_started'))
     def start(self):
         self.timer.start(self.duration)
 
@@ -65,7 +65,7 @@ class Session(ConnectSignalMixin):
     @fsm(target=State.stopped,
          source=[State.running],
          conditions=[timer_is_running],
-         exit=lambda s: s.emit('session_interrupted'))
+         exit=lambda i: i.emit('session_interrupted'))
     def interrupt(self):
         self.timer.stop()
 
@@ -73,7 +73,7 @@ class Session(ConnectSignalMixin):
 
     @fsm(target=State.stopped,
          source=[State.stopped],
-         exit=lambda s: s.emit('sessions_reseted'))
+         exit=lambda i: i.emit('sessions_reseted'))
     def reset(self):
         self.count = 0
 
@@ -82,7 +82,7 @@ class Session(ConnectSignalMixin):
     @fsm(target=State.stopped,
          source=[State.running],
          conditions=[timer_is_not_running],
-         exit=lambda s: s.emit('session_ended'))
+         exit=lambda i: i.emit('session_ended'))
     def end(self):
         if self.task == Task.pomodoro:
             self.count += 1
@@ -100,7 +100,7 @@ class Session(ConnectSignalMixin):
 
     @fsm(target=State.stopped,
          source=[State.stopped],
-         exit=lambda s: s.emit('task_changed'))
+         exit=lambda i: i.emit('task_changed'))
     def change_task(self, task=None):
         if task is not None:
             self.task = task
