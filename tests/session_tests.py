@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import unittest
 
 from mock import Mock
+from wiring import FactoryProvider, Graph, SingletonScope
 
 from tomate.enums import State, Task
 
@@ -14,7 +15,7 @@ class TestSessionInterface(unittest.TestCase):
 
         session = Session(timer=Mock(),
                           profile=Mock(**{'get_int.return_value': 25}),
-                          tomate_signals=Mock())
+                          signals=Mock())
         ISession.check_compliance(session)
 
 
@@ -25,7 +26,7 @@ class TestSession(unittest.TestCase):
 
         self.session = Session(timer=Mock(),
                                profile=Mock(**{'get_int.return_value': 25}),
-                               tomate_signals=Mock())
+                               signals=Mock())
 
     def test_default_state(self):
         self.assertEqual(Task.pomodoro, self.session.task)
@@ -103,7 +104,7 @@ class TestSessionSignals(unittest.TestCase):
 
         self.session = Session(timer=Mock(),
                                profile=Mock(**{'get_int.return_value': 25}),
-                               tomate_signals=Mock())
+                               signals=Mock())
 
     def test_should_emit_session_started(self):
         self.session.start()
@@ -165,3 +166,28 @@ class TestSessionSignals(unittest.TestCase):
                                                                  sessions=0,
                                                                  state=State.stopped,
                                                                  time_left=900)
+
+
+class TestSessionModule(unittest.TestCase):
+
+    def test_module(self):
+        from tomate.session import Session, SessionModule
+
+        graph = Graph()
+
+        self.assertEqual(['tomate.session'], SessionModule.providers.keys())
+        SessionModule().add_to(graph)
+
+        provider = graph.providers['tomate.session']
+
+        self.assertIsInstance(provider, FactoryProvider)
+        self.assertEqual(provider.scope, SingletonScope)
+        self.assertEqual(provider.dependencies,
+                         dict(signals='tomate.signals',
+                              profile='tomate.profile',
+                              timer='tomate.timer'))
+
+        graph.register_instance('tomate.signals', Mock())
+        graph.register_instance('tomate.timer', Mock())
+        graph.register_instance('tomate.profile', Mock())
+        self.assertIsInstance(graph.get('tomate.session'), Session)

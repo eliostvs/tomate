@@ -1,11 +1,9 @@
 from __future__ import unicode_literals
 
-from wiring import inject
-from wiring.interface import implements, Interface
-
-from tomate.mixins import ConnectSignalMixin
+from wiring import implements, inject, Interface, Module, SingletonScope
 
 from .enums import State, Task
+from .mixins import ConnectSignalMixin
 from .utils import fsm
 
 
@@ -37,8 +35,8 @@ class Session(ConnectSignalMixin):
         ('timer_finished', 'end'),
     )
 
-    @inject(timer='tomate.timer', profile='tomate.profile', tomate_signals='tomate.signals')
-    def __init__(self, timer=None, profile=None, tomate_signals=None):
+    @inject(timer='tomate.timer', profile='tomate.profile', signals='tomate.signals')
+    def __init__(self, timer=None, profile=None, signals=None):
         super(Session, self).__init__()
 
         self.count = 0
@@ -46,7 +44,7 @@ class Session(ConnectSignalMixin):
         self.state = State.stopped
         self.task = Task.pomodoro
         self.timer = timer
-        self.tomate_signals = tomate_signals
+        self.tomate_signals = signals
 
         self.connect_signals()
 
@@ -121,5 +119,12 @@ class Session(ConnectSignalMixin):
                     state=self.state,
                     time_left=self.duration)
 
-    def emit(self, signal):
-        self.tomate_signals.emit(signal, **self.status())
+    def emit(self, name):
+        self.tomate_signals.emit(name, **self.status())
+
+
+class SessionModule(Module):
+
+    factories = {
+        'tomate.session': (Session, SingletonScope)
+    }
