@@ -13,7 +13,7 @@ class TestTimerInterface(unittest.TestCase):
     def test_interface(self):
         from tomate.timer import ITimer, Timer
 
-        timer = Timer(signals=Mock())
+        timer = Timer(tomate_signals=Mock())
         ITimer.check_compliance(timer)
 
 
@@ -22,7 +22,7 @@ class TestTimer(unittest.TestCase):
     def setUp(self):
         from tomate.timer import Timer
 
-        self.timer = Timer(signals=Mock())
+        self.timer = Timer(tomate_signals=Mock())
 
     def test_init(self):
         self.assertEqual(State.stopped, self.timer.state)
@@ -78,7 +78,7 @@ class TestTimerSignals(unittest.TestCase):
     def setUp(self):
         from tomate.timer import Timer
 
-        self.timer = Timer(signals=Mock())
+        self.timer = Timer(tomate_signals=Mock())
 
     def test_should_emit_time_finished_signal(self):
         self.timer.start(1)
@@ -97,19 +97,20 @@ class TestTimerSignals(unittest.TestCase):
 class TestTimerModule(unittest.TestCase):
 
     def test_module(self):
-        from tomate.timer import Timer
+        from tomate.timer import TimerModule, Timer
 
         graph = Graph()
-        graph.register_scope(SingletonScope, SingletonScope())
-        graph.register_instance('tomate.signals', tomate_signals)
 
-        self.assertEqual(TimerModule.providers.keys(), ['tomate.timer'])
-        TimerModule().add_to(self.graph)
+        self.assertEqual(['tomate.timer'], TimerModule.providers.keys())
+        TimerModule().add_to(graph)
 
-        self.assertIn(graph.providers.keys(), ['tomate.timer', 'tomate.signals'])
+        self.assertIn('tomate.timer', graph.providers.keys())
 
         provider = graph.providers['tomate.timer']
 
         self.assertIsInstance(provider, FactoryProvider)
-        self.assertIsInstance(provider.scope, SingletonScope)
-        self.assertEqual(provider.dependencies, {'signals': 'tomate.signals'})
+        self.assertEqual(provider.scope, SingletonScope)
+        self.assertEqual(provider.dependencies, {'tomate_signals': 'tomate.signals'})
+
+        graph.register_instance('tomate.signals', tomate_signals)
+        self.assertIsInstance(graph.get('tomate.timer'), Timer)

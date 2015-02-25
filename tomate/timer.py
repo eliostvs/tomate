@@ -35,9 +35,9 @@ class ITimer(Interface):
 @implements(ITimer)
 class Timer(object):
 
-    @inject(signals='tomate.signals')
-    def __init__(self, signals):
-        self.signals = signals
+    @inject(tomate_signals='tomate.signals')
+    def __init__(self, tomate_signals):
+        self.signals = tomate_signals
         self.state = State.stopped
         self.reset()
 
