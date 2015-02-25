@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from blinker import Namespace
+from wiring import Module
 
 
 class TomateNamespace(Namespace):
@@ -37,3 +38,10 @@ window_hid = tomate_signals.signal('window_hid')
 
 # Settings
 setting_changed = tomate_signals.signal('setting_changed')
+
+
+class SignalsProvider(Module):
+
+    instances = {
+        'tomate.signals': tomate_signals
+    }

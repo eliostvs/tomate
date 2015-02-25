@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import unittest
 
 from mock import patch
+from wiring import Graph, InstanceProvider, SingletonScope
 
 
 class TestConnectSignalMixin(unittest.TestCase):
@@ -74,3 +75,22 @@ class TestTomateNamespace(unittest.TestCase):
         namespace.disconnect('test', function)
 
         mNamedSignal.return_value.disconnect.assert_called_once_with(function)
+
+
+class TestSignalProviders(unittest.TestCase):
+
+    def test_module(self):
+        from tomate.signals import SignalsProvider, TomateNamespace
+
+        graph = Graph()
+
+        self.assertEqual(['tomate.signals'], SignalsProvider.providers.keys())
+        SignalsProvider().add_to(graph)
+
+        provider = graph.providers['tomate.signals']
+
+        self.assertIsInstance(provider, InstanceProvider)
+        self.assertEqual(provider.scope, None)
+        self.assertEqual(provider.dependencies, {})
+
+        self.assertIsInstance(graph.get('tomate.signals'), TomateNamespace)
