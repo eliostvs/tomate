@@ -93,7 +93,9 @@ class Timer(object):
         return ratio
 
     def emit(self, signal):
-        self.signals.emit(signal, time_left=self.time_left, time_ratio=self.time_ratio)
+        self.signals.emit(signal,
+                          time_left=self.time_left,
+                          time_ratio=self.time_ratio)
 
     def reset(self):
         self.__seconds = self.time_left = 0

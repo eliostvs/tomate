@@ -119,8 +119,8 @@ class Session(ConnectSignalMixin):
                     state=self.state,
                     time_left=self.duration)
 
-    def emit(self, name):
-        self.tomate_signals.emit(name, **self.status())
+    def emit(self, signal):
+        self.tomate_signals.emit(signal, **self.status())
 
 
 class SessionModule(Module):
