@@ -157,7 +157,7 @@ class Config(object):
         return name.replace(' ', '_').lower()
 
 
-class ConfigModule(Module):
+class ConfigProvider(Module):
 
     factories = {
         'tomate.config': (Config, SingletonScope)
