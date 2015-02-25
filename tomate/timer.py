@@ -100,6 +100,7 @@ class Timer(object):
 
 
 class TimerModule(Module):
+
     factories = {
         'tomate.timer': (Timer, SingletonScope),
     }
