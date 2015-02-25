@@ -171,12 +171,12 @@ class TestSessionSignals(unittest.TestCase):
 class TestSessionModule(unittest.TestCase):
 
     def test_module(self):
-        from tomate.session import Session, SessionModule
+        from tomate.session import Session, SessionProvider
 
         graph = Graph()
 
-        self.assertEqual(['tomate.session'], SessionModule.providers.keys())
-        SessionModule().add_to(graph)
+        self.assertEqual(['tomate.session'], SessionProvider.providers.keys())
+        SessionProvider().add_to(graph)
 
         provider = graph.providers['tomate.session']
 

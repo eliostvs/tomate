@@ -96,12 +96,12 @@ class TestTimerSignals(unittest.TestCase):
 class TestTimerModule(unittest.TestCase):
 
     def test_module(self):
-        from tomate.timer import TimerModule, Timer
+        from tomate.timer import TimerProvider, Timer
 
         graph = Graph()
 
-        self.assertEqual(['tomate.timer'], TimerModule.providers.keys())
-        TimerModule().add_to(graph)
+        self.assertEqual(['tomate.timer'], TimerProvider.providers.keys())
+        TimerProvider().add_to(graph)
 
         provider = graph.providers['tomate.timer']
 

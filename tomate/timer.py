@@ -101,7 +101,7 @@ class Timer(object):
         self.__seconds = self.time_left = 0
 
 
-class TimerModule(Module):
+class TimerProvider(Module):
 
     factories = {
         'tomate.timer': (Timer, SingletonScope),

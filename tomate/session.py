@@ -123,7 +123,7 @@ class Session(ConnectSignalMixin):
         self.tomate_signals.emit(signal, **self.status())
 
 
-class SessionModule(Module):
+class SessionProvider(Module):
 
     factories = {
         'tomate.session': (Session, SingletonScope)
