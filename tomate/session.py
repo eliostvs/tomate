@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from wiring import implements, inject, Interface, Module, SingletonScope
 
 from .enums import State, Task
-from tomate.signals import ConnectSignalMixin
+from .signals import Subscriber
 from .utils import fsm
 
 
@@ -29,9 +29,9 @@ class ISession(Interface):
 
 
 @implements(ISession)
-class Session(ConnectSignalMixin):
+class Session(Subscriber):
 
-    signals = (
+    subscriptions = (
         ('timer_finished', 'end'),
     )
 
@@ -44,7 +44,7 @@ class Session(ConnectSignalMixin):
         self.state = State.stopped
         self.task = Task.pomodoro
         self.timer = timer
-        self.tomate_signals = signals
+        self.signals = signals
 
         self.connect_signals()
 
@@ -120,7 +120,7 @@ class Session(ConnectSignalMixin):
                     time_left=self.duration)
 
     def emit(self, signal):
-        self.tomate_signals.emit(signal, **self.status())
+        self.signals.emit(signal, **self.status())
 
 
 class SessionProvider(Module):

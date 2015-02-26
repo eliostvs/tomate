@@ -19,9 +19,6 @@ class IApplication(Interface):
     def run():
         pass
 
-    def quit():
-        pass
-
 
 @implements(IApplication)
 class Application(dbus.service.Object):
@@ -31,16 +28,14 @@ class Application(dbus.service.Object):
     bus_interface_name = 'com.github.Tomate'
 
     @inject(bus='bus.session',
-            session='tomate.session',
             view='tomate.view',
             config='tomate.config',
             plugin='tomate.plugin')
-    def __init__(self, bus=None, session=None, view=None, config=None, plugin=None):
+    def __init__(self, bus=None, view=None, config=None, plugin=None):
         dbus.service.Object.__init__(self, bus, self.bus_object_path)
 
         self.state = State.stopped
         self.config = config
-        self.session = session
         self.view = view
         self.plugin = plugin
         self.plugin.setPluginPlaces(self.config.get_plugin_paths())
@@ -63,13 +58,6 @@ class Application(dbus.service.Object):
             self.state = State.stopped
 
         return True
-
-    def quit(self):
-        if self.session.timer_is_running():
-            return self.view.hide()
-
-        else:
-            return self.view.quit()
 
 
 def application_factory(graph, specification='tomate.app'):

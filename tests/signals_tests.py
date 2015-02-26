@@ -9,10 +9,10 @@ from wiring import Graph, InstanceProvider
 class TestConnectSignalMixin(unittest.TestCase):
 
     def make_dummy(self):
-        from tomate.signals import ConnectSignalMixin
+        from tomate.signals import Subscriber
 
-        class Dummy(ConnectSignalMixin):
-            signals = (
+        class Dummy(Subscriber):
+            subscriptions = (
                 ('updated_timer', 'foo'),
             )
 

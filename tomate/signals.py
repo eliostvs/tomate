@@ -44,19 +44,19 @@ window_hid = tomate_signals.signal('window_hid')
 setting_changed = tomate_signals.signal('setting_changed')
 
 
-class ConnectSignalMixin(object):
+class Subscriber(object):
 
-    signals = ()
+    subscriptions = ()
 
     def connect_signals(self):
-        for (signal, method) in self.signals:
+        for (signal, method) in self.subscriptions:
             tomate_signals.connect(signal, getattr(self, method))
 
             logger.debug('method %s.%s connect to signal %s.',
                          self.__class__.__name__, method, signal)
 
     def disconnect_signals(self):
-        for (signal, method) in self.signals:
+        for (signal, method) in self.subscriptions:
             tomate_signals.disconnect(signal, getattr(self, method))
 
             logger.debug('method %s.%s disconnect from signal %s.',

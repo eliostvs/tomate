@@ -4,7 +4,7 @@ import unittest
 
 from mock import Mock
 from tomate.enums import State
-from wiring import FactoryProvider, Graph, SingletonScope
+from wiring import FactoryProvider, SingletonScope
 
 
 class TestTimerInterface(unittest.TestCase):
@@ -97,8 +97,7 @@ class TestTimerProvider(unittest.TestCase):
 
     def test_module(self):
         from tomate.timer import TimerProvider, Timer
-
-        graph = Graph()
+        from tomate.graph import graph
 
         self.assertEqual(['tomate.timer'], TimerProvider.providers.keys())
         TimerProvider().add_to(graph)

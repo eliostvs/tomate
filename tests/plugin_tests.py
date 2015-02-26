@@ -8,8 +8,8 @@ from wiring import FactoryProvider, SingletonScope
 
 class TestPlugin(unittest.TestCase):
 
-    @patch('tomate.plugin.ConnectSignalMixin.disconnect_signals')
-    @patch('tomate.plugin.ConnectSignalMixin.connect_signals')
+    @patch('tomate.plugin.Subscriber.disconnect_signals')
+    @patch('tomate.plugin.Subscriber.connect_signals')
     def test_interface(self, connect, disconnect):
         from tomate.plugin import Plugin
         from yapsy.IPlugin import IPlugin

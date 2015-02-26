@@ -4,7 +4,7 @@ from wiring import Module, provides, scope, SingletonScope
 from yapsy.IPlugin import IPlugin
 from yapsy.PluginManagerDecorator import PluginManagerDecorator
 
-from .signals import ConnectSignalMixin
+from .signals import Subscriber
 
 
 class InjectablePluginManager(PluginManagerDecorator):
@@ -25,7 +25,7 @@ class InjectablePluginManager(PluginManagerDecorator):
         self._graph = graph
 
 
-class Plugin(ConnectSignalMixin, IPlugin):
+class Plugin(Subscriber, IPlugin):
 
     def activate(self):
         super(Plugin, self).activate()

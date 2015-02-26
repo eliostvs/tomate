@@ -26,7 +26,6 @@ class TestApplicationFactory(unittest.TestCase):
         bus_session = Mock()
         graph = Graph()
         graph.register_instance('bus.session', bus_session)
-        graph.register_factory('tomate.session', Mock)
         graph.register_factory('tomate.view', Mock)
         graph.register_factory('tomate.config', Mock)
         graph.register_factory('tomate.plugin', Mock)
@@ -46,8 +45,7 @@ class ApplicationTestCase(unittest.TestCase):
     def setUp(self):
         from tomate.application import Application
 
-        self.app = Application(session=Mock(),
-                               view=Mock(),
+        self.app = Application(view=Mock(),
                                bus=Mock(),
                                config=Mock(),
                                plugin=Mock())
@@ -61,18 +59,6 @@ class ApplicationTestCase(unittest.TestCase):
         self.app.run()
 
         self.app.view.show.assert_called_once_with()
-
-    def test_quit_when_session_is_running(self):
-        self.app.session.timer_is_running.return_value = True
-        self.app.quit()
-
-        self.app.view.hide.assert_called_once_with()
-
-    def test_quit_when_session_is_not_running(self):
-        self.app.session.timer_is_running.return_value = False
-        self.app.quit()
-
-        self.app.view.quit.assert_called_once_with()
 
     def test_is_running(self):
         self.assertEqual(False, self.app.is_running())
