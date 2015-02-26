@@ -93,7 +93,7 @@ class TestTimerSignals(unittest.TestCase):
         self.timer.signals.emit.assert_called_once_with('timer_updated', time_left=9, time_ratio=0.1)
 
 
-class TestTimerModule(unittest.TestCase):
+class TestTimerProvider(unittest.TestCase):
 
     def test_module(self):
         from tomate.timer import TimerProvider, Timer

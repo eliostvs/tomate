@@ -3,80 +3,63 @@ from __future__ import unicode_literals
 import unittest
 
 from mock import Mock, patch
+from wiring import FactoryProvider, SingletonScope
 
 
-class TomatePluginTestCase(unittest.TestCase):
-
-    def setUp(self):
-        from tomate.plugin import TomatePlugin
-
-        class Dummy(TomatePlugin):
-            pass
-
-        self.dummy = Dummy()
+class TestPlugin(unittest.TestCase):
 
     @patch('tomate.plugin.ConnectSignalMixin.disconnect_signals')
-    def test_deactivate_plugin(self, mock_disconnect):
-        self.assertEqual(None, self.dummy.on_deactivate())
-
-        self.dummy.on_deactivate = Mock('on_deactivate')
-        self.dummy.deactivate()
-
-        mock_disconnect.assert_called_once_with()
-        self.dummy.on_deactivate.assert_called_once_with()
-
     @patch('tomate.plugin.ConnectSignalMixin.connect_signals')
-    def test_activate_plugin(self, mock_connect):
-        self.assertEqual(None, self.dummy.on_activate())
+    def test_interface(self, connect, disconnect):
+        from tomate.plugin import Plugin
+        from yapsy.IPlugin import IPlugin
 
-        self.dummy.on_activate = Mock('on_activate')
-        self.dummy.activate()
-
-        mock_connect.assert_called_once_with()
-        self.dummy.on_activate.assert_called_once_with()
-
-    @patch('tomate.plugin.TomatePlugin.on_init')
-    def test_intialize_plugin(self, mock_init):
-        from tomate.plugin import TomatePlugin
-
-        class Dummy(TomatePlugin):
+        class Dummy(Plugin):
             pass
 
-        Dummy()
+        dummy = Dummy()
 
-        mock_init.assert_called_once_with()
+        self.assertIsInstance(dummy, IPlugin)
+
+        dummy.activate()
+        connect.assert_called_once_with()
+
+        dummy.deactivate()
+        disconnect.assert_called_once_with()
 
 
-class AddViewPluginManagerDecoratorTestCase(unittest.TestCase):
+class TestInjectablePluginManager(unittest.TestCase):
 
-    def test_should_set_view_property_on_init(self):
-        from tomate.plugin import TomatePluginManager
-
-        app = Mock()
-        pm = TomatePluginManager(application=app)
-
-        self.assertEqual(app, pm._application)
-
-    def test_set_view_property_by_setApplication(self):
-        from tomate.plugin import TomatePluginManager
-
-        pm = TomatePluginManager()
-        app = Mock()
-
-        self.assertEqual(None, pm._application)
-
-        pm.setApplication(app)
-
-        self.assertEqual(app, pm._application)
-
-    def test_should_add_view_instance_to_all_plugins(self):
-        from tomate.plugin import TomatePluginManager
+    def test_plugin_manager(self):
+        from tomate.plugin import InjectablePluginManager
+        from tomate.graph import graph
 
         plugin = Mock()
-        app = Mock()
-        pm = TomatePluginManager(application=app)
-        pm._component = Mock()
-        pm._component.loadPlugins.return_value = [plugin]
-        pm.loadPlugins()
+        manager = InjectablePluginManager()
+        manager.setGraph(graph)
+        manager._component = Mock(**{'loadPlugins.return_value': [plugin]})
+        manager.loadPlugins()
 
-        self.assertEqual(app, plugin.plugin_object.app)
+        self.assertEqual(graph, plugin.plugin_object.graph)
+
+
+class TestProviderModule(unittest.TestCase):
+
+    def test_module(self):
+        from tomate.plugin import PluginProvider
+        from tomate.graph import graph
+        from yapsy.PluginManagerDecorator import PluginManagerDecorator
+
+        PluginProvider().add_to(graph)
+
+        provider = graph.providers['tomate.plugin']
+        self.assertEqual(['tomate.plugin'], graph.providers.keys())
+
+        self.assertIsInstance(provider, FactoryProvider)
+        self.assertEqual(provider.scope, SingletonScope)
+        self.assertEqual(provider.dependencies, {})
+
+        plugin_manager = graph.get('tomate.plugin')
+        self.assertIsInstance(plugin_manager, PluginManagerDecorator)
+
+        self.assertEqual(plugin_manager._graph, graph)

@@ -62,6 +62,8 @@ class Application(dbus.service.Object):
             self.view.run()
             self.state = State.stopped
 
+        return True
+
     def quit(self):
         if self.session.timer_is_running():
             return self.view.hide()
