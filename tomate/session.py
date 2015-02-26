@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from wiring import implements, inject, Interface, Module, SingletonScope
 
 from .enums import State, Task
-from .mixins import ConnectSignalMixin
+from tomate.signals import ConnectSignalMixin
 from .utils import fsm
 
 

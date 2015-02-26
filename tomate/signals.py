@@ -1,7 +1,11 @@
 from __future__ import unicode_literals
 
+import logging
+
 from blinker import Namespace
 from wiring import Module
+
+logger = logging.getLogger(__name__)
 
 
 class TomateNamespace(Namespace):
@@ -38,6 +42,25 @@ window_hid = tomate_signals.signal('window_hid')
 
 # Settings
 setting_changed = tomate_signals.signal('setting_changed')
+
+
+class ConnectSignalMixin(object):
+
+    signals = ()
+
+    def connect_signals(self):
+        for (signal, method) in self.signals:
+            tomate_signals.connect(signal, getattr(self, method))
+
+            logger.debug('method %s.%s connect to signal %s.',
+                         self.__class__.__name__, method, signal)
+
+    def disconnect_signals(self):
+        for (signal, method) in self.signals:
+            tomate_signals.disconnect(signal, getattr(self, method))
+
+            logger.debug('method %s.%s disconnect from signal %s.',
+                         self.__class__.__name__, method, signal)
 
 
 class SignalsProvider(Module):

@@ -9,7 +9,7 @@ from wiring import Graph, InstanceProvider
 class TestConnectSignalMixin(unittest.TestCase):
 
     def make_dummy(self):
-        from tomate.mixins import ConnectSignalMixin
+        from tomate.signals import ConnectSignalMixin
 
         class Dummy(ConnectSignalMixin):
             signals = (
