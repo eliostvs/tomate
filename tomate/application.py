@@ -1,14 +1,9 @@
 from __future__ import unicode_literals
 
 import dbus.service
-from wiring import inject
-from wiring.interface import implements, Interface
-from yapsy.ConfigurablePluginManager import ConfigurablePluginManager
-from yapsy.PluginManager import PluginManagerSingleton
-from yapsy.VersionedPluginManager import VersionedPluginManager
+from wiring import implements, inject, Interface
 
 from .enums import State
-from .plugin import TomatePluginManager
 
 
 class IApplication(Interface):
@@ -17,8 +12,6 @@ class IApplication(Interface):
     bus_name = ''
     bus_object_path = ''
     bus_interface_name = ''
-    plugin_manager_classes = ''
-    plugin_ext = ''
 
     def is_running():
         pass
@@ -36,31 +29,24 @@ class Application(dbus.service.Object):
     bus_name = 'com.github.Tomate'
     bus_object_path = '/'
     bus_interface_name = 'com.github.Tomate'
-    plugin_ext = 'plugin'
-    plugin_manager_classes = (TomatePluginManager,
-                              VersionedPluginManager,
-                              ConfigurablePluginManager,)
 
-    @inject(session='tomate.session', view='tomate.view',
-            bus='bus.session', confi='tomate.config')
-    def __init__(self, session=None, view=None, bus=None, config=None):
+    @inject(bus='bus.session',
+            session='tomate.session',
+            view='tomate.view',
+            config='tomate.config',
+            plugin='tomate.plugin')
+    def __init__(self, bus=None, session=None, view=None, config=None, plugin=None):
         dbus.service.Object.__init__(self, bus, self.bus_object_path)
 
+        self.state = State.stopped
         self.config = config
         self.session = session
-        self.state = State.stopped
         self.view = view
-
-    def setup_plugin(self):
-        PluginManagerSingleton.setBehaviour(self.plugin_manager_classes)
-
-        manager = PluginManagerSingleton.get()
-        manager.setPluginPlaces(self.config.get_plugin_paths())
-        manager.setPluginInfoExtension(self.plugin_ext)
-        manager.setApplication(self)
-        manager.setConfigParser(self.config.parser,
-                                self.config.save)
-        manager.collectPlugins()
+        self.plugin = plugin
+        self.plugin.setPluginPlaces(self.config.get_plugin_paths())
+        self.plugin.setPluginInfoExtension('plugin')
+        self.plugin.setConfigParser(self.config.parser, self.config.save)
+        self.plugin.collectPlugins()
 
     @dbus.service.method(bus_interface_name, out_signature='b')
     def is_running(self):
@@ -73,7 +59,6 @@ class Application(dbus.service.Object):
 
         else:
             self.state = State.running
-            self.session.change_task()
             self.view.run()
             self.state = State.stopped
 
@@ -85,19 +70,20 @@ class Application(dbus.service.Object):
             return self.view.quit()
 
 
-def application_factory(application_class, view_class, **kwargs):
-    bus_session = dbus.SessionBus()
-    request = bus_session.request_name(application_class.bus_name,
+def application_factory(graph, specification='tomate.app'):
+    bus_session = graph.get('bus.session')
+    app_class = graph.providers[specification].factory
+
+    request = bus_session.request_name(app_class.bus_name,
                                        dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
 
     if request != dbus.bus.REQUEST_NAME_REPLY_EXISTS:
-        app = application_class(view_class, bus_session, **kwargs)
+        app = graph.get(specification)
 
     else:
-        bus_object = bus_session.get_object(application_class.bus_name,
-                                            application_class.bus_object_path)
+        bus_object = bus_session.get_object(app_class.bus_name,
+                                            app_class.bus_object_path)
 
-        app = dbus.Interface(bus_object,
-                             application_class.bus_interface_name)
+        app = dbus.Interface(bus_object, app_class.bus_interface_name)
 
     return app
