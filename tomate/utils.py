@@ -7,18 +7,6 @@ import wrapt
 logger = logging.getLogger(__name__)
 
 
-def setup_logging(options):
-    fmt = '%(levelname)s:%(asctime)s:%(name)s:%(message)s'
-
-    if options.verbose:
-        level = logging.DEBUG
-
-    else:
-        level = logging.INFO
-
-    logging.basicConfig(level=level, format=fmt)
-
-
 def format_time_left(seconds):
     minutes, seconds = divmod(seconds, 60)
     return '{0:0>2}:{1:0>2}'.format(minutes, seconds)
