@@ -21,6 +21,8 @@ class TestApplicationInterface(unittest.TestCase):
 class TestApplicationFactory(unittest.TestCase):
 
     def test_factory(self):
+        from tomate.application import Application, application_factory
+
         bus_session = Mock()
         graph = Graph()
         graph.register_instance('bus.session', bus_session)
@@ -28,8 +30,6 @@ class TestApplicationFactory(unittest.TestCase):
         graph.register_factory('tomate.view', Mock)
         graph.register_factory('tomate.config', Mock)
         graph.register_factory('tomate.plugin', Mock)
-
-        from tomate.application import Application, application_factory
 
         graph.register_factory('tomate.app', Application)
 
