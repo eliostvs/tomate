@@ -46,7 +46,7 @@ class Session(Subscriber):
         self.timer = timer
         self.signals = signals
 
-        self.connect_signals()
+        self.connect()
 
     def timer_is_running(self):
         return self.timer.state == State.running

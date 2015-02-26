@@ -29,11 +29,11 @@ class Plugin(Subscriber, IPlugin):
 
     def activate(self):
         super(Plugin, self).activate()
-        self.connect_signals()
+        self.connect()
 
     def deactivate(self):
         super(Plugin, self).deactivate()
-        self.disconnect_signals()
+        self.disconnect()
 
 
 class PluginProvider(Module):

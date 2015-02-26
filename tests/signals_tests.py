@@ -24,14 +24,14 @@ class TestConnectSignalMixin(unittest.TestCase):
     @patch('tomate.signals.TomateNamespace.connect')
     def test_connect_signal(self, mconnect):
         dummy = self.make_dummy()
-        dummy.connect_signals()
+        dummy.connect()
 
         mconnect.assert_called_once_with('updated_timer', dummy.foo)
 
     @patch('tomate.signals.TomateNamespace.disconnect')
     def test_disconnect_signal(self, mdisconnect):
         dummy = self.make_dummy()
-        dummy.disconnect_signals()
+        dummy.disconnect()
 
         mdisconnect.assert_called_once_with('updated_timer', dummy.foo)
 

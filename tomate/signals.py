@@ -48,14 +48,14 @@ class Subscriber(object):
 
     subscriptions = ()
 
-    def connect_signals(self):
+    def connect(self):
         for (signal, method) in self.subscriptions:
             tomate_signals.connect(signal, getattr(self, method))
 
             logger.debug('method %s.%s connect to signal %s.',
                          self.__class__.__name__, method, signal)
 
-    def disconnect_signals(self):
+    def disconnect(self):
         for (signal, method) in self.subscriptions:
             tomate_signals.disconnect(signal, getattr(self, method))
 
