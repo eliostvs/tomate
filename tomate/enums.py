@@ -22,3 +22,8 @@ class Task(BaseEnum):
 class State(BaseEnum):
     stopped = 0
     running = 1
+
+
+class Visible(BaseEnum):
+    active = 0
+    passive = 0

@@ -5,16 +5,16 @@ from wiring import Interface
 
 class IView(Interface):
 
-    state = ''
+    visible = ''
 
-    def run(self):
+    def run():
         pass
 
-    def quit(self):
+    def quit():
         pass
 
-    def show(self):
+    def show():
         pass
 
-    def hide(self):
+    def hide():
         pass
