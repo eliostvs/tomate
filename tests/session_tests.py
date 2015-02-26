@@ -61,15 +61,32 @@ class TestSession(unittest.TestCase):
         self.assertEqual(0, self.session.count)
 
     def test_session_end(self):
+        self.session.config.get_int.return_value = 4
         self.session.state = State.stopped
         self.session.count = 0
+
         self.assertFalse(self.session.end())
 
         self.session.state = State.running
         self.session.timer.state = State.stopped
+
         self.assertTrue(self.session.end())
         self.assertEqual(State.stopped, self.session.state)
         self.assertEqual(1, self.session.count)
+        self.assertEqual(Task.shortbreak, self.session.task)
+
+        self.session.state = State.running
+        self.session.task = Task.pomodoro
+        self.session.count = 3
+
+        self.assertTrue(self.session.end())
+        self.assertEqual(Task.longbreak, self.session.task)
+
+        self.session.state = State.running
+        self.session.task = Task.shortbreak
+
+        self.assertTrue(self.session.end())
+        self.assertEqual(Task.pomodoro, self.session.task)
 
     def test_session_status(self):
         self.session.count = 2
