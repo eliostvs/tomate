@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import unittest
 
 from mock import patch
-from wiring import Graph, InstanceProvider, SingletonScope
+from wiring import Graph, InstanceProvider
 
 
 class TestConnectSignalMixin(unittest.TestCase):

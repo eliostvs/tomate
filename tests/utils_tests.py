@@ -2,8 +2,6 @@ from __future__ import unicode_literals
 
 import unittest
 
-from mock import patch
-
 
 class FormatTimeLeftTestCase(unittest.TestCase):
 
@@ -17,16 +15,13 @@ class FormatTimeLeftTestCase(unittest.TestCase):
 
 class SupressErrorsDecoratorTestCase(unittest.TestCase):
 
-    @patch('logging.getLogger')
-    def test_suppress_errors(self, mgetLogger):
+    def test_suppress_errors(self):
         from tomate.utils import suppress_errors
 
         exception = Exception('error')
 
+        @suppress_errors
         def raise_exception():
             raise exception
 
-        self.assertEqual(None, suppress_errors(raise_exception)())
-
-        mgetLogger.assert_called_once_with('tomate.tests.tests_utils')
-        mgetLogger.return_value.error.assert_called_once_with(exception, exc_info=True)
+        self.assertEqual(None, raise_exception())

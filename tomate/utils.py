@@ -30,10 +30,10 @@ def suppress_errors(wrapped, instance, args, kwargs):
         return wrapped(*args, **kwargs)
 
     except Exception as e:
-        logger = logging.getLogger(wrapped.__module__)
+        logger = logging.getLogger(__name__)
         logger.error(e, exc_info=True)
 
-    return wrapped
+    return None
 
 
 class fsm(object):
