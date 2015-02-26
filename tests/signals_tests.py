@@ -94,3 +94,26 @@ class TestSignalProviders(unittest.TestCase):
         self.assertEqual(provider.dependencies, {})
 
         self.assertIsInstance(graph.get('tomate.signals'), TomateNamespace)
+
+
+class TestConnectDecorator(unittest.TestCase):
+
+    @patch('tomate.signals.TomateNamespace.connect')
+    def test_decorator(self, mconnect):
+        from tomate.signals import subscribe
+
+        class Dummy(object):
+            subscriptions = (
+                ('updated_timer', 'foo'),
+            )
+
+            @subscribe
+            def __init__(self):
+                super(Dummy, self).__init__()
+
+            def foo(self):
+                pass
+
+        dummy = Dummy()
+
+        mconnect.assert_called_once_with('updated_timer', dummy.foo)

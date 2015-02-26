@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 import logging
 
+import wrapt
 from blinker import Namespace
 from wiring import Module
 
@@ -61,6 +62,17 @@ class Subscriber(object):
 
             logger.debug('method %s.%s disconnect from signal %s.',
                          self.__class__.__name__, method, signal)
+
+
+@wrapt.decorator
+def subscribe(wrapped, instance, args, kwargs):
+    for (signal, method) in instance.subscriptions:
+        tomate_signals.connect(signal, getattr(instance, method))
+
+        logger.debug('method %s.%s connect to signal %s.',
+                     instance.__class__.__name__, method, signal)
+
+    return wrapped(*args, **kwargs)
 
 
 class SignalsProvider(Module):

@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from wiring import implements, inject, Interface, Module, SingletonScope
 
 from .enums import State, Task
-from .signals import Subscriber
+from .signals import subscribe
 from .utils import fsm
 
 
@@ -29,12 +29,13 @@ class ISession(Interface):
 
 
 @implements(ISession)
-class Session(Subscriber):
+class Session(object):
 
     subscriptions = (
         ('timer_finished', 'end'),
     )
 
+    @subscribe
     @inject(timer='tomate.timer', config='tomate.config', signals='tomate.signals')
     def __init__(self, timer=None, config=None, signals=None):
         super(Session, self).__init__()
@@ -45,8 +46,6 @@ class Session(Subscriber):
         self.task = Task.pomodoro
         self.timer = timer
         self.signals = signals
-
-        self.connect()
 
     def timer_is_running(self):
         return self.timer.state == State.running
