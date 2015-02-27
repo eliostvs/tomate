@@ -5,8 +5,6 @@ from wiring import Interface
 
 class IView(Interface):
 
-    visible = ''
-
     def run():
         pass
 
