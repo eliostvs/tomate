@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 import unittest
 
-from mock import Mock, patch
+from mock import patch
 from wiring import FactoryProvider, SingletonScope
 
 
@@ -28,27 +28,12 @@ class TestPlugin(unittest.TestCase):
         disconnect.assert_called_once_with()
 
 
-class TestInjectablePluginManager(unittest.TestCase):
-
-    def test_plugin_manager(self):
-        from tomate.plugin import InjectablePluginManager
-        from tomate.graph import graph
-
-        plugin = Mock()
-        manager = InjectablePluginManager()
-        manager.setGraph(graph)
-        manager._component = Mock(**{'loadPlugins.return_value': [plugin]})
-        manager.loadPlugins()
-
-        self.assertEqual(graph, plugin.plugin_object.graph)
-
-
 class TestProviderModule(unittest.TestCase):
 
     def test_module(self):
+        from yapsy.PluginManagerDecorator import PluginManagerDecorator
         from tomate.plugin import PluginProvider
         from tomate.graph import graph
-        from yapsy.PluginManagerDecorator import PluginManagerDecorator
 
         PluginProvider().add_to(graph)
 
@@ -61,5 +46,3 @@ class TestProviderModule(unittest.TestCase):
 
         plugin_manager = graph.get('tomate.plugin')
         self.assertIsInstance(plugin_manager, PluginManagerDecorator)
-
-        self.assertEqual(plugin_manager._graph, graph)

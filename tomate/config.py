@@ -63,7 +63,7 @@ class Config(object):
     app_name = 'tomate'
 
     @inject(parser='parser', signals='tomate.signals')
-    def __init__(self, parser=None, signals=None):
+    def __init__(self, parser, signals):
         self.parser = parser
         self.signals = signals
 

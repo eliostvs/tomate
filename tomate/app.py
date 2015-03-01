@@ -27,7 +27,7 @@ class Application(dbus.service.Object):
     bus_object_path = '/'
     bus_interface_name = 'com.github.Tomate'
 
-    @inject(None,
+    @inject(bus='dbus.session',
             view='tomate.view',
             config='tomate.config',
             plugin='tomate.plugin')

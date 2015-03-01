@@ -17,7 +17,7 @@ class TestConfigInterface(unittest.TestCase):
     def test_interface(self):
         from tomate.config import IConfig, Config
 
-        config = Config(Mock())
+        config = Config(Mock(), Mock())
         IConfig.check_compliance(config)
 
 
@@ -27,7 +27,7 @@ class TestConfig(unittest.TestCase):
     def setUp(self):
         from tomate.config import Config
 
-        self.config = Config(signals=Mock(), parser=Mock())
+        self.config = Config(Mock(), Mock())
 
         self.mo = mock_open()
 
@@ -113,7 +113,7 @@ class TestConfigSignals(unittest.TestCase):
     def setUp(self, *args):
         from tomate.config import Config
 
-        self.config = Config(signals=Mock(), parser=Mock())
+        self.config = Config(Mock(), Mock())
 
         self.mo = mock_open()
 

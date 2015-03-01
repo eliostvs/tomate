@@ -37,7 +37,7 @@ class Session(object):
 
     @subscribe
     @inject(timer='tomate.timer', config='tomate.config', signals='tomate.signals')
-    def __init__(self, timer=None, config=None, signals=None):
+    def __init__(self, timer, config, signals):
         super(Session, self).__init__()
 
         self.count = 0
