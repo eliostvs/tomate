@@ -38,8 +38,8 @@ session_ended = tomate_signals.signal('session_ended')
 task_changed = tomate_signals.signal('task_changed')
 
 # Window
-window_showed = tomate_signals.signal('window_showed')
-window_hid = tomate_signals.signal('window_hid')
+view_showed = tomate_signals.signal('view_showed')
+view_hid = tomate_signals.signal('view_hid')
 
 # Settings
 setting_changed = tomate_signals.signal('setting_changed')

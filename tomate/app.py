@@ -27,17 +27,17 @@ class Application(dbus.service.Object):
     bus_object_path = '/'
     bus_interface_name = 'com.github.Tomate'
 
-    @inject(bus='bus.session',
+    @inject(None,
             view='tomate.view',
             config='tomate.config',
             plugin='tomate.plugin')
-    def __init__(self, bus=None, view=None, config=None, plugin=None):
+    def __init__(self, bus, view, config, plugin):
         dbus.service.Object.__init__(self, bus, self.bus_object_path)
-
         self.state = State.stopped
         self.config = config
         self.view = view
         self.plugin = plugin
+
         self.plugin.setPluginPlaces(self.config.get_plugin_paths())
         self.plugin.setPluginInfoExtension('plugin')
         self.plugin.setConfigParser(self.config.parser, self.config.save)
@@ -61,13 +61,14 @@ class Application(dbus.service.Object):
 
 
 def application_factory(graph, specification='tomate.app'):
-    bus_session = graph.get('bus.session')
+    bus_session = dbus.SessionBus()
     app_class = graph.providers[specification].factory
 
     request = bus_session.request_name(app_class.bus_name,
                                        dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
 
     if request != dbus.bus.REQUEST_NAME_REPLY_EXISTS:
+        graph.register_instance('dbus.session', bus_session)
         app = graph.get(specification)
 
     else:
