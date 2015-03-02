@@ -137,14 +137,14 @@ class TestConfigModule(unittest.TestCase):
         self.assertEqual(['tomate.config'], ConfigProvider.providers.keys())
         ConfigProvider().add_to(graph)
 
-        self.assertIn('parser', graph.providers.keys())
+        self.assertIn('config.parser', graph.providers.keys())
 
         provider = graph.providers['tomate.config']
 
         self.assertIsInstance(provider, FactoryProvider)
         self.assertEqual(provider.scope, SingletonScope)
         self.assertEqual(provider.dependencies,
-                         dict(parser='parser', signals='tomate.signals'))
+                         dict(parser='config.parser', signals='tomate.signals'))
 
         graph.register_instance('tomate.signals', Mock())
         self.assertIsInstance(graph.get('tomate.config'), Config)

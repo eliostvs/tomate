@@ -62,7 +62,7 @@ class Config(object):
 
     app_name = 'tomate'
 
-    @inject(parser='parser', signals='tomate.signals')
+    @inject(parser='config.parser', signals='tomate.signals')
     def __init__(self, parser, signals):
         self.parser = parser
         self.signals = signals
@@ -162,7 +162,7 @@ class ConfigProvider(Module):
         'tomate.config': (Config, SingletonScope)
     }
 
-    @provides('parser')
+    @provides('config.parser')
     @scope(SingletonScope)
     def provide_parser(self):
         from ConfigParser import SafeConfigParser
