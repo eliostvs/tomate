@@ -1,4 +1,4 @@
-box: wercker-labs/docker
+box: ubuntu:14.04
 build:
   steps:
     - script:
