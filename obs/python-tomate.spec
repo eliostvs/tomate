@@ -64,8 +64,7 @@ python setup.py install --prefix=%{_prefix} --root=%{buildroot}
 
 %files
 %defattr(-,root,root,-)
-%{python_sitelib}/%{real_name}-%{version}*.egg-info
-%{python_sitelib}/%{real_name}
+%{python_sitelib}/*
 
 %doc AUTHORS COPYING README.md
 
