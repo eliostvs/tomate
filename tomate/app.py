@@ -9,9 +9,6 @@ from .enums import State
 class IApplication(Interface):
 
     state = ''
-    bus_name = ''
-    bus_object_path = ''
-    bus_interface_name = ''
 
     def is_running():
         pass
