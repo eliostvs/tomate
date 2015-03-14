@@ -14,6 +14,6 @@ setup(
     name='tomate',
     packages=find_packages(exclude=['*tests']),
     url='https://github.com/eliostvs/tomate',
-    version='0.1.2',
+    version='0.2.0',
     zip_safe=False,
 )
