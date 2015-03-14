@@ -18,7 +18,7 @@
 %define real_name tomate
 
 Name: python-%{real_name}
-Version: 0.2.0
+Version: 0.2.1
 Release: 0
 License: GPL-3.0+
 Source: %{real_name}-upstream.tar.gz
@@ -33,6 +33,8 @@ BuildRequires: python-setuptools
 Requires: python-blinker
 Requires: python-enum34
 Requires: python-six
+Requires: python-wiring
+Requires: python-wrapt
 
 %if 0%{?fedora}
 BuildArch: noarch

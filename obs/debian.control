@@ -17,6 +17,8 @@ Depends: ${misc:Depends},
  python-enum34,
  python-gi,
  python-six,
+ python-wiring,
+ python-wrapt,
  python-xdg,
  python-yapsy
 Description: A pomodoro timer. Core classes.
