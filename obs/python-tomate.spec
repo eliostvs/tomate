@@ -33,6 +33,8 @@ BuildRequires: python-setuptools
 Requires: python-blinker
 Requires: python-enum34
 Requires: python-six
+Requires: python-wiring
+Requires: python-wrapt
 
 %if 0%{?fedora}
 BuildArch: noarch
