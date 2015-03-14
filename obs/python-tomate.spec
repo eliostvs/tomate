@@ -18,7 +18,7 @@
 %define real_name tomate
 
 Name: python-%{real_name}
-Version: 0.1.2
+Version: 0.2.0
 Release: 0
 License: GPL-3.0+
 Source: %{real_name}-upstream.tar.gz
@@ -64,8 +64,7 @@ python setup.py install --prefix=%{_prefix} --root=%{buildroot}
 
 %files
 %defattr(-,root,root,-)
-%{python_sitelib}/%{real_name}-%{version}*.egg-info
-%{python_sitelib}/%{real_name}
+%{python_sitelib}/*
 
 %doc AUTHORS COPYING README.md
 
