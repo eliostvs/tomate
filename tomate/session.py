@@ -32,7 +32,7 @@ class ISession(Interface):
 class Session(object):
 
     subscriptions = (
-        ('timer_finished', 'end'),
+        ('timer_finished', 'on_timer_finished'),
     )
 
     @subscribe
@@ -77,6 +77,9 @@ class Session(object):
         self.count = 0
 
         return True
+
+    def on_timer_finished(self, *args, **kwargs):
+        self.end()
 
     @fsm(target=State.stopped,
          source=[State.running],
