@@ -64,7 +64,7 @@ class TestTomateNamespace(unittest.TestCase):
 
         namespace.connect('test', function)
 
-        mNamedSignal.return_value.connect.assert_called_once_with(function, weak=True)
+        mNamedSignal.return_value.connect.assert_called_once_with(function, weak=False)
 
     def test_disconnect_signal(self, mNamedSignal):
         namespace = self.make_namespace()
