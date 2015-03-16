@@ -11,6 +11,7 @@ class ISession(Interface):
 
     state = ''
     duration = ''
+    count = ''
 
     def start(*args, **kwargs):
         pass
