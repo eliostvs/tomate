@@ -37,6 +37,8 @@ class fsm(object):
         if self.source == '*' or getattr(instance, self.attr) in self.source:
             return True
 
+        logger.debug('Invalid transition!')
+
     def valid_conditions(self, instance):
         if not self.conditions:
             return True
@@ -45,6 +47,9 @@ class fsm(object):
             return all(map(lambda condition: condition(instance), self.conditions))
 
     def change_state(self, instance):
+        logger.debug('Changing %s %s to %s',
+                     instance.__class__.__name__, self.attr, self.target)
+
         setattr(instance, self.attr, self.target)
 
     def call_exit_action(self, instance):
@@ -53,6 +58,9 @@ class fsm(object):
 
     @wrapt.decorator
     def __call__(self, wrapped, instance, args, kwargs):
+        logger.debug('Calling %s.%s',
+                     instance.__class__.__name__, wrapped.im_func.__name__)
+
         if self.valid_transition(instance) and self.valid_conditions(instance):
             result = wrapped(*args, **kwargs)
 
@@ -61,5 +69,7 @@ class fsm(object):
             self.call_exit_action(instance)
 
             return result
+
+        logger.debug('Invalid conditions!')
 
         return None

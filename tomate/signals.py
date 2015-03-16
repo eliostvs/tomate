@@ -17,7 +17,7 @@ class TomateNamespace(Namespace):
 
     def connect(self, name, method):
         signal = self[name]
-        signal.connect(method, weak=True)
+        signal.connect(method, weak=False)
 
     def disconnect(self, name, method):
         signal = self[name]
