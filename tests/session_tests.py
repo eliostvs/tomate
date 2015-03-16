@@ -6,10 +6,10 @@ from mock import Mock
 from tomate.enums import State, Task
 from wiring import FactoryProvider, Graph, SingletonScope
 
-from . import TSubscriptionMixin
+from .utils import SubscriptionMixin
 
 
-class TestSessionSubscription(TSubscriptionMixin, unittest.TestCase):
+class TestSessionSubscription(SubscriptionMixin, unittest.TestCase):
 
     def create_instance(self):
         from tomate.session import Session
