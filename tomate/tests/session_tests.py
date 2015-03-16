@@ -6,7 +6,7 @@ from mock import Mock
 from tomate.enums import State, Task
 from wiring import FactoryProvider, Graph, SingletonScope
 
-from .utils import SubscriptionMixin
+from . import SubscriptionMixin
 
 
 class TestSessionSubscription(SubscriptionMixin, unittest.TestCase):
