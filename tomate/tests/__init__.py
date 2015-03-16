@@ -7,7 +7,7 @@ class SubscriptionMixin(object):
         obj = self.create_instance()
 
         for (_, method) in obj.subscriptions:
-            getattr(obj, method)(1, 2, 3, a=1, b=2, c=3)
+            getattr(obj, method)(None, a=1, b=2, c=3)
 
     def create_instance(self):
         raise NotImplementedError()
