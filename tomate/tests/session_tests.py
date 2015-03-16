@@ -9,14 +9,6 @@ from wiring import FactoryProvider, Graph, SingletonScope
 from . import SubscriptionMixin
 
 
-class TestSessionSubscription(SubscriptionMixin, unittest.TestCase):
-
-    def create_instance(self):
-        from tomate.session import Session
-
-        return Session(timer=Mock(), config=Mock(), signals=Mock())
-
-
 class TestSessionInterface(unittest.TestCase):
 
     def test_interface(self):
@@ -28,7 +20,7 @@ class TestSessionInterface(unittest.TestCase):
         ISession.check_compliance(session)
 
 
-class TestSession(unittest.TestCase):
+class TestSession(SubscriptionMixin, unittest.TestCase):
 
     def setUp(self):
         from tomate.session import Session
@@ -36,6 +28,9 @@ class TestSession(unittest.TestCase):
         self.session = Session(timer=Mock(),
                                config=Mock(**{'get_int.return_value': 25}),
                                signals=Mock())
+
+    def create_instance(self):
+        return self.session
 
     def test_default_state(self):
         self.assertEqual(Task.pomodoro, self.session.task)
