@@ -3,9 +3,18 @@ from __future__ import unicode_literals
 import unittest
 
 from mock import Mock
+from tomate.enums import State, Task
 from wiring import FactoryProvider, Graph, SingletonScope
 
-from tomate.enums import State, Task
+from . import TSubscriptionMixin
+
+
+class TestSessionSubscription(TSubscriptionMixin, unittest.TestCase):
+
+    def create_instance(self):
+        from tomate.session import Session
+
+        return Session(timer=Mock(), config=Mock(), signals=Mock())
 
 
 class TestSessionInterface(unittest.TestCase):
