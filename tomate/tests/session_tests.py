@@ -3,9 +3,10 @@ from __future__ import unicode_literals
 import unittest
 
 from mock import Mock
+from tomate.enums import State, Task
 from wiring import FactoryProvider, Graph, SingletonScope
 
-from tomate.enums import State, Task
+from . import SubscriptionMixin
 
 
 class TestSessionInterface(unittest.TestCase):
@@ -19,7 +20,7 @@ class TestSessionInterface(unittest.TestCase):
         ISession.check_compliance(session)
 
 
-class TestSession(unittest.TestCase):
+class TestSession(SubscriptionMixin, unittest.TestCase):
 
     def setUp(self):
         from tomate.session import Session
@@ -27,6 +28,9 @@ class TestSession(unittest.TestCase):
         self.session = Session(timer=Mock(),
                                config=Mock(**{'get_int.return_value': 25}),
                                signals=Mock())
+
+    def create_instance(self):
+        return self.session
 
     def test_default_state(self):
         self.assertEqual(Task.pomodoro, self.session.task)

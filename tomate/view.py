@@ -5,14 +5,14 @@ from wiring import Interface
 
 class IView(Interface):
 
-    def run():
+    def run(*args, **kwargs):
         pass
 
-    def quit():
+    def quit(*args, **kwargs):
         pass
 
-    def show():
+    def show(*args, **kwargs):
         pass
 
-    def hide():
+    def hide(*args, **kwargs):
         pass

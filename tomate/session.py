@@ -11,14 +11,18 @@ class ISession(Interface):
 
     state = ''
     duration = ''
+    count = ''
 
-    def start():
+    def start(*args, **kwargs):
         pass
 
-    def interrupt():
+    def interrupt(*args, **kwargs):
         pass
 
-    def end():
+    def end(*args, **kwargs):
+        pass
+
+    def reset(*args, **kwargs):
         pass
 
     def change_task(task=None):
@@ -32,7 +36,7 @@ class ISession(Interface):
 class Session(object):
 
     subscriptions = (
-        ('timer_finished', 'on_timer_finished'),
+        ('timer_finished', 'end'),
     )
 
     @subscribe
@@ -56,7 +60,7 @@ class Session(object):
     @fsm(target=State.running,
          source=[State.stopped],
          exit=lambda i: i.emit('session_started'))
-    def start(self):
+    def start(self, *args, **kwargs):
         self.timer.start(self.duration)
 
         return True
@@ -65,7 +69,7 @@ class Session(object):
          source=[State.running],
          conditions=[timer_is_running],
          exit=lambda i: i.emit('session_interrupted'))
-    def interrupt(self):
+    def interrupt(self, *args, **kwargs):
         self.timer.stop()
 
         return True
@@ -73,19 +77,16 @@ class Session(object):
     @fsm(target=State.stopped,
          source=[State.stopped],
          exit=lambda i: i.emit('sessions_reseted'))
-    def reset(self):
+    def reset(self, *args, **kwargs):
         self.count = 0
 
         return True
-
-    def on_timer_finished(self, *args, **kwargs):
-        self.end()
 
     @fsm(target=State.stopped,
          source=[State.running],
          conditions=[timer_is_not_running],
          exit=lambda i: i.emit('session_ended'))
-    def end(self):
+    def end(self, *args, **kwargs):
         if self.task == Task.pomodoro:
             self.count += 1
 

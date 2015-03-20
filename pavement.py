@@ -1,5 +1,7 @@
 #!/bin/env python
-from paver.easy import needs, path, sh
+from optparse import Option
+
+from paver.easy import cmdopts, needs, path, sh
 from paver.tasks import task
 
 ROOT_PATH = path(__file__).dirname().abspath()
@@ -15,8 +17,12 @@ def default():
 
 @task
 @needs(['clean'])
+@cmdopts([
+    Option('-v', '--verbosity', default=1, type=int),
+])
 def test(options):
-    sh('nosetests --with-coverage --cover-erase --cover-package=%s' % TOMATE_PATH)
+    sh('nosetests --with-coverage --cover-erase --cover-package=%s --verbosity=%s'
+       % (TOMATE_PATH, options.test.verbosity))
 
 
 @task
