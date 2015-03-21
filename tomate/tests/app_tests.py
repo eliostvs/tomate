@@ -18,7 +18,7 @@ class ApplicationTestCase(unittest.TestCase):
                                config=Mock(),
                                plugin=Mock())
 
-    def test_interface(self, *args):
+    def test_interface(self):
         from tomate.app import IApplication
 
         IApplication.check_compliance(self.app)
