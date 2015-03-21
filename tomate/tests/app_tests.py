@@ -8,38 +8,6 @@ from tomate.enums import State
 from wiring import Graph
 
 
-class TestApplicationInterface(unittest.TestCase):
-
-    def test_interface(self, *args):
-        from tomate.app import IApplication, Application
-
-        app = Application(Mock(), Mock(), Mock(), Mock())
-
-        IApplication.check_compliance(app)
-
-
-class TestApplicationFactory(unittest.TestCase):
-
-    @patch('tomate.app.dbus.SessionBus')
-    def test_factory(self, *args):
-        from tomate.app import Application, application_factory
-
-        graph = Graph()
-        graph.register_factory('tomate.view', Mock)
-        graph.register_factory('tomate.config', Mock)
-        graph.register_factory('tomate.plugin', Mock)
-
-        graph.register_factory('tomate.app', Application)
-
-        app = application_factory(graph)
-        self.assertIsInstance(app, Application)
-
-        with patch('tomate.app.dbus.SessionBus.return_value.request_name',
-                   return_value=dbus.bus.REQUEST_NAME_REPLY_EXISTS):
-            dbus_app = application_factory(graph)
-            self.assertIsInstance(dbus_app, dbus.Interface)
-
-
 class ApplicationTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -49,6 +17,30 @@ class ApplicationTestCase(unittest.TestCase):
                                view=Mock(),
                                config=Mock(),
                                plugin=Mock())
+
+    def test_interface(self, *args):
+        from tomate.app import IApplication
+
+        IApplication.check_compliance(self.app)
+
+    @patch('tomate.app.dbus.SessionBus')
+    def test_factory(self, *args):
+        from tomate.app import Application
+
+        graph = Graph()
+        graph.register_factory('tomate.view', Mock)
+        graph.register_factory('tomate.config', Mock)
+        graph.register_factory('tomate.plugin', Mock)
+
+        graph.register_factory('tomate.app', Application)
+
+        app = Application.fromgraph(graph)
+        self.assertIsInstance(app, Application)
+
+        with patch('tomate.app.dbus.SessionBus.return_value.request_name',
+                   return_value=dbus.bus.REQUEST_NAME_REPLY_EXISTS):
+            dbus_app = Application.fromgraph(graph)
+            self.assertIsInstance(dbus_app, dbus.Interface)
 
     def test_run_when_not_running(self):
         self.app.run()

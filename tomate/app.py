@@ -23,6 +23,7 @@ class Application(dbus.service.Object):
     bus_name = 'com.github.Tomate'
     bus_object_path = '/'
     bus_interface_name = 'com.github.Tomate'
+    specifiation = 'tomate.app'
 
     @inject(bus='dbus.session',
             view='tomate.view',
@@ -56,22 +57,17 @@ class Application(dbus.service.Object):
 
         return True
 
+    @classmethod
+    def fromgraph(cls, graph):
+        bus_session = dbus.SessionBus()
+        request = bus_session.request_name(cls.bus_name, dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
 
-def application_factory(graph, specification='tomate.app'):
-    bus_session = dbus.SessionBus()
-    app_class = graph.providers[specification].factory
+        if request != dbus.bus.REQUEST_NAME_REPLY_EXISTS:
+            graph.register_instance('dbus.session', bus_session)
+            instance = graph.get(cls.specifiation)
 
-    request = bus_session.request_name(app_class.bus_name,
-                                       dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
+        else:
+            bus_object = bus_session.get_object(cls.bus_name, cls.bus_object_path)
+            instance = dbus.Interface(bus_object, cls.bus_interface_name)
 
-    if request != dbus.bus.REQUEST_NAME_REPLY_EXISTS:
-        graph.register_instance('dbus.session', bus_session)
-        app = graph.get(specification)
-
-    else:
-        bus_object = bus_session.get_object(app_class.bus_name,
-                                            app_class.bus_object_path)
-
-        app = dbus.Interface(bus_object, app_class.bus_interface_name)
-
-    return app
+        return instance
