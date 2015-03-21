@@ -67,7 +67,7 @@ class TestTimer(unittest.TestCase):
 
         self.timer.update()
 
-        self.assertFalse(self.timer.update())
+        self.assertTrue(self.timer.update())
         self.assertEqual(0, self.timer.time_left)
         self.assertEqual(State.stopped, self.timer.state)
 

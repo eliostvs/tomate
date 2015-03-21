@@ -80,7 +80,7 @@ class Timer(object):
     def end(self):
         self.reset()
 
-        return False
+        return True
 
     @property
     def time_ratio(self):
