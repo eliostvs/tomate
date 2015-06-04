@@ -38,7 +38,7 @@ class TestProviderModule(unittest.TestCase):
         PluginProvider().add_to(graph)
 
         provider = graph.providers['tomate.plugin']
-        self.assertEqual(['tomate.plugin'], graph.providers.keys())
+        self.assertIn('tomate.plugin', graph.providers.keys())
 
         self.assertIsInstance(provider, FactoryProvider)
         self.assertEqual(provider.scope, SingletonScope)
