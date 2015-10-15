@@ -7,7 +7,21 @@ RUN echo 'deb http://download.opensuse.org/repositories/home:/eliostvs:/tomate/x
 
 COPY ./ /code/
 
-RUN apt-get update -qq && cat /code/packages.txt | xargs apt-get -yqq install
+RUN apt-get update -qq && apt-get install -y \
+	gir1.2-glib-2.0 \
+	python-blinker \
+	python-coverage \
+	python-dbus \
+	python-enum34 \
+	python-gi \
+	python-mock \
+	python-nose \
+	python-paver \
+	python-six \
+	python-wiring \
+	python-wrapt \
+	python-xdg \
+	python-yapsy
 
 RUN apt-get clean
 
