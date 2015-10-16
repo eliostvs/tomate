@@ -27,7 +27,7 @@ def test(options):
 
 @task
 def clean():
-    sh('pyclean tomate tests')
+    sh('find . -name "*.pyc" -o -name __pycache__ -print0 | xargs -0 rm -rf')
 
 
 @task
