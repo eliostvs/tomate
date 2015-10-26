@@ -165,6 +165,6 @@ class ConfigProvider(Module):
     @provides('config.parser')
     @scope(SingletonScope)
     def provide_parser(self):
-        from ConfigParser import SafeConfigParser
+        from six.moves import configparser
 
-        return SafeConfigParser(DEFAULTS)
+        return configparser.SafeConfigParser(DEFAULTS)
