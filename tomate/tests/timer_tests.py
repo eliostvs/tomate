@@ -7,15 +7,6 @@ from tomate.enums import State
 from wiring import FactoryProvider, SingletonScope
 
 
-class TestTimerInterface(unittest.TestCase):
-
-    def test_interface(self):
-        from tomate.timer import ITimer, Timer
-
-        timer = Timer(signals=Mock())
-        ITimer.check_compliance(timer)
-
-
 class TestTimer(unittest.TestCase):
 
     def setUp(self):

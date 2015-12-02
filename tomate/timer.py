@@ -11,28 +11,6 @@ from .utils import fsm
 # Thanks Pierre!
 
 
-class ITimer(Interface):
-
-    state = ''
-
-    time_ratio = ''
-
-    time_left = ''
-
-    def start(seconds):
-        pass
-
-    def update():
-        pass
-
-    def stop():
-        pass
-
-    def end():
-        pass
-
-
-@implements(ITimer)
 class Timer(object):
 
     @inject(signals='tomate.signals')
