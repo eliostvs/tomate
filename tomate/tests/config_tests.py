@@ -12,15 +12,6 @@ BaseDirectory_attrs = {
 }
 
 
-class TestConfigInterface(unittest.TestCase):
-
-    def test_interface(self):
-        from tomate.config import IConfig, Config
-
-        config = Config(Mock(), Mock())
-        IConfig.check_compliance(config)
-
-
 @patch('tomate.config.BaseDirectory', spec_set=True, **BaseDirectory_attrs)
 class TestConfig(unittest.TestCase):
 

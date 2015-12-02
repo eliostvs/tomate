@@ -17,47 +17,6 @@ DEFAULTS = {
 }
 
 
-class IConfig(Interface):
-    app_name = ''
-
-    def get_config_path():
-        pass
-
-    def get_resource_paths(*resources):
-        pass
-
-    def get_resource_path(*resources):
-        pass
-
-    def get_plugin_paths():
-        pass
-
-    def get_icon_paths():
-        pass
-
-    def get_icon_path(iconname, size=None, theme=None):
-        pass
-
-    def get_media_uri(*resources):
-        pass
-
-    def get(section, option):
-        pass
-
-    def get_int(section, option):
-        pass
-
-    def set(section, option, value):
-        pass
-
-    def load():
-        pass
-
-    def save():
-        pass
-
-
-@implements(IConfig)
 class Config(object):
 
     app_name = 'tomate'
