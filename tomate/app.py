@@ -1,23 +1,11 @@
 from __future__ import unicode_literals
 
 import dbus.service
-from wiring import implements, inject, Interface
+from wiring import inject
 
 from .enums import State
 
 
-class IApplication(Interface):
-
-    state = ''
-
-    def is_running():
-        pass
-
-    def run():
-        pass
-
-
-@implements(IApplication)
 class Application(dbus.service.Object):
 
     bus_name = 'com.github.Tomate'

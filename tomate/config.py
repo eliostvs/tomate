@@ -3,8 +3,7 @@ from __future__ import unicode_literals
 import logging
 import os
 
-from wiring import (implements, inject, Interface, Module, provides, scope,
-                    SingletonScope)
+from wiring import inject, Module, provides, scope, SingletonScope
 from xdg import BaseDirectory, IconTheme
 
 logger = logging.getLogger(__name__)

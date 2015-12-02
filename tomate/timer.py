@@ -1,7 +1,7 @@
 from __future__ import division, unicode_literals
 
 from gi.repository import GObject
-from wiring import implements, inject, Interface, Module, SingletonScope
+from wiring import inject, Module, SingletonScope
 
 from .enums import State
 from .utils import fsm

@@ -8,7 +8,7 @@ from tomate.enums import State
 from wiring import Graph
 
 
-class ApplicationTestCase(unittest.TestCase):
+class ApplicationTest(unittest.TestCase):
 
     def setUp(self):
         from tomate.app import Application

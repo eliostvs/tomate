@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from wiring import implements, inject, Interface, Module, SingletonScope
+from wiring import inject, Module, SingletonScope
 
 from .enums import State, Task
 from .signals import subscribe
