@@ -1,7 +1,7 @@
 from __future__ import division, unicode_literals
 
 from gi.repository import GObject
-from wiring import implements, inject, Interface, Module, SingletonScope
+from wiring import inject, Module, SingletonScope
 
 from .enums import State
 from .utils import fsm
@@ -11,28 +11,6 @@ from .utils import fsm
 # Thanks Pierre!
 
 
-class ITimer(Interface):
-
-    state = ''
-
-    time_ratio = ''
-
-    time_left = ''
-
-    def start(seconds):
-        pass
-
-    def update():
-        pass
-
-    def stop():
-        pass
-
-    def end():
-        pass
-
-
-@implements(ITimer)
 class Timer(object):
 
     @inject(signals='tomate.signals')

@@ -9,7 +9,7 @@ class Dummy(BaseEnum):
     b = 2
 
 
-class PomodoroTaskTestCase(unittest.TestCase):
+class BaseEnumTest(unittest.TestCase):
 
     def test_get_task_by_index(self):
         self.assertEqual(Dummy.a, Dummy.get_by_index(0))
