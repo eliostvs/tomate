@@ -9,17 +9,6 @@ from wiring import FactoryProvider, Graph, SingletonScope
 from . import SubscriptionMixin
 
 
-class TestSessionInterface(unittest.TestCase):
-
-    def test_interface(self):
-        from tomate.session import ISession, Session
-
-        session = Session(timer=Mock(),
-                          config=Mock(**{'get_int.return_value': 25}),
-                          signals=Mock())
-        ISession.check_compliance(session)
-
-
 class TestSession(SubscriptionMixin, unittest.TestCase):
 
     def setUp(self):

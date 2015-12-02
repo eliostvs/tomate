@@ -7,32 +7,6 @@ from .signals import subscribe
 from .utils import fsm
 
 
-class ISession(Interface):
-
-    state = ''
-    duration = ''
-    count = ''
-
-    def start(*args, **kwargs):
-        pass
-
-    def interrupt(*args, **kwargs):
-        pass
-
-    def end(*args, **kwargs):
-        pass
-
-    def reset(*args, **kwargs):
-        pass
-
-    def change_task(task=None):
-        pass
-
-    def status():
-        pass
-
-
-@implements(ISession)
 class Session(object):
 
     subscriptions = (
