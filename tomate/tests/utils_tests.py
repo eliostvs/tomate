@@ -3,9 +3,9 @@ from __future__ import unicode_literals
 import unittest
 
 
-class FormatTimeLeftTestCase(unittest.TestCase):
+class FormatTimeLeftTest(unittest.TestCase):
 
-    def test_format_time_left(self):
+    def test_format_seconds_in_string_with_minutes_and_seconds(self):
         from tomate.utils import format_time_left
 
         self.assertEqual('25:00', format_time_left(25 * 60))
@@ -13,9 +13,9 @@ class FormatTimeLeftTestCase(unittest.TestCase):
         self.assertEqual('05:00', format_time_left(5 * 60))
 
 
-class SupressErrorsDecoratorTestCase(unittest.TestCase):
+class SupressErrorsDecoratorTest(unittest.TestCase):
 
-    def test_suppress_errors(self):
+    def test_not_raise_exception(self):
         from tomate.utils import suppress_errors
 
         exception = Exception('error')
