@@ -14,8 +14,8 @@ class Session(object):
     )
 
     @subscribe
-    @inject(timer='tomate.timer', config='tomate.config', signals='tomate.signals')
-    def __init__(self, timer, config, signals):
+    @inject(timer='tomate.timer', config='tomate.config', events='tomate.events')
+    def __init__(self, timer, config, events):
         super(Session, self).__init__()
 
         self.count = 0
@@ -23,7 +23,7 @@ class Session(object):
         self.state = State.stopped
         self.task = Task.pomodoro
         self.timer = timer
-        self.signals = signals
+        self.events = events
 
     def timer_is_running(self):
         return self.timer.state == State.running
@@ -97,7 +97,7 @@ class Session(object):
                     time_left=self.duration)
 
     def emit(self, signal):
-        self.signals.emit(signal, **self.status())
+        self.events.emit(signal, **self.status())
 
 
 class SessionProvider(Module):

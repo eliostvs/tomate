@@ -12,7 +12,7 @@ class TestTimer(unittest.TestCase):
     def setUp(self):
         from tomate.timer import Timer
 
-        self.timer = Timer(signals=Mock())
+        self.timer = Timer(events=Mock())
 
     def test_init(self):
         self.assertEqual(State.stopped, self.timer.state)
@@ -68,20 +68,20 @@ class TestTimerSignals(unittest.TestCase):
     def setUp(self):
         from tomate.timer import Timer
 
-        self.timer = Timer(signals=Mock())
+        self.timer = Timer(events=Mock())
 
     def test_should_emit_time_finished_signal(self):
         self.timer.start(1)
         self.timer.update()
         self.timer.update()
 
-        self.timer.signals.emit.assert_called('timer_finished', time_left=0, time_ratio=0)
+        self.timer.events.emit.assert_called('timer_finished', time_left=0, time_ratio=0)
 
     def test_should_emit_time_updated_signal(self):
         self.timer.start(10)
         self.timer.update()
 
-        self.timer.signals.emit.assert_called_once_with('timer_updated', time_left=9, time_ratio=0.1)
+        self.timer.events.emit.assert_called_once_with('timer_updated', time_left=9, time_ratio=0.1)
 
 
 class TestTimerProvider(unittest.TestCase):
@@ -97,7 +97,7 @@ class TestTimerProvider(unittest.TestCase):
 
         self.assertIsInstance(provider, FactoryProvider)
         self.assertEqual(provider.scope, SingletonScope)
-        self.assertEqual(provider.dependencies, {'signals': 'tomate.signals'})
+        self.assertEqual(provider.dependencies, {'events': 'tomate.events'})
 
-        graph.register_instance('tomate.signals', Mock())
+        graph.register_instance('tomate.events', Mock())
         self.assertIsInstance(graph.get('tomate.timer'), Timer)

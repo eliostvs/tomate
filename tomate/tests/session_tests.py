@@ -16,7 +16,7 @@ class TestSession(SubscriptionMixin, unittest.TestCase):
 
         self.session = Session(timer=Mock(),
                                config=Mock(**{'get_int.return_value': 25}),
-                               signals=Mock())
+                               events=Mock())
 
     def create_instance(self):
         return self.session
@@ -114,37 +114,37 @@ class TestSessionSignals(unittest.TestCase):
 
         self.session = Session(timer=Mock(),
                                config=Mock(**{'get_int.return_value': 25}),
-                               signals=Mock())
+                               events=Mock())
 
     def test_should_emit_session_started(self):
         self.session.start()
 
-        self.session.signals.emit.assert_called_once_with('session_started',
-                                                          task=Task.pomodoro,
-                                                          sessions=0,
-                                                          state=State.running,
-                                                          time_left=1500)
+        self.session.events.emit.assert_called_once_with('session_started',
+                                                         task=Task.pomodoro,
+                                                         sessions=0,
+                                                         state=State.running,
+                                                         time_left=1500)
 
     def test_should_emit_session_interrupt(self):
         self.session.state = State.running
         self.session.timer.state = State.running
         self.session.interrupt()
 
-        self.session.signals.emit.assert_called_once_with('session_interrupted',
-                                                          task=Task.pomodoro,
-                                                          sessions=0,
-                                                          state=State.stopped,
-                                                          time_left=1500)
+        self.session.events.emit.assert_called_once_with('session_interrupted',
+                                                         task=Task.pomodoro,
+                                                         sessions=0,
+                                                         state=State.stopped,
+                                                         time_left=1500)
 
     def test_should_emit_session_reseted(self):
         self.session.count = 2
         self.session.reset()
 
-        self.session.signals.emit.assert_called_once_with('sessions_reseted',
-                                                          task=Task.pomodoro,
-                                                          sessions=0,
-                                                          state=State.stopped,
-                                                          time_left=1500)
+        self.session.events.emit.assert_called_once_with('sessions_reseted',
+                                                         task=Task.pomodoro,
+                                                         sessions=0,
+                                                         state=State.stopped,
+                                                         time_left=1500)
 
     def test_should_emit_session_end(self):
         self.session.state = State.running
@@ -152,26 +152,26 @@ class TestSessionSignals(unittest.TestCase):
         self.session.config.get_int.return_value = 5
         self.session.end()
 
-        self.session.signals.emit.assert_called_once_with('session_ended',
-                                                          task=Task.shortbreak,
-                                                          sessions=1,
-                                                          state=State.stopped,
-                                                          time_left=300)
+        self.session.events.emit.assert_called_once_with('session_ended',
+                                                         task=Task.shortbreak,
+                                                         sessions=1,
+                                                         state=State.stopped,
+                                                         time_left=300)
 
     def test_should_emit_task_changed(self):
         self.session.config.get_int.return_value = 15
         self.session.change_task(task=Task.longbreak)
 
-        self.session.signals.emit.assert_called_once_with('task_changed',
-                                                          task=Task.longbreak,
-                                                          sessions=0,
-                                                          state=State.stopped,
-                                                          time_left=900)
+        self.session.events.emit.assert_called_once_with('task_changed',
+                                                         task=Task.longbreak,
+                                                         sessions=0,
+                                                         state=State.stopped,
+                                                         time_left=900)
 
-        self.session.signals.reset_mock()
+        self.session.events.reset_mock()
         self.session.change_task()
 
-        self.session.signals.emit.assert_called_once_with('task_changed',
+        self.session.events.emit.assert_called_once_with('task_changed',
                                                           task=Task.longbreak,
                                                           sessions=0,
                                                           state=State.stopped,
@@ -193,11 +193,11 @@ class TestSessionModule(unittest.TestCase):
         self.assertIsInstance(provider, FactoryProvider)
         self.assertEqual(provider.scope, SingletonScope)
         self.assertEqual(provider.dependencies,
-                         dict(signals='tomate.signals',
+                         dict(events='tomate.events',
                               config='tomate.config',
                               timer='tomate.timer'))
 
-        graph.register_instance('tomate.signals', Mock())
+        graph.register_instance('tomate.events', Mock())
         graph.register_instance('tomate.timer', Mock())
         graph.register_instance('tomate.config', Mock())
         self.assertIsInstance(graph.get('tomate.session'), Session)

@@ -13,9 +13,9 @@ from .utils import fsm
 
 class Timer(object):
 
-    @inject(signals='tomate.signals')
-    def __init__(self, signals):
-        self.signals = signals
+    @inject(events='tomate.events')
+    def __init__(self, events):
+        self.events = events
         self.state = State.stopped
         self.reset()
 
@@ -71,9 +71,9 @@ class Timer(object):
         return ratio
 
     def emit(self, signal):
-        self.signals.emit(signal,
-                          time_left=self.time_left,
-                          time_ratio=self.time_ratio)
+        self.events.emit(signal,
+                         time_left=self.time_left,
+                         time_ratio=self.time_ratio)
 
     def reset(self):
         self.__seconds = self.time_left = 0
