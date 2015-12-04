@@ -112,10 +112,10 @@ class TestConfigSignals(unittest.TestCase):
         with patch('tomate.config.open', self.mo, create=True):
             self.config.set('Timer', 'Pomodoro', 4)
 
-            self.config.signals.emit.assert_called_once_with('setting_changed',
-                                                             section='timer',
-                                                             option='pomodoro',
-                                                             value=4)
+            self.config.events.emit.assert_called_once_with('setting_changed',
+                                                            section='timer',
+                                                            option='pomodoro',
+                                                            value=4)
 
 
 class TestConfigModule(unittest.TestCase):
@@ -135,7 +135,7 @@ class TestConfigModule(unittest.TestCase):
         self.assertIsInstance(provider, FactoryProvider)
         self.assertEqual(provider.scope, SingletonScope)
         self.assertEqual(provider.dependencies,
-                         dict(parser='config.parser', signals='tomate.signals'))
+                         dict(parser='config.parser', events='tomate.events'))
 
-        graph.register_instance('tomate.signals', Mock())
+        graph.register_instance('tomate.events', Mock())
         self.assertIsInstance(graph.get('tomate.config'), Config)

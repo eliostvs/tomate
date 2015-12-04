@@ -18,11 +18,6 @@ class ApplicationTest(unittest.TestCase):
                                config=Mock(),
                                plugin=Mock())
 
-    def test_interface(self):
-        from tomate.app import IApplication
-
-        IApplication.check_compliance(self.app)
-
     @patch('tomate.app.dbus.SessionBus')
     def test_factory(self, *args):
         from tomate.app import Application

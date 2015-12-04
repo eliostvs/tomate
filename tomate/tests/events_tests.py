@@ -9,7 +9,7 @@ from wiring import Graph, InstanceProvider
 class TestConnectSignalMixin(unittest.TestCase):
 
     def make_dummy(self):
-        from tomate.signals import Subscriber
+        from tomate.events import Subscriber
 
         class Dummy(Subscriber):
             subscriptions = (
@@ -21,14 +21,14 @@ class TestConnectSignalMixin(unittest.TestCase):
 
         return Dummy()
 
-    @patch('tomate.signals.TomateNamespace.connect')
+    @patch('tomate.events.TomateNamespace.connect')
     def test_connect_signal(self, mconnect):
         dummy = self.make_dummy()
         dummy.connect()
 
         mconnect.assert_called_once_with('updated_timer', dummy.foo)
 
-    @patch('tomate.signals.TomateNamespace.disconnect')
+    @patch('tomate.events.TomateNamespace.disconnect')
     def test_disconnect_signal(self, mdisconnect):
         dummy = self.make_dummy()
         dummy.disconnect()
@@ -40,7 +40,7 @@ class TestConnectSignalMixin(unittest.TestCase):
 class TestTomateNamespace(unittest.TestCase):
 
     def make_namespace(self):
-        from tomate.signals import TomateNamespace
+        from tomate.events import TomateNamespace
 
         namespace = TomateNamespace()
         namespace.signal('test')
@@ -80,27 +80,27 @@ class TestTomateNamespace(unittest.TestCase):
 class TestSignalProviders(unittest.TestCase):
 
     def test_module(self):
-        from tomate.signals import SignalsProvider, TomateNamespace
+        from tomate.events import SignalsProvider, TomateNamespace
 
         graph = Graph()
 
-        self.assertEqual(['tomate.signals'], SignalsProvider.providers.keys())
+        self.assertEqual(['tomate.events'], SignalsProvider.providers.keys())
         SignalsProvider().add_to(graph)
 
-        provider = graph.providers['tomate.signals']
+        provider = graph.providers['tomate.events']
 
         self.assertIsInstance(provider, InstanceProvider)
         self.assertEqual(provider.scope, None)
         self.assertEqual(provider.dependencies, {})
 
-        self.assertIsInstance(graph.get('tomate.signals'), TomateNamespace)
+        self.assertIsInstance(graph.get('tomate.events'), TomateNamespace)
 
 
 class TestConnectDecorator(unittest.TestCase):
 
-    @patch('tomate.signals.TomateNamespace.connect')
+    @patch('tomate.events.TomateNamespace.connect')
     def test_decorator(self, mconnect):
-        from tomate.signals import subscribe
+        from tomate.events import subscribe
 
         class Dummy(object):
             subscriptions = (

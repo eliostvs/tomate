@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from wiring import inject, Module, SingletonScope
 
 from .enums import State, Task
-from .signals import subscribe
+from .events import subscribe
 from .utils import fsm
 
 

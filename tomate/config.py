@@ -20,10 +20,10 @@ class Config(object):
 
     app_name = 'tomate'
 
-    @inject(parser='config.parser', signals='tomate.signals')
-    def __init__(self, parser, signals):
+    @inject(parser='config.parser', events='tomate.events')
+    def __init__(self, parser, events):
         self.parser = parser
-        self.signals = signals
+        self.events = events
 
         self.load()
 
@@ -104,7 +104,7 @@ class Config(object):
 
         self.save()
 
-        self.signals.emit('setting_changed',
+        self.events.emit('setting_changed',
                           section=section,
                           option=option,
                           value=value)

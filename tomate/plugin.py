@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from wiring import Module, provides, scope, SingletonScope
 from yapsy.IPlugin import IPlugin
 
-from .signals import Subscriber
+from .events import Subscriber
 
 
 class Plugin(Subscriber, IPlugin):
