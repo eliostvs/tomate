@@ -24,6 +24,9 @@ class Application(dbus.service.Object):
         self.view = view
         self.plugin = plugin
 
+        self.__setup_plugin_manager()
+
+    def __setup_plugin_manager(self):
         self.plugin.setPluginPlaces(self.config.get_plugin_paths())
         self.plugin.setPluginInfoExtension('plugin')
         self.plugin.setConfigParser(self.config.parser, self.config.save)

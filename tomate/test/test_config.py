@@ -121,12 +121,12 @@ class TestConfigSignals(unittest.TestCase):
 class TestConfigModule(unittest.TestCase):
 
     def test_module(self):
-        from tomate.config import Config, ConfigProvider
+        from tomate.config import Config, ConfigModule
 
         graph = Graph()
 
-        self.assertEqual(['tomate.config'], ConfigProvider.providers.keys())
-        ConfigProvider().add_to(graph)
+        self.assertEqual(['tomate.config'], ConfigModule.providers.keys())
+        ConfigModule().add_to(graph)
 
         self.assertIn('config.parser', graph.providers.keys())
 

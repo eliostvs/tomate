@@ -50,7 +50,8 @@ class fsm(object):
         logger.debug('Changing %s %s to %s',
                      instance.__class__.__name__, self.attr, self.target)
 
-        setattr(instance, self.attr, self.target)
+        if getattr(instance, self.attr, None) != self.target:
+            setattr(instance, self.attr, self.target)
 
     def call_exit_action(self, instance):
         if self.exit_action is not None:
@@ -72,4 +73,4 @@ class fsm(object):
 
         logger.debug('Invalid conditions!')
 
-        return None
+        return False

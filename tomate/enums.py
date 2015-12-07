@@ -4,26 +4,28 @@ import enum
 
 
 @enum.unique
-class BaseEnum(enum.Enum):
+class Base(enum.Enum):
 
     @classmethod
-    def get_by_index(cls, index):
-        for i, k in enumerate(cls):
-            if i == index:
-                return k
+    def by_index(cls, number):
+        for (index, attr) in enumerate(cls):
+            if index == number:
+                return attr
 
 
-class Task(BaseEnum):
+class Task(Base):
     pomodoro = 0
     shortbreak = 1
     longbreak = 2
 
 
-class State(BaseEnum):
+class State(Base):
     stopped = 0
     running = 1
+    finished = 3
+    changed = 4
 
 
-class Visible(BaseEnum):
-    active = 0
-    passive = 0
+class View(Base):
+    show = 0
+    hide = 0

@@ -3,27 +3,17 @@ from __future__ import unicode_literals
 from wiring import inject, Module, SingletonScope
 
 from .enums import State, Task
-from .events import subscribe
+from .events import EventState, Subscriber, on, Events
 from .utils import fsm
 
 
-class Session(object):
+class Session(Subscriber):
 
-    subscriptions = (
-        ('timer_finished', 'end'),
-    )
-
-    @subscribe
     @inject(timer='tomate.timer', config='tomate.config', events='tomate.events')
     def __init__(self, timer, config, events):
-        super(Session, self).__init__()
-
-        self.count = 0
         self.config = config
-        self.state = State.stopped
-        self.task = Task.pomodoro
         self.timer = timer
-        self.events = events
+        self.event = events.Session
 
     def timer_is_running(self):
         return self.timer.state == State.running
@@ -32,35 +22,33 @@ class Session(object):
         return not self.timer_is_running()
 
     @fsm(target=State.running,
-         source=[State.stopped],
-         exit=lambda i: i.emit('session_started'))
-    def start(self, *args, **kwargs):
+         source=[State.stopped, State.finished])
+    def start(self):
         self.timer.start(self.duration)
 
         return True
 
     @fsm(target=State.stopped,
          source=[State.running],
-         conditions=[timer_is_running],
-         exit=lambda i: i.emit('session_interrupted'))
-    def interrupt(self, *args, **kwargs):
+         conditions=[timer_is_running])
+    def stop(self):
         self.timer.stop()
 
         return True
 
     @fsm(target=State.stopped,
-         source=[State.stopped],
-         exit=lambda i: i.emit('sessions_reseted'))
-    def reset(self, *args, **kwargs):
+         source=[State.stopped, State.finished],
+        exit=lambda i: i.trigger(State.changed))
+    def reset(self):
         self.count = 0
 
         return True
 
-    @fsm(target=State.stopped,
+    @fsm(target=State.finished,
          source=[State.running],
-         conditions=[timer_is_not_running],
-         exit=lambda i: i.emit('session_ended'))
-    def end(self, *args, **kwargs):
+         conditions=[timer_is_not_running])
+    @on(Events.Timer, State.finished)
+    def end(self, sender=None, **kwargs):
         if self.task == Task.pomodoro:
             self.count += 1
 
@@ -76,8 +64,7 @@ class Session(object):
         return True
 
     @fsm(target=State.stopped,
-         source=[State.stopped],
-         exit=lambda i: i.emit('task_changed'))
+         source=[State.stopped, State.finished])
     def change_task(self, task=None):
         if task is not None:
             self.task = task
@@ -96,11 +83,15 @@ class Session(object):
                     state=self.state,
                     time_left=self.duration)
 
-    def emit(self, signal):
-        self.events.emit(signal, **self.status())
+    def trigger(self, event_type):
+        self.event.send(event_type, **self.status())
+
+    state = EventState(State.stopped, trigger)
+    count = EventState(0, trigger, attr='_count', event_type=State.changed)
+    task = EventState(Task.pomodoro, trigger, attr='_task', event_type=State.changed)
 
 
-class SessionProvider(Module):
+class SessionModule(Module):
 
     factories = {
         'tomate.session': (Session, SingletonScope)

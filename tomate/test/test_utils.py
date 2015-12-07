@@ -13,7 +13,7 @@ class FormatTimeLeftTest(unittest.TestCase):
         self.assertEqual('05:00', format_time_left(5 * 60))
 
 
-class SupressErrorsDecoratorTest(unittest.TestCase):
+class supresserrorsdecoratortest(unittest.TestCase):
 
     def test_not_raise_exception(self):
         from tomate.utils import suppress_errors

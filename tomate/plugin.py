@@ -7,21 +7,14 @@ from .events import Subscriber
 
 
 class Plugin(Subscriber, IPlugin):
-
-    def activate(self):
-        super(Plugin, self).activate()
-        self.connect()
-
-    def deactivate(self):
-        super(Plugin, self).deactivate()
-        self.disconnect()
+    pass
 
 
-class PluginProvider(Module):
+class PluginModule(Module):
 
     @provides('tomate.plugin')
     @scope(SingletonScope)
-    def create_plugin_manager(self):
+    def provide_plugin_manager(self):
         from yapsy.ConfigurablePluginManager import ConfigurablePluginManager
         from yapsy.PluginManager import PluginManagerSingleton
         from yapsy.VersionedPluginManager import VersionedPluginManager

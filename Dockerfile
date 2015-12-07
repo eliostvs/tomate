@@ -9,6 +9,7 @@ COPY ./ /code/
 
 RUN apt-get update -qq && apt-get install -y \
 	gir1.2-glib-2.0 \
+	make \
 	python-blinker \
 	python-coverage \
 	python-dbus \
@@ -16,7 +17,6 @@ RUN apt-get update -qq && apt-get install -y \
 	python-gi \
 	python-mock \
 	python-nose \
-	python-paver \
 	python-six \
 	python-wiring \
 	python-wrapt \
@@ -27,6 +27,6 @@ RUN apt-get clean
 
 WORKDIR /code/
 
-ENTRYPOINT ["paver"]
+ENTRYPOINT ["make"]
 
 CMD ["test"]

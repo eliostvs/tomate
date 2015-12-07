@@ -4,6 +4,7 @@ from gi.repository import GObject
 from wiring import inject, Module, SingletonScope
 
 from .enums import State
+from .events import EventState
 from .utils import fsm
 
 # Borrowed from Tomatoro create by Pierre Quillery.
@@ -15,12 +16,11 @@ class Timer(object):
 
     @inject(events='tomate.events')
     def __init__(self, events):
-        self.events = events
-        self.state = State.stopped
+        self.event = events.Timer
         self.reset()
 
     @fsm(target=State.running,
-         source=[State.stopped])
+         source=[State.finished, State.stopped])
     def start(self, seconds):
         self.__seconds = self.time_left = seconds
 
@@ -37,7 +37,7 @@ class Timer(object):
 
         self.time_left -= 1
 
-        self.emit('timer_updated')
+        self.trigger(State.changed)
 
         return True
 
@@ -51,10 +51,9 @@ class Timer(object):
     def timer_is_up(self):
         return self.time_left <= 0
 
-    @fsm(target=State.stopped,
+    @fsm(target=State.finished,
          source=[State.running],
-         conditions=[timer_is_up],
-         exit=lambda i: i.emit('timer_finished'))
+         conditions=[timer_is_up])
     def end(self):
         self.reset()
 
@@ -70,16 +69,18 @@ class Timer(object):
 
         return ratio
 
-    def emit(self, signal):
-        self.events.emit(signal,
-                         time_left=self.time_left,
-                         time_ratio=self.time_ratio)
+    def trigger(self, event_type):
+        self.event.send(event_type,
+                        time_left=self.time_left,
+                        time_ratio=self.time_ratio)
 
     def reset(self):
         self.__seconds = self.time_left = 0
 
+    state = EventState(State.stopped, trigger)
 
-class TimerProvider(Module):
+
+class TimerModule(Module):
 
     factories = {
         'tomate.timer': (Timer, SingletonScope),

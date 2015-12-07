@@ -6,36 +6,14 @@ from mock import patch
 from wiring import FactoryProvider, SingletonScope
 
 
-class TestPlugin(unittest.TestCase):
-
-    @patch('tomate.plugin.Subscriber.disconnect')
-    @patch('tomate.plugin.Subscriber.connect')
-    def test_interface(self, connect, disconnect):
-        from tomate.plugin import Plugin
-        from yapsy.IPlugin import IPlugin
-
-        class Dummy(Plugin):
-            pass
-
-        dummy = Dummy()
-
-        self.assertIsInstance(dummy, IPlugin)
-
-        dummy.activate()
-        connect.assert_called_once_with()
-
-        dummy.deactivate()
-        disconnect.assert_called_once_with()
-
-
 class TestProviderModule(unittest.TestCase):
 
     def test_module(self):
         from yapsy.PluginManagerDecorator import PluginManagerDecorator
-        from tomate.plugin import PluginProvider
+        from tomate.plugin import PluginModule
         from tomate.graph import graph
 
-        PluginProvider().add_to(graph)
+        PluginModule().add_to(graph)
 
         provider = graph.providers['tomate.plugin']
         self.assertIn('tomate.plugin', graph.providers.keys())

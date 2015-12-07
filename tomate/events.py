@@ -1,82 +1,87 @@
 from __future__ import unicode_literals
 
+import functools
 import logging
 
-import wrapt
+import six
 from blinker import Namespace
 from wiring import Module
 
 logger = logging.getLogger(__name__)
 
 
-class TomateNamespace(Namespace):
+class Dispatcher(Namespace):
 
-    def emit(self, name, **kwargs):
-        signal = self[name]
-        return signal.send(**kwargs)
-
-    def connect(self, name, method):
-        signal = self[name]
-        signal.connect(method, weak=False)
-
-    def disconnect(self, name, method):
-        signal = self[name]
-        signal.disconnect(method)
+    def __getattr__(self, attr):
+        return self[attr]
 
 
-events = TomateNamespace()
 
-# Timer
-timer_updated = events.signal('timer_updated')
-timer_finished = events.signal('timer_finished')
-
-# Pomodoro
-session_started = events.signal('session_started')
-sessions_reseted = events.signal('sessions_reseted')
-session_interrupted = events.signal('session_interrupted')
-session_ended = events.signal('session_ended')
-task_changed = events.signal('task_changed')
-
-# Window
-view_showed = events.signal('view_showed')
-view_hid = events.signal('view_hid')
-
-# Settings
-setting_changed = events.signal('setting_changed')
+Events = Dispatcher()
+Session = Events.signal('Session')
+Timer = Events.signal('Timer')
+Setting = Events.signal('Setting')
+View = Events.signal('View')
 
 
-class Subscriber(object):
+class SubscriberMeta(type):
+    def __call__(cls, *args, **kwargs):
+        obj = type.__call__(cls, *args, **kwargs)
 
-    subscriptions = ()
+        for method in cls.__get_binds(obj):
+            (event, sender) = method._bind
+            event.connect(method, sender=sender, weak=False)
 
-    def connect(self):
-        for (signal, method) in self.subscriptions:
-            events.connect(signal, getattr(self, method))
+        return obj
 
-            logger.debug('method %s.%s connect to signal %s.',
-                         self.__class__.__name__, method, signal)
-
-    def disconnect(self):
-        for (signal, method) in self.subscriptions:
-            events.disconnect(signal, getattr(self, method))
-
-            logger.debug('method %s.%s disconnect from signal %s.',
-                         self.__class__.__name__, method, signal)
+    def __get_binds(self, obj):
+        binds = [getattr(obj, attr)
+                 for attr in dir(obj)
+                 if getattr(getattr(obj, attr), '_is_bind', False) is True]
+        return binds
 
 
-@wrapt.decorator
-def subscribe(wrapped, instance, args, kwargs):
-    for (signal, method) in instance.subscriptions:
-        events.connect(signal, getattr(instance, method))
-
-        logger.debug('method %s.%s connect to signal %s.',
-                     instance.__class__.__name__, method, signal)
-
-    return wrapped(*args, **kwargs)
+class Subscriber(six.with_metaclass(SubscriberMeta, object)):
+    pass
 
 
-class SignalsProvider(Module):
+def on(event, sender):
+    def wrapper(func):
+        func._is_bind = True
+        func._bind = (event, sender)
+
+        @functools.wraps(func)
+        def wrapped(*args, **kwargs):
+            return func(*args, **kwargs)
+        return wrapped
+    return wrapper
+
+
+class EventState(object):
+
+    def __init__(self, initial, callback, attr='_state', event_type=None):
+        self.initial = initial
+        self.callback = callback
+        self.state_attr = attr
+        self.event_type = event_type
+
+    def __get__(self, instance, owner):
+        if instance is None or not hasattr(instance, self.state_attr):
+            value = self.initial
+
+        else:
+            value = getattr(instance, self.state_attr)
+
+        return value
+
+    def __set__(self, instance, value):
+        setattr(instance, self.state_attr, value)
+        event = value if self.event_type is None else self.event_type
+        self.callback(instance, event)
+
+
+class EventsModule(Module):
 
     instances = {
-        'tomate.events': events
+        'tomate.events': Events
     }

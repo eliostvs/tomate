@@ -60,10 +60,12 @@ class Config(object):
 
         raise EnvironmentError('resource with path %s not found!' % os.path.join(*resources))
 
-    def get_resource_paths(self, *resources):
+    @staticmethod
+    def get_resource_paths(*resources):
         return [p for p in BaseDirectory.load_data_paths(*resources)]
 
-    def get_icon_path(self, iconname, size=None, theme=None):
+    @staticmethod
+    def get_icon_path(iconname, size=None, theme=None):
         iconpath = IconTheme.getIconPath(iconname, size, theme, extensions=['png', 'svg', 'xpm'])
 
         if iconpath is not None:
@@ -114,7 +116,7 @@ class Config(object):
         return name.replace(' ', '_').lower()
 
 
-class ConfigProvider(Module):
+class ConfigModule(Module):
 
     factories = {
         'tomate.config': (Config, SingletonScope)
