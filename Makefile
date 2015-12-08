@@ -12,7 +12,7 @@ test:  clean
 	nosetests --with-coverage --cover-erase --cover-package=$(PACKAGE_ROOT) --verbosity=$(VERBOSITY)
 
 docker-clean:
-	docker rmi --force $(DOCKER_IMAGE_NAME)
+	docker rmi --force $(DOCKER_IMAGE_NAME) 2> /dev/null || echo Image $(DOCKER_IMAGE_NAME) not found
 
 docker-build:
 	docker build -t $(DOCKER_IMAGE_NAME) .

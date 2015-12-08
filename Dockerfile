@@ -17,11 +17,14 @@ RUN apt-get update -qq && apt-get install -y \
 	python-gi \
 	python-mock \
 	python-nose \
+	python-setuptools \
 	python-six \
 	python-wiring \
 	python-wrapt \
 	python-xdg \
 	python-yapsy
+
+RUN easy_install -U six
 
 RUN apt-get clean
 
