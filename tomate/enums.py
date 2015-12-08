@@ -24,8 +24,5 @@ class State(Base):
     running = 1
     finished = 3
     changed = 4
-
-
-class View(Base):
-    show = 0
-    hide = 0
+    showing = 5
+    hiding = 6
