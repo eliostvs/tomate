@@ -59,8 +59,7 @@ class fsm(object):
 
     @wrapt.decorator
     def __call__(self, wrapped, instance, args, kwargs):
-        logger.debug('Calling %s.%s',
-                     instance.__class__.__name__, wrapped.im_func.__name__)
+        logger.debug('Calling %s.%s', instance.__class__.__name__, wrapped)
 
         if self.valid_transition(instance) and self.valid_conditions(instance):
             result = wrapped(*args, **kwargs)

@@ -49,7 +49,7 @@ class Application(dbus.service.Object):
         return True
 
     @classmethod
-    def fromgraph(cls, graph):
+    def from_graph(cls, graph):
         bus_session = dbus.SessionBus()
         request = bus_session.request_name(cls.bus_name, dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
 

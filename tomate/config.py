@@ -6,6 +6,8 @@ import os
 from wiring import inject, Module, provides, scope, SingletonScope
 from xdg import BaseDirectory, IconTheme
 
+from .events import Events
+
 logger = logging.getLogger(__name__)
 
 DEFAULTS = {
@@ -23,7 +25,7 @@ class Config(object):
     @inject(parser='config.parser', events='tomate.events')
     def __init__(self, parser, events):
         self.parser = parser
-        self.events = events
+        self.event = events.Setting
 
         self.load()
 
@@ -106,10 +108,10 @@ class Config(object):
 
         self.save()
 
-        self.events.emit('setting_changed',
-                          section=section,
-                          option=option,
-                          value=value)
+        self.event.send((section, option),
+                        section=section,
+                        option=option,
+                        value=value)
 
     @staticmethod
     def normalize(name):
