@@ -2,12 +2,12 @@ from __future__ import unicode_literals
 
 import unittest
 
+import six
 from blinker import Namespace
 from mock import Mock
-from wiring import Graph, InstanceProvider
-
 from tomate.enums import State
 from tomate.events import Events, on, EventsModule, Subscriber, SubscriberMeta, Dispatcher
+from wiring import Graph, InstanceProvider
 
 
 class Foo(object):
@@ -76,7 +76,8 @@ class EventsModuleTest(unittest.TestCase):
     def test_module(self):
         graph = Graph()
 
-        self.assertEqual(['tomate.events'], EventsModule.providers.keys())
+        six.assertCountEqual(self, ['tomate.events'], EventsModule.providers.keys())
+
         EventsModule().add_to(graph)
 
         provider = graph.providers['tomate.events']

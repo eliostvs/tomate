@@ -65,9 +65,9 @@ class Session(Subscriber):
 
     @fsm(target=State.stopped,
          source=[State.stopped, State.finished])
-    def change_task(self, task=None):
-        if task is not None:
-            self.task = task
+    @on(Events.Setting, ['timer'])
+    def change_task(self, *args, **kwargs):
+        self.task = kwargs.get('task', self.task)
 
         return True
 

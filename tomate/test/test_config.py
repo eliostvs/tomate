@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import os
 import unittest
 
+import six
 from mock import Mock, mock_open, patch
 from wiring import FactoryProvider, Graph, SingletonScope
 
@@ -112,10 +113,10 @@ class TestConfigSignals(unittest.TestCase):
         with patch('tomate.config.open', self.mo, create=True):
             self.config.set('Timer', 'Pomodoro', 4)
 
-            self.config.events.emit.assert_called_once_with('setting_changed',
-                                                            section='timer',
-                                                            option='pomodoro',
-                                                            value=4)
+            self.config.event.send.assert_called_once_with('timer',
+                                                           section='timer',
+                                                           option='pomodoro',
+                                                           value=4)
 
 
 class TestConfigModule(unittest.TestCase):
@@ -125,7 +126,8 @@ class TestConfigModule(unittest.TestCase):
 
         graph = Graph()
 
-        self.assertEqual(['tomate.config'], ConfigModule.providers.keys())
+        six.assertCountEqual(self, ['tomate.config'], ConfigModule.providers.keys())
+
         ConfigModule().add_to(graph)
 
         self.assertIn('config.parser', graph.providers.keys())

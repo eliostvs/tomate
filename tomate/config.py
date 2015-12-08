@@ -108,7 +108,7 @@ class Config(object):
 
         self.save()
 
-        self.event.send((section, option),
+        self.event.send(section,
                         section=section,
                         option=option,
                         value=value)

@@ -2,12 +2,12 @@ from __future__ import division, unicode_literals
 
 import unittest
 
+import six
 from mock import Mock
-from wiring import FactoryProvider, SingletonScope
-
 from tomate.enums import State
 from tomate.graph import graph
 from tomate.timer import Timer, TimerModule
+from wiring import FactoryProvider, SingletonScope
 
 
 class TimerTest(unittest.TestCase):
@@ -16,7 +16,6 @@ class TimerTest(unittest.TestCase):
         self.timer = Timer(events=Mock())
 
     def test_default_timer_values(self):
-        print self.timer.state
         self.assertEqual(State.stopped, self.timer.state)
         self.assertEqual(0, self.timer.time_ratio)
         self.assertEqual(0, self.timer.time_left)
@@ -92,10 +91,11 @@ class TimerTest(unittest.TestCase):
         self.timer.event.send.assert_called_with(State.changed, time_left=9, time_ratio=0.1)
 
 
-class TimerProviderTest(unittest.TestCase):
+class TimerModuleTest(unittest.TestCase):
 
     def test_module(self):
-        self.assertEqual(['tomate.timer'], TimerModule.providers.keys())
+        six.assertCountEqual(self, ['tomate.timer'], TimerModule.providers.keys())
+
         TimerModule().add_to(graph)
 
         provider = graph.providers['tomate.timer']

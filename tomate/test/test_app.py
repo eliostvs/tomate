@@ -29,12 +29,12 @@ class ApplicationTest(unittest.TestCase):
 
         graph.register_factory('tomate.app', Application)
 
-        app = Application.fromgraph(graph)
+        app = Application.from_graph(graph)
         self.assertIsInstance(app, Application)
 
         with patch('tomate.app.dbus.SessionBus.return_value.request_name',
                    return_value=dbus.bus.REQUEST_NAME_REPLY_EXISTS):
-            dbus_app = Application.fromgraph(graph)
+            dbus_app = Application.from_graph(graph)
             self.assertIsInstance(dbus_app, dbus.Interface)
 
     def test_run_when_not_running(self):

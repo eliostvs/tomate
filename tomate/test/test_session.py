@@ -2,11 +2,11 @@ from __future__ import unicode_literals
 
 import unittest
 
+import six
 from mock import Mock
-from wiring import FactoryProvider, Graph, SingletonScope
-
 from tomate.enums import State, Task
 from tomate.session import Session, SessionModule
+from wiring import FactoryProvider, Graph, SingletonScope
 
 
 class SessionTest(unittest.TestCase):
@@ -80,12 +80,13 @@ class SessionTest(unittest.TestCase):
     def test_shoud_not_be_able_to_change_task_when_state_is_not_valid(self):
         self.session.state = State.running
 
-        self.assertFalse(self.session.change_task(None))
+        self.assertFalse(self.session.change_task(task=None))
 
     def test_should_be_able_to_change_task_when_state_is_valid(self):
         for state in (State.stopped, State.finished):
             self.session.timer.state = state
 
+            self.session.change_task(dict(task=Task.shortbreak))
             self.assertTrue(self.session.change_task(task=Task.shortbreak))
             self.assertEqual(Task.shortbreak, self.session.task)
 
@@ -196,7 +197,8 @@ class SessionModuleTest(unittest.TestCase):
     def test_module(self):
         graph = Graph()
 
-        self.assertEqual(['tomate.session'], SessionModule.providers.keys())
+        six.assertCountEqual(self, ['tomate.session'], SessionModule.providers.keys())
+
         SessionModule().add_to(graph)
 
         provider = graph.providers['tomate.session']
