@@ -23,13 +23,14 @@ Setting = Events.signal('Setting')
 View = Events.signal('View')
 
 
-def on(event, sender):
+def on(event, senders):
     def wrapper(func):
-        if hasattr(func, '_is_bind'):
-            func._bind.append((event, sender))
-        else:
-            func._is_bind = True
-            func._bind = [(event, sender)]
+        if not hasattr(func, '_has_event'):
+            func._has_event = True
+            func._events = []
+
+        for each in senders:
+            func._events.append((event, each))
 
         @functools.wraps(func)
         def wrapped(*args, **kwargs):
@@ -47,16 +48,16 @@ class SubscriberMeta(type):
         return obj
 
     def __connect_events(cls, obj):
-        for method in cls.__get_binds_methods(obj):
-            for (event, sender) in method._bind:
+        for method in cls.__get_methods_with_events(obj):
+            for (event, sender) in method._events:
                 logger.debug('Connecting {event} to method {method} with sender {sender}'
                              .format(**locals()))
                 event.connect(method, sender=sender, weak=False)
 
-    def __get_binds_methods(cls, obj):
+    def __get_methods_with_events(cls, obj):
         binds = [getattr(obj, attr)
                  for attr in dir(obj)
-                 if getattr(getattr(obj, attr), '_is_bind', False) is True]
+                 if getattr(getattr(obj, attr), '_has_event', False) is True]
         return binds
 
 

@@ -11,12 +11,11 @@ from tomate.events import Events, on, EventsModule, Subscriber, SubscriberMeta, 
 
 
 class Foo(object):
-    @on(Events.Timer, State.finished)
+    @on(Events.Timer, [State.finished])
     def func(self, sender):
         return sender
 
-    @on(Events.Timer, State.changed)
-    @on(Events.Timer, State.finished)
+    @on(Events.Timer, [State.finished, State.changed])
     def spam(self, sender):
         return sender
 
@@ -27,29 +26,29 @@ class Base(unittest.TestCase):
 
 
 class DecoratorOnTest(Base):
-    def test_should_return_bind_events_in_method(self):
-        self.assertListEqual(self.foo.func._bind, [(Events.Timer, State.finished)])
+    def test_should_return_events_bind_with_the_method(self):
+        self.assertListEqual(self.foo.func._events, [(Events.Timer, State.finished)])
 
-        self.assertListEqual(self.foo.spam._bind,
+        self.assertListEqual(self.foo.spam._events,
                              [(Events.Timer, State.finished), (Events.Timer, State.changed)])
 
 
 class SubscriberMetaTest(Base):
-    def test_should_return_bind_methods(self):
+    def test_should_return_methods_that_has_events(self):
         meta = SubscriberMeta(str('name'), (object,), {})
 
         expected = [self.foo.func, self.foo.spam]
-        self.assertEqual(expected, meta._SubscriberMeta__get_binds_methods(self.foo))
+        self.assertEqual(expected, meta._SubscriberMeta__get_methods_with_events(self.foo))
 
 
 class SubscriberTest(unittest.TestCase):
-    def test_should_connect_method_on_given_event(self):
+    def test_should_connect_event_with_the_method(self):
         Session = Mock()
         Timer = Mock()
 
         class Baz(Subscriber):
-            @on(Timer, State.changed)
-            @on(Session, State.finished)
+            @on(Session, [State.finished])
+            @on(Timer, [State.changed])
             def bar(self, sender):
                 return sender
 

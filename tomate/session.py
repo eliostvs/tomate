@@ -47,7 +47,7 @@ class Session(Subscriber):
     @fsm(target=State.finished,
          source=[State.running],
          conditions=[timer_is_not_running])
-    @on(Events.Timer, State.finished)
+    @on(Events.Timer, [State.finished])
     def end(self, sender=None, **kwargs):
         if self.task == Task.pomodoro:
             self.count += 1
