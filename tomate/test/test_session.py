@@ -163,7 +163,7 @@ class SessionTest(unittest.TestCase):
         self.session.count = 2
         self.session.reset()
 
-        self.session.event.send.assert_called_with(State.changed,
+        self.session.event.send.assert_called_with(State.reset,
                                                    task=Task.pomodoro,
                                                    sessions=0,
                                                    state=State.stopped,

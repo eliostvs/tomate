@@ -38,7 +38,7 @@ class Session(Subscriber):
 
     @fsm(target=State.stopped,
          source=[State.stopped, State.finished],
-        exit=lambda i: i.trigger(State.changed))
+        exit=lambda i: i.trigger(State.reset))
     def reset(self):
         self.count = 0
 

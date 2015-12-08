@@ -26,3 +26,4 @@ class State(Base):
     changed = 4
     showing = 5
     hiding = 6
+    reset = 7
