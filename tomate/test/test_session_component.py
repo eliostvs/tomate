@@ -4,8 +4,8 @@ import unittest
 
 from mock import Mock
 
-from tomate.enums import State
-from tomate.events import Events
+from tomate.constant import State
+from tomate.event import Events
 from tomate.session import Session
 from tomate.timer import Timer
 from blinker import ANY
@@ -35,7 +35,7 @@ class SessionComponent(unittest.TestCase):
         self.assertEqual([(self.session.change_task, True)], result)
 
     def test_call_change_task_when_setting_event_emit_and_session_running_should_fail(self):
-        self.session.state = State.running
+        self.session.state = State.started
 
         result = Events.Setting.send('timer')
 

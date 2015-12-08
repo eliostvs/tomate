@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from mock import Mock
 
-from tomate.events import EventState
+from tomate.event import EventState
 
 
 class Foo(object):

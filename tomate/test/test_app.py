@@ -4,7 +4,7 @@ import unittest
 
 import dbus
 from mock import Mock, patch
-from tomate.enums import State
+from tomate.constant import State
 from wiring import Graph
 
 
@@ -42,7 +42,7 @@ class ApplicationTest(unittest.TestCase):
         self.app.view.run.assert_called_once_with()
 
     def test_run_when_already_running(self):
-        self.app.state = State.running
+        self.app.state = State.started
         self.app.run()
 
         self.app.view.show.assert_called_once_with()
@@ -50,6 +50,6 @@ class ApplicationTest(unittest.TestCase):
     def test_is_running(self):
         self.assertEqual(False, self.app.is_running())
 
-        self.app.state = State.running
+        self.app.state = State.started
 
         self.assertEqual(True, self.app.is_running())

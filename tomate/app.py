@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import dbus.service
 from wiring import inject
 
-from .enums import State
+from .constant import State
 
 
 class Application(dbus.service.Object):
@@ -34,7 +34,7 @@ class Application(dbus.service.Object):
 
     @dbus.service.method(bus_interface_name, out_signature='b')
     def is_running(self):
-        return self.state == State.running
+        return self.state == State.started
 
     @dbus.service.method(bus_interface_name, out_signature='b')
     def run(self):
@@ -42,7 +42,7 @@ class Application(dbus.service.Object):
             self.view.show()
 
         else:
-            self.state = State.running
+            self.state = State.started
             self.view.run()
             self.state = State.stopped
 

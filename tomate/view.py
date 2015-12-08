@@ -4,6 +4,7 @@ from wiring import Interface
 
 
 class IView(Interface):
+    widget = ''
 
     def run(*args, **kwargs):
         pass

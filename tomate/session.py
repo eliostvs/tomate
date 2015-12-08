@@ -2,8 +2,8 @@ from __future__ import unicode_literals
 
 from wiring import inject, Module, SingletonScope
 
-from .enums import State, Task
-from .events import EventState, Subscriber, on, Events
+from .constant import State, Task
+from .event import EventState, Subscriber, on, Events
 from .utils import fsm
 
 
@@ -16,12 +16,12 @@ class Session(Subscriber):
         self.event = events.Session
 
     def timer_is_running(self):
-        return self.timer.state == State.running
+        return self.timer.state == State.started
 
     def timer_is_not_running(self):
         return not self.timer_is_running()
 
-    @fsm(target=State.running,
+    @fsm(target=State.started,
          source=[State.stopped, State.finished])
     def start(self):
         self.timer.start(self.duration)
@@ -29,7 +29,7 @@ class Session(Subscriber):
         return True
 
     @fsm(target=State.stopped,
-         source=[State.running],
+         source=[State.started],
          conditions=[timer_is_running])
     def stop(self):
         self.timer.stop()
@@ -45,7 +45,7 @@ class Session(Subscriber):
         return True
 
     @fsm(target=State.finished,
-         source=[State.running],
+         source=[State.started],
          conditions=[timer_is_not_running])
     @on(Events.Timer, [State.finished])
     def end(self, sender=None, **kwargs):

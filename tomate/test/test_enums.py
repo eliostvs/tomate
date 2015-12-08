@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 import unittest
-from tomate.enums import Base
+from tomate.constant import Base
 
 
 class BaseTest(unittest.TestCase):

@@ -5,8 +5,8 @@ import unittest
 import six
 from blinker import Namespace
 from mock import Mock
-from tomate.enums import State
-from tomate.events import Events, on, EventsModule, Subscriber, SubscriberMeta, Dispatcher
+from tomate.constant import State
+from tomate.event import Events, on, EventsModule, Subscriber, SubscriberMeta, Dispatcher
 from wiring import Graph, InstanceProvider
 
 

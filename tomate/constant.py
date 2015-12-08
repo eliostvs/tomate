@@ -21,7 +21,7 @@ class Task(Base):
 
 class State(Base):
     stopped = 0
-    running = 1
+    started = 1
     finished = 3
     changed = 4
     showing = 5

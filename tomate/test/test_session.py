@@ -4,7 +4,7 @@ import unittest
 
 import six
 from mock import Mock
-from tomate.enums import State, Task
+from tomate.constant import State, Task
 from tomate.session import Session, SessionModule
 from wiring import FactoryProvider, Graph, SingletonScope
 
@@ -17,7 +17,7 @@ class SessionTest(unittest.TestCase):
                                events=Mock())
 
     def test_should_no_be_able_to_start_when_state_is_not_valid(self):
-        self.session.state = State.running
+        self.session.state = State.started
 
         self.assertFalse(self.session.start())
 
@@ -26,7 +26,7 @@ class SessionTest(unittest.TestCase):
             self.session.state = state
 
             self.assertTrue(self.session.start())
-            self.assertEqual(State.running, self.session.state)
+            self.assertEqual(State.started, self.session.state)
 
     def test_shoud_not_be_able_to_stop_when_state_is_not_valid(self):
         self.session.state = State.stopped
@@ -40,14 +40,14 @@ class SessionTest(unittest.TestCase):
         self.assertFalse(self.session.stop())
 
     def test_should_be_able_to_stop_when_state_is_valid(self):
-        self.session.state = State.running
-        self.session.timer.state = State.running
+        self.session.state = State.started
+        self.session.timer.state = State.started
 
         self.assertTrue(self.session.stop())
         self.assertEqual(State.stopped, self.session.state)
 
     def test_should_no_be_able_to_reset_when_state_is_not_valid(self):
-        self.session.state = State.running
+        self.session.state = State.started
 
         self.assertFalse(self.session.reset())
 
@@ -65,20 +65,20 @@ class SessionTest(unittest.TestCase):
         self.assertFalse(self.session.end())
 
     def test_should_not_be_able_to_end_when_the_state_is_valid_and_timer_is_running(self):
-        self.session.state = State.running
-        self.session.timer.state = State.running
+        self.session.state = State.started
+        self.session.timer.state = State.started
 
         self.assertFalse(self.session.end())
 
     def test_should_be_able_to_end_when_state_is_valid_and_timer_is_not_running(self):
-        self.session.state = State.running
+        self.session.state = State.started
         self.session.timer.state = State.stopped
 
         self.assertTrue(self.session.end())
         self.assertEqual(State.finished, self.session.state)
 
     def test_shoud_not_be_able_to_change_task_when_state_is_not_valid(self):
-        self.session.state = State.running
+        self.session.state = State.started
 
         self.assertFalse(self.session.change_task(task=None))
 
@@ -93,7 +93,7 @@ class SessionTest(unittest.TestCase):
     def test_should_change_task_to_short_break(self):
         self.session.timer.state = State.stopped
         self.session.task = Task.pomodoro
-        self.session.state = State.running
+        self.session.state = State.started
         self.session.count = 0
         self.session.config.get_int.return_value = 4
 
@@ -105,14 +105,14 @@ class SessionTest(unittest.TestCase):
         for task in (Task.longbreak, Task.shortbreak):
             self.session.task = task
             self.session.timer.state = State.stopped
-            self.session.state = State.running
+            self.session.state = State.started
 
             self.session.end()
 
             self.assertEqual(Task.pomodoro, self.session.task)
 
     def test_should_change_task_to_long_break(self):
-        self.session.state = State.running
+        self.session.state = State.started
         self.session.task = Task.pomodoro
         self.session.count = 3
         self.session.config.get_int.return_value = 4
@@ -123,12 +123,12 @@ class SessionTest(unittest.TestCase):
     def test_session_status(self):
         self.session.count = 2
         self.session.task = Task.shortbreak
-        self.session.state = State.running
+        self.session.state = State.started
         self.session.config.get_int.return_value = 5
 
         expected = dict(task=Task.shortbreak,
                         sessions=2,
-                        state=State.running,
+                        state=State.started,
                         time_left=5 * 60)
 
         self.assertEqual(expected, self.session.status())
@@ -142,15 +142,15 @@ class SessionTest(unittest.TestCase):
     def test_should_trigger_start_event_when_session_start(self):
         self.session.start()
 
-        self.session.event.send.assert_called_once_with(State.running,
+        self.session.event.send.assert_called_once_with(State.started,
                                                         task=Task.pomodoro,
                                                         sessions=0,
-                                                        state=State.running,
+                                                        state=State.started,
                                                         time_left=1500)
 
     def test_should_trigger_stop_event_when_session_stop(self):
-        self.session.state = State.running
-        self.session.timer.state = State.running
+        self.session.state = State.started
+        self.session.timer.state = State.started
         self.session.stop()
 
         self.session.event.send.assert_called_with(State.stopped,
@@ -170,7 +170,7 @@ class SessionTest(unittest.TestCase):
                                                    time_left=1500)
 
     def test_should_trigger_finished_event(self):
-        self.session.state = State.running
+        self.session.state = State.started
         self.session.timer.State = State.stopped
         self.session.config.get_int.return_value = 5
         self.session.end()

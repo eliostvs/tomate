@@ -3,8 +3,8 @@ from __future__ import division, unicode_literals
 from gi.repository import GObject
 from wiring import inject, Module, SingletonScope
 
-from .enums import State
-from .events import EventState
+from .constant import State
+from .event import EventState
 from .utils import fsm
 
 # Borrowed from Tomatoro create by Pierre Quillery.
@@ -19,7 +19,7 @@ class Timer(object):
         self.event = events.Timer
         self.reset()
 
-    @fsm(target=State.running,
+    @fsm(target=State.started,
          source=[State.finished, State.stopped])
     def start(self, seconds):
         self.__seconds = self.time_left = seconds
@@ -29,7 +29,7 @@ class Timer(object):
         return True
 
     def update(self):
-        if self.state != State.running:
+        if self.state != State.started:
             return False
 
         if self.time_left <= 0:
@@ -42,7 +42,7 @@ class Timer(object):
         return True
 
     @fsm(target=State.stopped,
-         source=[State.running])
+         source=[State.started])
     def stop(self):
         self.reset()
 
@@ -52,7 +52,7 @@ class Timer(object):
         return self.time_left <= 0
 
     @fsm(target=State.finished,
-         source=[State.running],
+         source=[State.started],
          conditions=[timer_is_up])
     def end(self):
         self.reset()

@@ -4,7 +4,7 @@ import unittest
 
 import six
 from mock import Mock
-from tomate.enums import State
+from tomate.constant import State
 from tomate.graph import graph
 from tomate.timer import Timer, TimerModule
 from wiring import FactoryProvider, SingletonScope
@@ -24,13 +24,13 @@ class TimerTest(unittest.TestCase):
         self.assertFalse(self.timer.stop())
 
     def test_should_be_able_to_stop(self):
-        self.timer.state = State.running
+        self.timer.state = State.started
 
         self.assertTrue(self.timer.stop())
         self.assertEqual(State.stopped, self.timer.state)
 
     def test_not_be_able_to_start(self):
-        self.timer.state = State.running
+        self.timer.state = State.started
         self.assertFalse(self.timer.start(1))
 
     def test_should_be_able_to_start(self):
