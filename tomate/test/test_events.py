@@ -7,12 +7,17 @@ from mock import Mock
 from wiring import Graph, InstanceProvider
 
 from tomate.enums import State
-from tomate.events import Events, on, Subscriber, EventsModule, SubscriberMeta, Dispatcher
+from tomate.events import Events, on, EventsModule, Subscriber, SubscriberMeta, Dispatcher
 
 
 class Foo(object):
     @on(Events.Timer, State.finished)
     def func(self, sender):
+        return sender
+
+    @on(Events.Timer, State.changed)
+    @on(Events.Timer, State.finished)
+    def spam(self, sender):
         return sender
 
 
@@ -22,28 +27,36 @@ class Base(unittest.TestCase):
 
 
 class DecoratorOnTest(Base):
-    def test_should_return_bind_event_in_method(self):
-        self.assertEqual(self.foo.func._bind, (Events.Timer, State.finished))
+    def test_should_return_bind_events_in_method(self):
+        self.assertListEqual(self.foo.func._bind, [(Events.Timer, State.finished)])
+
+        self.assertListEqual(self.foo.spam._bind,
+                             [(Events.Timer, State.finished), (Events.Timer, State.changed)])
 
 
 class SubscriberMetaTest(Base):
     def test_should_return_bind_methods(self):
         meta = SubscriberMeta(str('name'), (object,), {})
-        self.assertEqual([self.foo.func], meta._SubscriberMeta__get_binds(self.foo))
+
+        expected = [self.foo.func, self.foo.spam]
+        self.assertEqual(expected, meta._SubscriberMeta__get_binds_methods(self.foo))
 
 
 class SubscriberTest(unittest.TestCase):
     def test_should_connect_method_on_given_event(self):
-        Event = Mock()
+        Session = Mock()
+        Timer = Mock()
 
-        class Foo(Subscriber):
-            @on(Event, State.finished)
-            def func(self, sender):
+        class Baz(Subscriber):
+            @on(Timer, State.changed)
+            @on(Session, State.finished)
+            def bar(self, sender):
                 return sender
 
-        foo = Foo()
+        baz = Baz()
 
-        Event.connect.assert_called_once_with(foo.func, sender=State.finished, weak=False)
+        Session.connect.assert_called_with(baz.bar, sender=State.finished, weak=False)
+        Timer.connect.assert_called_with(baz.bar, sender=State.changed, weak=False)
 
 
 class TestDispatcher(unittest.TestCase):

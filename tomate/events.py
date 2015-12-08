@@ -16,7 +16,6 @@ class Dispatcher(Namespace):
         return self[attr]
 
 
-
 Events = Dispatcher()
 Session = Events.signal('Session')
 Timer = Events.signal('Timer')
@@ -24,17 +23,37 @@ Setting = Events.signal('Setting')
 View = Events.signal('View')
 
 
+def on(event, sender):
+    def wrapper(func):
+        if hasattr(func, '_is_bind'):
+            func._bind.append((event, sender))
+        else:
+            func._is_bind = True
+            func._bind = [(event, sender)]
+
+        @functools.wraps(func)
+        def wrapped(*args, **kwargs):
+            return func(*args, **kwargs)
+        return wrapped
+    return wrapper
+
+
 class SubscriberMeta(type):
     def __call__(cls, *args, **kwargs):
         obj = type.__call__(cls, *args, **kwargs)
 
-        for method in cls.__get_binds(obj):
-            (event, sender) = method._bind
-            event.connect(method, sender=sender, weak=False)
+        cls.__connect_events(obj)
 
         return obj
 
-    def __get_binds(self, obj):
+    def __connect_events(cls, obj):
+        for method in cls.__get_binds_methods(obj):
+            for (event, sender) in method._bind:
+                logger.debug('Connecting {event} to method {method} with sender {sender}'
+                             .format(**locals()))
+                event.connect(method, sender=sender, weak=False)
+
+    def __get_binds_methods(cls, obj):
         binds = [getattr(obj, attr)
                  for attr in dir(obj)
                  if getattr(getattr(obj, attr), '_is_bind', False) is True]
@@ -43,18 +62,6 @@ class SubscriberMeta(type):
 
 class Subscriber(six.with_metaclass(SubscriberMeta, object)):
     pass
-
-
-def on(event, sender):
-    def wrapper(func):
-        func._is_bind = True
-        func._bind = (event, sender)
-
-        @functools.wraps(func)
-        def wrapped(*args, **kwargs):
-            return func(*args, **kwargs)
-        return wrapped
-    return wrapper
 
 
 class EventState(object):
