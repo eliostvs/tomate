@@ -39,26 +39,36 @@ def on(event, senders):
     return wrapper
 
 
+def methods_with_events(obj):
+    binds = [getattr(obj, attr)
+             for attr in dir(obj)
+             if getattr(getattr(obj, attr), '_has_event', False) is True]
+    return binds
+
+
+def connect_events(obj):
+    for method in methods_with_events(obj):
+        for (event, sender) in method._events:
+            logger.debug('Connecting {event} to method {method} with sender {sender}'
+                         .format(**locals()))
+            event.connect(method, sender=sender, weak=False)
+
+
+def disconnect_events(obj):
+    for method in methods_with_events(obj):
+        for (event, sender) in method._events:
+            logger.debug('Disconnecting {event} to method {method} with sender {sender}'
+                         .format(**locals()))
+            event.disconnect(method, sender=sender)
+
+
 class SubscriberMeta(type):
     def __call__(cls, *args, **kwargs):
         obj = type.__call__(cls, *args, **kwargs)
 
-        cls.__connect_events(obj)
+        connect_events(obj)
 
         return obj
-
-    def __connect_events(cls, obj):
-        for method in cls.__get_methods_with_events(obj):
-            for (event, sender) in method._events:
-                logger.debug('Connecting {event} to method {method} with sender {sender}'
-                             .format(**locals()))
-                event.connect(method, sender=sender, weak=False)
-
-    def __get_methods_with_events(cls, obj):
-        binds = [getattr(obj, attr)
-                 for attr in dir(obj)
-                 if getattr(getattr(obj, attr), '_has_event', False) is True]
-        return binds
 
 
 class Subscriber(six.with_metaclass(SubscriberMeta, object)):
@@ -88,7 +98,7 @@ class EventState(object):
         self.callback(instance, event)
 
 
-class EventsModule(Module):
+class EventModule(Module):
 
     instances = {
         'tomate.events': Events

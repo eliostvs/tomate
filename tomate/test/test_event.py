@@ -5,43 +5,51 @@ import unittest
 import six
 from blinker import Namespace
 from mock import Mock
-from tomate.constant import State
-from tomate.event import Events, on, EventsModule, Subscriber, SubscriberMeta, Dispatcher
 from wiring import Graph, InstanceProvider
 
-
-class Foo(object):
-    @on(Events.Timer, [State.finished])
-    def func(self, sender):
-        return sender
-
-    @on(Events.Timer, [State.finished, State.changed])
-    def spam(self, sender):
-        return sender
+from tomate.constant import State
+from tomate.event import (on, EventModule, Subscriber, SubscriberMeta, Dispatcher,
+                          methods_with_events, disconnect_events)
 
 
 class Base(unittest.TestCase):
     def setUp(self):
+        Session = Mock()
+        Timer = Mock()
+
+        class Foo(object):
+            @on(Session, [State.finished])
+            def bar(self, sender):
+                return sender
+
+            @on(Timer, [State.finished, State.changed])
+            def spam(self, sender):
+                return sender
+
         self.foo = Foo()
+        self.timer_event = Timer
+        self.session_event = Session
 
 
 class DecoratorOnTest(Base):
-    def test_should_return_events_bind_with_the_method(self):
-        self.assertListEqual(self.foo.func._events, [(Events.Timer, State.finished)])
+    def test_should_return_events_and_states_bind_with_the_method(self):
+        self.assertListEqual(self.foo.bar._events, [(self.session_event, State.finished)])
 
         self.assertListEqual(self.foo.spam._events,
-                             [(Events.Timer, State.finished), (Events.Timer, State.changed)])
+                             [(self.timer_event, State.finished), (self.timer_event, State.changed)])
 
 
 class SubscriberMetaTest(Base):
     def test_should_return_methods_that_has_events(self):
         meta = SubscriberMeta(str('name'), (object,), {})
 
-        expected = [self.foo.func, self.foo.spam]
-        self.assertEqual(expected, meta._SubscriberMeta__get_methods_with_events(self.foo))
+        expected = [self.foo.bar, self.foo.spam]
+
+        self.assertEqual(expected, methods_with_events(self.foo))
 
 
-class SubscriberTest(unittest.TestCase):
+class SubscriberTest(Base):
+
     def test_should_connect_event_with_the_method(self):
         Session = Mock()
         Timer = Mock()
@@ -56,6 +64,17 @@ class SubscriberTest(unittest.TestCase):
 
         Session.connect.assert_called_with(baz.bar, sender=State.finished, weak=False)
         Timer.connect.assert_called_with(baz.bar, sender=State.changed, weak=False)
+
+
+class TestDisconnectFunction(Base):
+
+    def test_should_disconnect_bind_events(self):
+        disconnect_events(self.foo)
+
+        self.session_event.disconnect.assert_called_with(self.foo.bar, sender=State.finished)
+
+        self.timer_event.disconnect.assert_any_call(self.foo.spam, sender=State.changed)
+        self.timer_event.disconnect.assert_any_call(self.foo.spam, sender=State.finished)
 
 
 class TestDispatcher(unittest.TestCase):
@@ -76,9 +95,9 @@ class EventsModuleTest(unittest.TestCase):
     def test_module(self):
         graph = Graph()
 
-        six.assertCountEqual(self, ['tomate.events'], EventsModule.providers.keys())
+        six.assertCountEqual(self, ['tomate.events'], EventModule.providers.keys())
 
-        EventsModule().add_to(graph)
+        EventModule().add_to(graph)
 
         provider = graph.providers['tomate.events']
 
