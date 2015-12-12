@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 import dbus.service
-from wiring import inject
+from wiring import inject, SingletonScope, Module
 
 from .constant import State
 
@@ -62,3 +62,9 @@ class Application(dbus.service.Object):
             instance = dbus.Interface(bus_object, cls.bus_interface_name)
 
         return instance
+
+
+class ApplicationModule(Module):
+    factories = {
+        'tomate.app': (Application, SingletonScope)
+    }
