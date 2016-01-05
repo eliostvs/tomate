@@ -3,7 +3,7 @@ AUTHOR = eliostvs
 PROJECT_ROOT = $(CURDIR)
 PACKAGE_ROOT = $(PROJECT_ROOT)/$(PROJECT)
 DOCKER_IMAGE_NAME= $(AUTHOR)/$(PROJECT)
-VERBOSITY=1
+VERBOSITY = 1
 
 clean:
 	find . \( -iname "*.pyc" -o -iname "__pycache__" \) -print0 | xargs -0 rm -rf

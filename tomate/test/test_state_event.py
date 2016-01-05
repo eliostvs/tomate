@@ -10,7 +10,7 @@ from tomate.event import EventState
 class Foo(object):
     function = Mock()
 
-    state = EventState('a', function, event_type='spam')
+    state = EventState('a', function, event='spam')
     other_state = EventState('b', function, '_hide')
 
 

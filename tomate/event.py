@@ -40,10 +40,10 @@ def on(event, senders):
 
 
 def methods_with_events(obj):
-    binds = [getattr(obj, attr)
-             for attr in dir(obj)
-             if getattr(getattr(obj, attr), '_has_event', False) is True]
-    return binds
+    methods = [getattr(obj, attr)
+               for attr in dir(obj)
+               if getattr(getattr(obj, attr), '_has_event', False) is True]
+    return methods
 
 
 def connect_events(obj):
@@ -77,24 +77,24 @@ class Subscriber(six.with_metaclass(SubscriberMeta, object)):
 
 class EventState(object):
 
-    def __init__(self, initial, callback, attr='_state', event_type=None):
+    def __init__(self, initial, callback, attr='_state', event=None):
         self.initial = initial
         self.callback = callback
-        self.state_attr = attr
-        self.event_type = event_type
+        self.attr = attr
+        self.event = event
 
     def __get__(self, instance, owner):
-        if instance is None or not hasattr(instance, self.state_attr):
+        if instance is None or not hasattr(instance, self.attr):
             value = self.initial
 
         else:
-            value = getattr(instance, self.state_attr)
+            value = getattr(instance, self.attr)
 
         return value
 
     def __set__(self, instance, value):
-        setattr(instance, self.state_attr, value)
-        event = value if self.event_type is None else self.event_type
+        setattr(instance, self.attr, value)
+        event = value if self.event is None else self.event
         self.callback(instance, event)
 
 

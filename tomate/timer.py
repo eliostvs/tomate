@@ -69,15 +69,15 @@ class Timer(object):
 
         return ratio
 
-    def trigger(self, event_type):
-        self.event.send(event_type,
+    def trigger(self, event):
+        self.event.send(event,
                         time_left=self.time_left,
                         time_ratio=self.time_ratio)
 
     def reset(self):
         self.__seconds = self.time_left = 0
 
-    state = EventState(State.stopped, trigger)
+    state = EventState(initial=State.stopped, callback=trigger)
 
 
 class TimerModule(Module):

@@ -38,7 +38,7 @@ class Session(Subscriber):
 
     @fsm(target=State.stopped,
          source=[State.stopped, State.finished],
-         exit=lambda i: i.trigger(State.reset))
+         exit=lambda self: self.trigger(State.reset))
     def reset(self):
         self.count = 0
 
@@ -83,12 +83,20 @@ class Session(Subscriber):
                     state=self.state,
                     time_left=self.duration)
 
-    def trigger(self, event_type):
-        self.event.send(event_type, **self.status())
+    def trigger(self, event):
+        self.event.send(event, **self.status())
 
-    state = EventState(State.stopped, trigger)
-    count = EventState(0, trigger, attr='_count', event_type=State.changed)
-    task = EventState(Task.pomodoro, trigger, attr='_task', event_type=State.changed)
+    state = EventState(initial=State.stopped, callback=trigger)
+
+    count = EventState(initial=0,
+                       callback=trigger,
+                       attr='_count',
+                       event=State.changed)
+
+    task = EventState(initial=Task.pomodoro,
+                      callback=trigger,
+                      attr='_task',
+                      event=State.changed)
 
 
 class SessionModule(Module):
