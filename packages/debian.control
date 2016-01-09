@@ -1,10 +1,11 @@
 Source: python-tomate
 Section: python
 Priority: optional
-Build-Depends: debhelper (>= 8), python-all, python-setuptools
+Build-Depends: debhelper (>= 8), python-all, python-setuptools, python3-all, python3-setuptools
 Maintainer: Elio Esteves Duarte <elio.esteves.duarte@gmail.com>
 Standards-Version: 3.9.5
 X-Python-Version: >= 2.7
+X-Python-Version: >= 3.2
 Homepage: https://github.com/eliostvs/tomate
 
 Package: python-tomate
@@ -21,4 +22,24 @@ Depends: ${misc:Depends},
  python-wrapt,
  python-xdg,
  python-yapsy
-Description: A pomodoro timer. Core classes.
+Description: A pomodoro timer. Core classes
+.
+This package installs the library for Python 2.
+
+Package: python3-tomate
+Architecture: all
+Depends: ${misc:Depends},
+ ${python3:Depends},
+ gir1.2-glib-2.0,
+ python-blinker,
+ python-dbus,
+ python-enum34,
+ python-gi,
+ python-six,
+ python-wiring,
+ python-wrapt,
+ python-xdg,
+ python-yapsy
+Description: A pomodoro timer. Core classes
+.
+This package installs the library for Python 3.

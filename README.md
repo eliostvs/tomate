@@ -8,7 +8,7 @@ A pomodoro timer written in Python. This project has only the core classes.
 Bugs and Suggetions
 -------------------
 
-Bugs and suggestions should be reported [here][2].
+Bugs and suggestions should be reported [here][3].
 
 
 Changelog
