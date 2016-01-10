@@ -22,9 +22,8 @@ Depends: ${misc:Depends},
  python-wrapt,
  python-xdg,
  python-yapsy
-Description: A pomodoro timer. Core classes
-.
-This package installs the library for Python 2.
+ Description: A pomodoro timer. Core classes.
+  This package installs the library for Python 2.
 
 Package: python3-tomate
 Architecture: all
@@ -41,5 +40,4 @@ Depends: ${misc:Depends},
  python-xdg,
  python-yapsy
 Description: A pomodoro timer. Core classes
-.
-This package installs the library for Python 3.
+ This package installs the library for Python 3.
