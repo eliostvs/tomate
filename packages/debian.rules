@@ -1,8 +1,8 @@
 #!/usr/bin/make -f
-DPKG_EXPORT_BUILDFLAGS = 1
-include /usr/share/dpkg/default.mk
-
-%:
-	dh $@ --with python2 --buildsystem=pybuild
+export PYBUILD_NAME = foo
+export PYBUILD_VERSIONS=2.7 3.3
 
 override_dh_auto_test:
+
+%:
+	dh $@ --with python2,python3 --buildsystem pybuild
