@@ -1,7 +1,12 @@
 Source: python-tomate
 Section: python
 Priority: optional
-Build-Depends: debhelper (>= 8), python-all, python-setuptools, python3-all, python3-setuptools
+Build-Depends: debhelper (>= 9),
+ dh-python,
+ python-all,
+ python-setuptools,
+ python3-all,
+ python3-setuptools
 Maintainer: Elio Esteves Duarte <elio.esteves.duarte@gmail.com>
 Standards-Version: 3.9.5
 X-Python-Version: >= 2.7
@@ -30,6 +35,7 @@ Architecture: all
 Depends: ${misc:Depends},
  ${python3:Depends},
  gir1.2-glib-2.0,
+ python-blinker,
  python3-dbus,
  python3-gi,
  python3-six,
