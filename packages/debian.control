@@ -30,7 +30,6 @@ Architecture: all
 Depends: ${misc:Depends},
  ${python3:Depends},
  gir1.2-glib-2.0,
- python-blinker,
  python3-dbus,
  python3-gi,
  python3-six,
