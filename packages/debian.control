@@ -16,7 +16,7 @@ Homepage: https://github.com/eliostvs/tomate
 Package: python-tomate
 Architecture: all
 Depends: ${misc:Depends},
- ${python:Depends},
+ python-all ( >= 2.7),
  gir1.2-glib-2.0,
  python-blinker,
  python-dbus,
@@ -27,13 +27,13 @@ Depends: ${misc:Depends},
  python-wrapt,
  python-xdg,
  python-yapsy
- Description: A pomodoro timer. Core classes.
+Description: A pomodoro timer. Core classes.
   This package installs the library for Python 2.
 
 Package: python3-tomate
 Architecture: all
 Depends: ${misc:Depends},
- ${python3:Depends},
+ python-all ( >= 3.2),
  gir1.2-glib-2.0,
  python-blinker,
  python3-dbus,
