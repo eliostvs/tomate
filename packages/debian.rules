@@ -1,7 +1,5 @@
 #!/usr/bin/make -f
-export PYBUILD_NAME=tomate
-
 %:
-	dh $@ --with python2,python3 --buildsystem=pybuild
+	dh $@ --with python2,python3
 
 override_dh_auto_test:
