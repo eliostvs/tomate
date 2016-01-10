@@ -31,13 +31,12 @@ Depends: ${misc:Depends},
  ${python3:Depends},
  gir1.2-glib-2.0,
  python-blinker,
- python-dbus,
- python-enum34,
- python-gi,
- python-six,
- python-wiring,
- python-wrapt,
- python-xdg,
- python-yapsy
+ python3-dbus,
+ python3-gi,
+ python3-six,
+ python3-wiring,
+ python3-wrapt,
+ python3-xdg,
+ python3-yapsy
 Description: A pomodoro timer. Core classes
  This package installs the library for Python 3.
