@@ -24,8 +24,8 @@ class SessionComponent(unittest.TestCase):
     def test_should_change_state_to_finished(self):
         self.session.start()
 
-        self.timer.update()
-        self.timer.update()
+        self.timer._update()
+        self.timer._update()
 
         self.assertEqual(State.finished, self.session.state)
 

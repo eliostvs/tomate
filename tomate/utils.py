@@ -18,8 +18,8 @@ def suppress_errors(wrapped, instance, args, kwargs):
         return wrapped(*args, **kwargs)
 
     except Exception as e:
-        logger = logging.getLogger(__name__)
-        logger.error(e, exc_info=True)
+        log = logging.getLogger(__name__)
+        log.error(e, exc_info=True)
 
     return None
 

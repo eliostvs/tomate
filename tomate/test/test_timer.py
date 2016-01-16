@@ -53,40 +53,40 @@ class TimerTest(unittest.TestCase):
 
         self.timer.start(10)
 
-        self.timer.update()
-        self.timer.update()
-        self.timer.update()
+        self.timer._update()
+        self.timer._update()
+        self.timer._update()
 
         self.assertEqual(0.3, self.timer.time_ratio)
 
     def test_should_decrease_the_time_left_after_update(self):
-        self.assertFalse(False, self.timer.update())
+        self.assertFalse(False, self.timer._update())
 
         self.timer.start(2)
 
-        self.assertTrue(self.timer.update())
+        self.assertTrue(self.timer._update())
         self.assertEqual(1, self.timer.time_left)
 
     def test_should_finished_when_the_time_ends(self):
         self.timer.start(1)
 
-        self.timer.update()
-        self.timer.update()
+        self.timer._update()
+        self.timer._update()
 
         self.assertEqual(State.finished, self.timer.state)
 
     def test_should_trigger_finished_event(self):
         self.timer.start(1)
 
-        self.timer.update()
-        self.timer.update()
+        self.timer._update()
+        self.timer._update()
 
         self.timer.event.send.assert_called_with(State.finished, time_left=0, time_ratio=0)
 
     def test_should_trigger_changed_event(self):
         self.timer.start(10)
 
-        self.timer.update()
+        self.timer._update()
 
         self.timer.event.send.assert_called_with(State.changed, time_left=9, time_ratio=0.1)
 

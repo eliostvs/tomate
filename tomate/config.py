@@ -90,7 +90,6 @@ class Config(object):
 
         if not self.parser.has_option(section, option):
             value = self.parser.get(section, option)
-
             self.parser.set(section, option, value)
 
         return getattr(self.parser, method)(section, option)

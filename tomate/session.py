@@ -38,7 +38,7 @@ class Session(Subscriber):
 
     @fsm(target=State.stopped,
          source=[State.stopped, State.finished],
-         exit=lambda self: self.trigger(State.reset))
+         exit=lambda self: self._trigger(State.reset))
     def reset(self):
         self.count = 0
 
@@ -49,14 +49,11 @@ class Session(Subscriber):
          conditions=[timer_is_not_running])
     @on(Events.Timer, [State.finished])
     def end(self, sender=None, **kwargs):
-        if self.task == Task.pomodoro:
+        if self.current_task_is(Task.pomodoro):
             self.count += 1
-
-            if self.count % self.config.get_int('Timer', 'Long Break Interval'):
-                self.task = Task.shortbreak
-
-            else:
-                self.task = Task.longbreak
+            self.task = (Task.longbreak
+                         if self._is_time_to_long_break
+                         else Task.shortbreak)
 
         else:
             self.task = Task.pomodoro
@@ -83,18 +80,25 @@ class Session(Subscriber):
                     state=self.state,
                     time_left=self.duration)
 
-    def trigger(self, event):
-        self.event.send(event, **self.status())
+    def current_task_is(self, task_type):
+        return self.task == task_type
 
-    state = EventState(initial=State.stopped, callback=trigger)
+    def _trigger(self, event_type):
+        self.event.send(event_type, **self.status())
+
+    @property
+    def _is_time_to_long_break(self):
+        return not self.count % self.config.get_int('Timer', 'Long Break Interval')
+
+    state = EventState(initial=State.stopped, callback=_trigger)
 
     count = EventState(initial=0,
-                       callback=trigger,
+                       callback=_trigger,
                        attr='_count',
                        event=State.changed)
 
     task = EventState(initial=Task.pomodoro,
-                      callback=trigger,
+                      callback=_trigger,
                       attr='_task',
                       event=State.changed)
 
