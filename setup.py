@@ -12,8 +12,8 @@ setup(
     license='GPL-3',
     long_description=open('README.md').read(),
     name='tomate',
-    packages=find_packages(exclude=['*tests']),
+    packages=find_packages(exclude=['*test']),
     url='https://github.com/eliostvs/tomate',
-    version='0.3.0',
+    version='0.4.0',
     zip_safe=False,
 )

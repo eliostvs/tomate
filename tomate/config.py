@@ -3,8 +3,7 @@ from __future__ import unicode_literals
 import logging
 import os
 
-from wiring import (implements, inject, Interface, Module, provides, scope,
-                    SingletonScope)
+from wiring import inject, Module, provides, scope, SingletonScope
 from xdg import BaseDirectory, IconTheme
 
 logger = logging.getLogger(__name__)
@@ -17,55 +16,14 @@ DEFAULTS = {
 }
 
 
-class IConfig(Interface):
-    app_name = ''
-
-    def get_config_path():
-        pass
-
-    def get_resource_paths(*resources):
-        pass
-
-    def get_resource_path(*resources):
-        pass
-
-    def get_plugin_paths():
-        pass
-
-    def get_icon_paths():
-        pass
-
-    def get_icon_path(iconname, size=None, theme=None):
-        pass
-
-    def get_media_uri(*resources):
-        pass
-
-    def get(section, option):
-        pass
-
-    def get_int(section, option):
-        pass
-
-    def set(section, option, value):
-        pass
-
-    def load():
-        pass
-
-    def save():
-        pass
-
-
-@implements(IConfig)
 class Config(object):
 
     app_name = 'tomate'
 
-    @inject(parser='config.parser', signals='tomate.signals')
-    def __init__(self, parser, signals):
+    @inject(parser='config.parser', events='tomate.events')
+    def __init__(self, parser, events):
         self.parser = parser
-        self.signals = signals
+        self.event = events.Setting
 
         self.load()
 
@@ -102,10 +60,12 @@ class Config(object):
 
         raise EnvironmentError('resource with path %s not found!' % os.path.join(*resources))
 
-    def get_resource_paths(self, *resources):
+    @staticmethod
+    def get_resource_paths(*resources):
         return [p for p in BaseDirectory.load_data_paths(*resources)]
 
-    def get_icon_path(self, iconname, size=None, theme=None):
+    @staticmethod
+    def get_icon_path(iconname, size=None, theme=None):
         iconpath = IconTheme.getIconPath(iconname, size, theme, extensions=['png', 'svg', 'xpm'])
 
         if iconpath is not None:
@@ -128,7 +88,6 @@ class Config(object):
 
         if not self.parser.has_option(section, option):
             value = self.parser.get(section, option)
-
             self.parser.set(section, option, value)
 
         return getattr(self.parser, method)(section, option)
@@ -146,17 +105,17 @@ class Config(object):
 
         self.save()
 
-        self.signals.emit('setting_changed',
-                          section=section,
-                          option=option,
-                          value=value)
+        self.event.send(section,
+                        section=section,
+                        option=option,
+                        value=value)
 
     @staticmethod
     def normalize(name):
         return name.replace(' ', '_').lower()
 
 
-class ConfigProvider(Module):
+class ConfigModule(Module):
 
     factories = {
         'tomate.config': (Config, SingletonScope)
@@ -165,6 +124,6 @@ class ConfigProvider(Module):
     @provides('config.parser')
     @scope(SingletonScope)
     def provide_parser(self):
-        from ConfigParser import SafeConfigParser
+        from six.moves import configparser
 
-        return SafeConfigParser(DEFAULTS)
+        return configparser.SafeConfigParser(DEFAULTS)

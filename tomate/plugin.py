@@ -3,25 +3,24 @@ from __future__ import unicode_literals
 from wiring import Module, provides, scope, SingletonScope
 from yapsy.IPlugin import IPlugin
 
-from .signals import Subscriber
+from .event import connect_events, disconnect_events
 
 
-class Plugin(Subscriber, IPlugin):
-
+class Plugin(IPlugin):
     def activate(self):
         super(Plugin, self).activate()
-        self.connect()
+        connect_events(self)
 
     def deactivate(self):
         super(Plugin, self).deactivate()
-        self.disconnect()
+        disconnect_events(self)
 
 
-class PluginProvider(Module):
+class PluginModule(Module):
 
     @provides('tomate.plugin')
     @scope(SingletonScope)
-    def create_plugin_manager(self):
+    def provide_plugin_manager(self):
         from yapsy.ConfigurablePluginManager import ConfigurablePluginManager
         from yapsy.PluginManager import PluginManagerSingleton
         from yapsy.VersionedPluginManager import VersionedPluginManager

@@ -18,8 +18,8 @@ def suppress_errors(wrapped, instance, args, kwargs):
         return wrapped(*args, **kwargs)
 
     except Exception as e:
-        logger = logging.getLogger(__name__)
-        logger.error(e, exc_info=True)
+        log = logging.getLogger(__name__)
+        log.error(e, exc_info=True)
 
     return None
 
@@ -50,7 +50,8 @@ class fsm(object):
         logger.debug('Changing %s %s to %s',
                      instance.__class__.__name__, self.attr, self.target)
 
-        setattr(instance, self.attr, self.target)
+        if getattr(instance, self.attr, None) != self.target:
+            setattr(instance, self.attr, self.target)
 
     def call_exit_action(self, instance):
         if self.exit_action is not None:
@@ -58,8 +59,7 @@ class fsm(object):
 
     @wrapt.decorator
     def __call__(self, wrapped, instance, args, kwargs):
-        logger.debug('Calling %s.%s',
-                     instance.__class__.__name__, wrapped.im_func.__name__)
+        logger.debug('Calling %s.%s', instance.__class__.__name__, wrapped)
 
         if self.valid_transition(instance) and self.valid_conditions(instance):
             result = wrapped(*args, **kwargs)
@@ -72,4 +72,4 @@ class fsm(object):
 
         logger.debug('Invalid conditions!')
 
-        return None
+        return False

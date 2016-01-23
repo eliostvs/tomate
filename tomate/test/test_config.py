@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import os
 import unittest
 
+import six
 from mock import Mock, mock_open, patch
 from wiring import FactoryProvider, Graph, SingletonScope
 
@@ -10,15 +11,6 @@ BaseDirectory_attrs = {
     'xdg_config_home': '/home/mock/.config',
     'load_data_paths.side_effect': lambda *args: [os.path.join('/usr/mock/', *args)],
 }
-
-
-class TestConfigInterface(unittest.TestCase):
-
-    def test_interface(self):
-        from tomate.config import IConfig, Config
-
-        config = Config(Mock(), Mock())
-        IConfig.check_compliance(config)
 
 
 @patch('tomate.config.BaseDirectory', spec_set=True, **BaseDirectory_attrs)
@@ -121,21 +113,22 @@ class TestConfigSignals(unittest.TestCase):
         with patch('tomate.config.open', self.mo, create=True):
             self.config.set('Timer', 'Pomodoro', 4)
 
-            self.config.signals.emit.assert_called_once_with('setting_changed',
-                                                             section='timer',
-                                                             option='pomodoro',
-                                                             value=4)
+            self.config.event.send.assert_called_once_with('timer',
+                                                           section='timer',
+                                                           option='pomodoro',
+                                                           value=4)
 
 
 class TestConfigModule(unittest.TestCase):
 
     def test_module(self):
-        from tomate.config import Config, ConfigProvider
+        from tomate.config import Config, ConfigModule
 
         graph = Graph()
 
-        self.assertEqual(['tomate.config'], ConfigProvider.providers.keys())
-        ConfigProvider().add_to(graph)
+        six.assertCountEqual(self, ['tomate.config'], ConfigModule.providers.keys())
+
+        ConfigModule().add_to(graph)
 
         self.assertIn('config.parser', graph.providers.keys())
 
@@ -144,7 +137,7 @@ class TestConfigModule(unittest.TestCase):
         self.assertIsInstance(provider, FactoryProvider)
         self.assertEqual(provider.scope, SingletonScope)
         self.assertEqual(provider.dependencies,
-                         dict(parser='config.parser', signals='tomate.signals'))
+                         dict(parser='config.parser', events='tomate.events'))
 
-        graph.register_instance('tomate.signals', Mock())
+        graph.register_instance('tomate.events', Mock())
         self.assertIsInstance(graph.get('tomate.config'), Config)
