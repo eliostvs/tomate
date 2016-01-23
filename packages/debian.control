@@ -16,7 +16,7 @@ Homepage: https://github.com/eliostvs/tomate
 Package: python-tomate
 Architecture: all
 Depends: ${misc:Depends},
- python-all ( >= 2.7),
+ python-all (>= 2.7),
  gir1.2-glib-2.0,
  python-blinker,
  python-dbus,
@@ -33,9 +33,9 @@ Description: A pomodoro timer. Core classes.
 Package: python3-tomate
 Architecture: all
 Depends: ${misc:Depends},
- python-all ( >= 3.2),
+ python-all (>= 3.2),
  gir1.2-glib-2.0,
- python-blinker,
+ python3-blinker,
  python3-dbus,
  python3-gi,
  python3-six,
