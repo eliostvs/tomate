@@ -18,7 +18,7 @@
 %define real_name tomate
 
 Name: python-%{real_name}
-Version: 0.4.0
+Version: 0.4.1
 Release: 0
 License: GPL-3.0+
 Source: %{real_name}-upstream.tar.gz
