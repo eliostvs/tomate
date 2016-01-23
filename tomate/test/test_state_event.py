@@ -47,4 +47,3 @@ class StateTriggerTest(TestCase):
         foo.other_state = 'b'
 
         foo.function.assert_called_with(foo, 'b')
-

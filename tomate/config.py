@@ -6,8 +6,6 @@ import os
 from wiring import inject, Module, provides, scope, SingletonScope
 from xdg import BaseDirectory, IconTheme
 
-from .event import Events
-
 logger = logging.getLogger(__name__)
 
 DEFAULTS = {

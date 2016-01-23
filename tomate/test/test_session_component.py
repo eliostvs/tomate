@@ -8,7 +8,6 @@ from tomate.constant import State
 from tomate.event import Events
 from tomate.session import Session
 from tomate.timer import Timer
-from blinker import ANY
 
 
 class SessionComponent(unittest.TestCase):

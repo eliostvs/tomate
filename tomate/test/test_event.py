@@ -41,7 +41,7 @@ class DecoratorOnTest(Base):
 
 class SubscriberMetaTest(Base):
     def test_should_return_methods_that_has_events(self):
-        meta = SubscriberMeta(str('name'), (object,), {})
+        SubscriberMeta(str('name'), (object,), {})
 
         expected = [self.foo.bar, self.foo.spam]
 
