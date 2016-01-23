@@ -43,5 +43,5 @@ Depends: ${misc:Depends},
  python3-wrapt,
  python3-xdg,
  python3-yapsy
-Description: A pomodoro timer. Core classes
+Description: A pomodoro timer. Core classes.
  This package installs the library for Python 3.
