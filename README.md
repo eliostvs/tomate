@@ -14,9 +14,6 @@ Bugs and suggestions should be reported [here][2].
 Changelog
 ---------
 
-### v0.4.2
-- Fix ubuntu/debian dependency
-
 ### v0.4.0
 
 - Create a new event system.
