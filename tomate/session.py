@@ -63,7 +63,7 @@ class Session(Subscriber):
     @fsm(target=State.stopped,
          source=[State.stopped, State.finished])
     @on(Events.Setting, ['timer'])
-    def change_task(self, *args, **kwargs):
+    def change_task(self, sender=None, **kwargs):
         self.task = kwargs.get('task', self.task)
 
         return True
