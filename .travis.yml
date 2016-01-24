@@ -1,5 +1,4 @@
 sudo: required
-install: true
 
 services:
     - docker
@@ -9,3 +8,8 @@ before_install:
 
 script:
     - make docker-test
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always
