@@ -89,6 +89,9 @@ class TestDispatcher(unittest.TestCase):
     def test_should_return_event_by_attribute(self):
         self.assertEqual(self.new_event, self.dispacther.event)
 
+    def test_should_return_a_empty_list(self):
+        self.assertEqual(self.dispacther.__basses__, [])
+
 
 class EventsModuleTest(unittest.TestCase):
 
