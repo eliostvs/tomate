@@ -14,6 +14,10 @@ Bugs and suggestions should be reported [here][2].
 Changelog
 ---------
 
+### v0.5.0
+
+- Bug fixed
+
 ### v0.4.0
 
 - Create a new event system.
