@@ -14,10 +14,14 @@ Bugs and suggestions should be reported [here][2].
 Changelog
 ---------
 
+### v0.5.0
+
+- Remove linux package metadata
+
 ### v0.4.0
 
-- Create a new event system.
-- Python 2/3 compatible.
+- Create a new event system
+- Python 2/3 compatible
 
 License
 -------

@@ -13,6 +13,9 @@ logger = logging.getLogger(__name__)
 class Dispatcher(Namespace):
 
     def __getattr__(self, attr):
+        if attr == '__bases__':  # Prevent yapsy break when a plugin is imported
+            return []
+
         return self[attr]
 
 
