@@ -16,7 +16,7 @@ Changelog
 
 ### v0.5.0
 
-- Bug fixed
+- Bugs fixed
 
 ### v0.4.0
 
