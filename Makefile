@@ -11,7 +11,7 @@ clean:
 	rm -rf *.egg-info/ .coverage build/
 
 test: clean
-	$(PYTHONPATH) py.test --cov-report term-missing -v
+	$(PYTHONPATH) py.test --cov-report term-missing --cov=$(PACKAGE) -v
 
 docker-clean:
 	docker rmi --force $(DOCKER_IMAGE_NAME) 2> /dev/null || echo Image $(DOCKER_IMAGE_NAME) not found
