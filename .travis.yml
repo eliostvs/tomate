@@ -13,3 +13,6 @@ notifications:
   email:
     on_success: change
     on_failure: always
+
+after_script:
+  - test $TRAVIS_BRANCH != 'master' && make trigger-build PROJECT=home:eliostvs:test TOKEN=$OBS_TOKEN
