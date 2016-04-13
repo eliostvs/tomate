@@ -1,55 +1,58 @@
 from __future__ import unicode_literals
 
-import unittest
-
 import dbus
+import pytest
 from mock import Mock, patch
-from tomate.constant import State
 from wiring import Graph
+from tomate.constant import State
 
 
-class ApplicationTest(unittest.TestCase):
+@pytest.fixture()
+def app():
+    from tomate.app import Application
 
-    def setUp(self):
-        from tomate.app import Application
+    return Application(bus=Mock(), view=Mock(), config=Mock(), plugin=Mock())
 
-        self.app = Application(Mock(),
-                               view=Mock(),
-                               config=Mock(),
-                               plugin=Mock())
 
-    @patch('tomate.app.dbus.SessionBus')
-    def test_factory(self, *args):
-        from tomate.app import Application
+@patch('tomate.app.dbus.SessionBus')
+def test_the_factory(mock_session_bus=None):
+    from tomate.app import Application
 
-        graph = Graph()
-        graph.register_factory('tomate.view', Mock)
-        graph.register_factory('tomate.config', Mock)
-        graph.register_factory('tomate.plugin', Mock)
+    graph = Graph()
+    graph.register_factory('tomate.view', Mock)
+    graph.register_factory('tomate.config', Mock)
+    graph.register_factory('tomate.plugin', Mock)
 
-        graph.register_factory('tomate.app', Application)
+    graph.register_factory('tomate.app', Application)
 
-        app = Application.from_graph(graph)
-        self.assertIsInstance(app, Application)
+    app = Application.from_graph(graph)
 
-        with patch('tomate.app.dbus.SessionBus.return_value.request_name',
-                   return_value=dbus.bus.REQUEST_NAME_REPLY_EXISTS):
-            dbus_app = Application.from_graph(graph)
-            self.assertIsInstance(dbus_app, dbus.Interface)
+    assert isinstance(app, Application)
 
-    def test_run_when_not_running(self):
-        self.app.run()
-        self.app.view.run.assert_called_once_with()
+    with patch('tomate.app.dbus.SessionBus.return_value.request_name',
+               return_value=dbus.bus.REQUEST_NAME_REPLY_EXISTS):
+        dbus_app = Application.from_graph(graph)
 
-    def test_run_when_already_running(self):
-        self.app.state = State.started
-        self.app.run()
+        assert isinstance(dbus_app, dbus.Interface)
 
-        self.app.view.show.assert_called_once_with()
 
-    def test_is_running(self):
-        self.assertEqual(False, self.app.is_running())
+def test_run_when_not_running(app):
+    app.run()
 
-        self.app.state = State.started
+    app.view.run.assert_called_once_with()
 
-        self.assertEqual(True, self.app.is_running())
+
+def test_run_when_already_running(app):
+    app.state = State.started
+
+    app.run()
+
+    app.view.show.assert_called_once_with()
+
+
+def test_is_running(app):
+    assert not app.is_running()
+
+    app.state = State.started
+
+    assert app.is_running()

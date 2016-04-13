@@ -10,8 +10,8 @@ clean:
 	find . \( -iname "*.pyc" -o -iname "__pycache__" \) -print0 | xargs -0 rm -rf
 	rm -rf *.egg-info/ .coverage build/
 
-test:  clean
-	 $(PYTHONPATH) py.test --cov-report term-missing -v
+test: clean
+	$(PYTHONPATH) py.test --cov-report term-missing -v
 
 docker-clean:
 	docker rmi --force $(DOCKER_IMAGE_NAME) 2> /dev/null || echo Image $(DOCKER_IMAGE_NAME) not found

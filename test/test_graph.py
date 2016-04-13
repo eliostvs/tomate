@@ -1,11 +1,9 @@
-import unittest
+from __future__ import unicode_literals
 
 from wiring import Graph
 
 from tomate.graph import graph
 
 
-class GraphTest(unittest.TestCase):
-
-    def test_returns_graph_instance(self):
-        self.assertIsInstance(graph.get(Graph), Graph)
+def test_returns_graph_instance():
+    assert graph is graph.get(Graph)
