@@ -1,3 +1,4 @@
 .git
 dist/
 *.egg-info
+.cache
