@@ -1,8 +1,7 @@
 from __future__ import unicode_literals
 
-import unittest
+import pytest
 
-import six
 from blinker import Namespace
 from mock import Mock
 from wiring import Graph, InstanceProvider
@@ -12,103 +11,98 @@ from tomate.event import (on, EventModule, Subscriber, SubscriberMeta, Dispatche
                           methods_with_events, disconnect_events)
 
 
-class Base(unittest.TestCase):
-    def setUp(self):
-        Session = Mock()
-        Timer = Mock()
-
-        class Foo(object):
-            @on(Session, [State.finished])
-            def bar(self, sender):
-                return sender
-
-            @on(Timer, [State.finished, State.changed])
-            def spam(self, sender):
-                return sender
-
-        self.foo = Foo()
-        self.timer_event = Timer
-        self.session_event = Session
+@pytest.fixture()
+def session():
+    return Mock()
 
 
-class DecoratorOnTest(Base):
-    def test_should_return_events_and_states_bind_with_the_method(self):
-        self.assertListEqual(self.foo.bar._events, [(self.session_event, State.finished)])
-
-        self.assertListEqual(self.foo.spam._events,
-                             [(self.timer_event, State.finished), (self.timer_event, State.changed)])
+@pytest.fixture()
+def timer():
+    return Mock()
 
 
-class SubscriberMetaTest(Base):
-    def test_should_return_methods_that_has_events(self):
-        SubscriberMeta(str('name'), (object,), {})
+@pytest.fixture()
+def foo(session, timer):
 
-        expected = [self.foo.bar, self.foo.spam]
+    class Foo(object):
+        @on(session, [State.finished])
+        def bar(self, sender):
+            return sender
 
-        self.assertEqual(expected, methods_with_events(self.foo))
+        @on(timer, [State.finished, State.changed])
+        def spam(self, sender):
+            return sender
 
-
-class SubscriberTest(Base):
-
-    def test_should_connect_event_with_the_method(self):
-        Session = Mock()
-        Timer = Mock()
-
-        class Baz(Subscriber):
-            @on(Session, [State.finished])
-            @on(Timer, [State.changed])
-            def bar(self, sender):
-                return sender
-
-        baz = Baz()
-
-        Session.connect.assert_called_with(baz.bar, sender=State.finished, weak=False)
-        Timer.connect.assert_called_with(baz.bar, sender=State.changed, weak=False)
+    return Foo()
 
 
-class TestDisconnectFunction(Base):
+def test_should_return_events_and_states_bind_with_the_method(foo, session, timer):
+    assert foo.bar._events == [(session, State.finished)]
 
-    def test_should_disconnect_bind_events(self):
-        disconnect_events(self.foo)
-
-        self.session_event.disconnect.assert_called_with(self.foo.bar, sender=State.finished)
-
-        self.timer_event.disconnect.assert_any_call(self.foo.spam, sender=State.changed)
-        self.timer_event.disconnect.assert_any_call(self.foo.spam, sender=State.finished)
+    assert foo.spam._events == [(timer, State.finished), (timer, State.changed)]
 
 
-class TestDispatcher(unittest.TestCase):
+def test_should_return_methods_that_has_events(foo):
+    SubscriberMeta(str('name'), (object,), {})
 
-    def setUp(self):
-        self.dispacther = Dispatcher()
-        self.new_event = self.dispacther.signal('event')
-
-    def test_should_return_event_by_key(self):
-        self.assertEqual(self.new_event, self.dispacther['event'])
-
-    def test_should_return_event_by_attribute(self):
-        self.assertEqual(self.new_event, self.dispacther.event)
-
-    def test_should_return_a_empty_list(self):
-        self.assertEqual(self.dispacther.__bases__, [])
+    assert  [foo.bar, foo.spam] ==  methods_with_events(foo)
 
 
-class EventsModuleTest(unittest.TestCase):
+def test_should_connect_event_with_the_method(session, timer):
+    class Baz(Subscriber):
+        @on(session, [State.finished])
+        @on(timer, [State.changed])
+        def bar(self, sender):
+            return sender
 
-    def test_module(self):
-        graph = Graph()
+    baz = Baz()
 
-        six.assertCountEqual(self, ['tomate.events'], EventModule.providers.keys())
+    session.connect.assert_called_with(baz.bar, sender=State.finished, weak=False)
+    timer.connect.assert_called_with(baz.bar, sender=State.changed, weak=False)
 
-        EventModule().add_to(graph)
 
-        provider = graph.providers['tomate.events']
+def test_should_disconnect_bind_events(session, timer, foo):
+    disconnect_events(foo)
 
-        self.assertIsInstance(provider, InstanceProvider)
-        self.assertEqual(provider.scope, None)
-        self.assertEqual(provider.dependencies, {})
+    session.disconnect.assert_called_with(foo.bar, sender=State.finished)
 
-        self.assertIsInstance(graph.get('tomate.events'), Namespace)
+    timer.disconnect.assert_any_call(foo.spam, sender=State.changed)
+    timer.disconnect.assert_any_call(foo.spam, sender=State.finished)
 
-if __name__ == '__main__':
-    unittest.main()
+
+@pytest.fixture()
+def dispatcher():
+    return Dispatcher()
+
+
+@pytest.fixture()
+def event(dispatcher):
+    return dispatcher.signal('event')
+
+
+class TestDispatcher:
+
+    def test_should_return_event_by_key(self, dispatcher, event):
+        assert event == dispatcher['event']
+
+    def test_should_return_event_by_attribute(self, dispatcher, event):
+        assert event == dispatcher.event
+
+    def test_should_return_a_empty_list(self, dispatcher):
+        assert dispatcher.__bases__ == []
+
+
+def test_event_module():
+    graph = Graph()
+
+    assert ['tomate.events'] == EventModule.providers.keys()
+
+    EventModule().add_to(graph)
+
+    provider = graph.providers['tomate.events']
+
+    assert isinstance(provider, InstanceProvider)
+    assert provider.scope is None
+    assert provider.dependencies == {}
+
+    assert isinstance(graph.get('tomate.events'), Namespace)
