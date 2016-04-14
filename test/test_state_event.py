@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 
-from unittest import TestCase
-
+import pytest
 from mock import Mock
 
 from tomate.event import EventState
@@ -14,36 +13,37 @@ class Foo(object):
     other_state = EventState('b', function, '_hide')
 
 
-class StateTriggerTest(TestCase):
+@pytest.fixture()
+def foo():
+    return Foo()
 
-    def test_should_return_initial_value(self):
-        foo = Foo()
 
-        self.assertEqual('a', foo.state)
-        self.assertEqual('a', Foo.state)
+def test_should_return_initial_value(foo):
+    assert 'a' == foo.state
+    assert 'a' == Foo.state
 
-    def test_should_has_default_attribute(self):
-        foo = Foo()
-        foo.state = 'a'
 
-        self.assertTrue(hasattr(foo, '_state'))
-        self.assertEqual('a', foo._state)
+def test_should_has_default_attribute(foo):
+    foo.state = 'a'
 
-    def test_should_has_configurable_attribute(self):
-        foo = Foo()
-        foo.other_state = 'b'
+    assert hasattr(foo, '_state')
+    assert 'a' == foo.state
 
-        self.assertTrue(hasattr(foo, '_hide'))
-        self.assertEqual(foo.other_state, foo._hide)
 
-    def test_should_call_trigger_method_with_choosed_event_type(self):
-        foo = Foo()
-        foo.state = 'a'
+def test_should_has_configurable_attribute(foo):
+    foo.other_state = 'b'
 
-        foo.function.assert_called_with(foo, 'spam')
+    assert hasattr(foo, '_hide')
+    assert foo.other_state == foo._hide
 
-    def test_should_call_trigger_method_with_default_event_type(self):
-        foo = Foo()
-        foo.other_state = 'b'
 
-        foo.function.assert_called_with(foo, 'b')
+def test_should_call_trigger_method_with_choosed_event_type(foo):
+    foo.state = 'a'
+
+    foo.function.assert_called_with(foo, 'spam')
+
+
+def test_should_call_trigger_method_with_default_event_type(foo):
+    foo.other_state = 'b'
+
+    foo.function.assert_called_with(foo, 'b')
