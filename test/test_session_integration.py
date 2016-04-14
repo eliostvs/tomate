@@ -20,9 +20,7 @@ def session(timer):
 
     Events.Setting.receivers.clear()
 
-    return Session(timer=timer,
-                    config=Mock(**{'get_int.return_value': 0.01}),
-                    events=Events)
+    return Session(timer=timer, config=Mock(**{'get_int.return_value': 0.01}), events=Events)
 
 
 def test_should_change_state_to_finished(timer, session):

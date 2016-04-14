@@ -45,7 +45,7 @@ def test_should_return_events_and_states_bind_with_the_method(foo, session, time
 def test_should_return_methods_that_has_events(foo):
     SubscriberMeta(str('name'), (object,), {})
 
-    assert  [foo.bar, foo.spam] ==  methods_with_events(foo)
+    assert [foo.bar, foo.spam] == methods_with_events(foo)
 
 
 def test_should_connect_event_with_the_method(session, timer):
