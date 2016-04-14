@@ -1,9 +1,8 @@
 from __future__ import unicode_literals
 
 import os
-import unittest
 
-import six
+import pytest
 from mock import Mock, mock_open, patch
 from wiring import FactoryProvider, Graph, SingletonScope
 
@@ -13,131 +12,123 @@ BaseDirectory_attrs = {
 }
 
 
+@pytest.fixture()
+def config():
+    from tomate.config import Config
+
+    return Config(Mock(), Mock())
+
+
 @patch('tomate.config.BaseDirectory', spec_set=True, **BaseDirectory_attrs)
-class TestConfig(unittest.TestCase):
+class TestConfig:
 
-    def setUp(self):
-        from tomate.config import Config
+    def test_get_config_path(self, base_directory, config):
+        assert config.get_config_path() == '/home/mock/.config/tomate/tomate.conf'
 
-        self.config = Config(Mock(), Mock())
+    def test_get_plugin_path(self, base_directory, config):
+        assert config.get_plugin_paths() == ['/usr/mock/tomate/plugins']
 
-        self.mo = mock_open()
+    def test_write_config(self, base_directory, config):
+        mo = mock_open()
 
-    def test_get_config_path(self, *args):
-        self.assertEqual('/home/mock/.config/tomate/tomate.conf', self.config.get_config_path())
+        with patch('tomate.config.open', mo, create=True):
+            config.save()
 
-    def test_get_plugin_path(self, *args):
-        self.assertEqual(['/usr/mock/tomate/plugins'], self.config.get_plugin_paths())
+        assert config.parser.write.called
 
-    def test_write_config(self, *args):
-        with patch('tomate.config.open', self.mo, create=True):
-            self.config.save()
-
-        self.assertTrue(self.config.parser.write.called)
-        self.config.parser.write.assert_called_once_with(self.mo())
+        config.parser.write.assert_called_once_with(mo())
 
     @patch('tomate.config.os.path.exists', spec_set=True, return_value=True)
-    def test_get_media_file(self, mpath, *args):
-        self.assertEqual('file:///usr/mock/tomate/media/alarm.mp3', self.config.get_media_uri('alarm.mp3'))
+    def test_get_media_file(self, path, base_directory, config):
+        config.get_media_uri('alarm.mp3') == 'file:///usr/mock/tomate/media/alarm.mp3'
 
-    def test_get_resource_path_should_raise_exception(self, *args):
-        self.assertRaises(EnvironmentError, self.config.get_resource_path, '/file/not/exist/')
+    def test_get_resource_path_should_raise_exception(self, base_directory, config):
+
+        with pytest.raises(EnvironmentError):
+            config.get_resource_path('/file/not/exist/')
 
     @patch('tomate.config.IconTheme.getIconPath', return_value=None)
-    def test_get_icon_path_should_raise_exception(self, mgetIconPath, *args):
-        self.assertRaises(EnvironmentError, self.config.get_icon_path, 'tomate', 22)
+    def test_get_icon_path_should_raise_exception(self, get_icon_path, base_directory, config):
+        with pytest.raises(EnvironmentError):
+            config.get_icon_path('tomate', 22)
 
     @patch('tomate.config.IconTheme.getIconPath', spec_set=True)
-    def test_get_icon_path_should_success(self, mgetIconPath, *args):
-        mgetIconPath.side_effect = (
+    def test_get_icon_path_should_success(self, get_icon_path, base_directory, config):
+        get_icon_path.side_effect = (
             lambda name, size, theme, extensions:
             '/usr/mock/icons/hicolor/{size}x{size}/apps/{name}.png'
             .format(name=name, size=size)
         )
 
-        self.assertEqual('/usr/mock/icons/hicolor/22x22/apps/tomate.png',
-                         self.config.get_icon_path('tomate', 22))
+        assert config.get_icon_path('tomate', 22) == '/usr/mock/icons/hicolor/22x22/apps/tomate.png'
 
-    def test_icon_paths_should_success(self, *args):
-        self.assertEqual(['/usr/mock/icons'], self.config.get_icon_paths())
+    def test_icon_paths_should_success(self, base_directory, config):
+        assert config.get_icon_paths() == ['/usr/mock/icons']
 
-    def test_get_option(self, *args):
-        self.config.parser.has_section.return_value = False
-        self.config.parser.has_option.return_value = False
-        self.config.parser.get.return_value = '25'
-        self.config.parser.getint.return_value = 25
+    def test_get_option(self, base_directory, config):
+        config.parser.has_section.return_value = False
+        config.parser.has_option.return_value = False
+        config.parser.get.return_value = '25'
+        config.parser.getint.return_value = 25
 
-        self.assertEqual(25, self.config.get_int('Timer', 'pomodoro duration'))
+        assert config.get_int('Timer', 'pomodoro duration') == 25
 
-        self.config.parser.has_section.assert_called_once_with('timer')
+        config.parser.has_section.assert_called_once_with('timer')
+        config.parser.add_section.assert_called_once_with('timer')
+        config.parser.has_option.assert_called_once_with('timer', 'pomodoro_duration')
+        config.parser.get.assert_called_once_with('timer', 'pomodoro_duration')
+        config.parser.set.assert_called_once_with('timer', 'pomodoro_duration', '25')
 
-        self.config.parser.add_section.assert_called_once_with('timer')
+    def test_get_options(self, base_directory, config):
+        config.get('section', 'option')
 
-        self.config.parser.has_option.assert_called_once_with('timer', 'pomodoro_duration')
+        config.parser.get.assert_called_with('section', 'option')
 
-        self.config.parser.get.assert_called_once_with('timer', 'pomodoro_duration')
+        config.get_int('section', 'option')
+        config.parser.getint.assert_called_with('section', 'option')
 
-        self.config.parser.set.assert_called_once_with('timer', 'pomodoro_duration', '25')
+    def test_set_option(self, base_directory, config):
+        config.parser.has_section.return_value = False
 
-    def test_get_options(self, *args):
-        self.config.get('section', 'option')
-        self.config.parser.get.assert_called_with('section', 'option')
+        mo = mock_open()
 
-        self.config.get_int('section', 'option')
-        self.config.parser.getint.assert_called_with('section', 'option')
+        with patch('tomate.config.open', mo, create=True):
+            config.set('Timer', 'Shortbreak Duration', 4)
 
-    def test_set_option(self, *args):
-        self.config.parser.has_section.return_value = False
+            config.parser.has_section.assert_called_once_with('timer')
+            config.parser.add_section.assert_called_once_with('timer')
+            config.parser.set.assert_called_once_with('timer', 'shortbreak_duration', 4)
 
-        with patch('tomate.config.open', self.mo, create=True):
-            self.config.set('Timer', 'Shortbreak Duration', 4)
-
-            self.config.parser.has_section.assert_called_once_with('timer')
-            self.config.parser.add_section.assert_called_once_with('timer')
-            self.config.parser.set.assert_called_once_with('timer', 'shortbreak_duration', 4)
-
-            self.config.parser.write.assert_called_once_with(self.mo())
+            config.parser.write.assert_called_once_with(mo())
 
 
 @patch('tomate.config.BaseDirectory', spec_set=True, **BaseDirectory_attrs)
-class TestConfigSignals(unittest.TestCase):
+def test_should_emit_setting_changed(base_directory, config):
+    with patch('tomate.config.open', mock_open(), create=True):
+        config.set('Timer', 'Pomodoro', 4)
 
-    def setUp(self, *args):
-        from tomate.config import Config
-
-        self.config = Config(Mock(), Mock())
-
-        self.mo = mock_open()
-
-    def test_should_emit_setting_changed(self, *args):
-        with patch('tomate.config.open', self.mo, create=True):
-            self.config.set('Timer', 'Pomodoro', 4)
-
-            self.config.event.send.assert_called_once_with('timer',
-                                                           section='timer',
-                                                           option='pomodoro',
-                                                           value=4)
+        config.event.send.assert_called_once_with('timer',
+                                                  section='timer',
+                                                  option='pomodoro',
+                                                  value=4)
 
 
-class TestConfigModule(unittest.TestCase):
+def test_module():
+    from tomate.config import Config, ConfigModule
 
-    def test_module(self):
-        from tomate.config import Config, ConfigModule
+    graph = Graph()
 
-        graph = Graph()
+    assert ConfigModule.providers.keys() == ['tomate.config']
 
-        six.assertCountEqual(self, ['tomate.config'], ConfigModule.providers.keys())
+    ConfigModule().add_to(graph)
 
-        ConfigModule().add_to(graph)
+    assert 'config.parser' in graph.providers.keys()
 
-        self.assertIn('config.parser', graph.providers.keys())
+    provider = graph.providers['tomate.config']
 
-        provider = graph.providers['tomate.config']
+    assert isinstance(provider, FactoryProvider)
+    assert provider.scope == SingletonScope
+    assert provider.dependencies == dict(parser='config.parser', events='tomate.events')
 
-        self.assertIsInstance(provider, FactoryProvider)
-        self.assertEqual(provider.scope, SingletonScope)
-        self.assertEqual(provider.dependencies,
-                         dict(parser='config.parser', events='tomate.events'))
-
-        graph.register_instance('tomate.events', Mock())
-        self.assertIsInstance(graph.get('tomate.config'), Config)
+    graph.register_instance('tomate.events', Mock())
+    assert isinstance(graph.get('tomate.config'), Config)
