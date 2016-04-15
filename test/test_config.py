@@ -118,7 +118,7 @@ def test_module():
 
     graph = Graph()
 
-    assert ConfigModule.providers.keys() == ['tomate.config']
+    assert ['tomate.config'] == list(ConfigModule.providers.keys())
 
     ConfigModule().add_to(graph)
 

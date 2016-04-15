@@ -4,6 +4,7 @@ import dbus
 import pytest
 from mock import Mock, patch
 from wiring import Graph
+
 from tomate.constant import State
 
 

@@ -95,7 +95,7 @@ class TestDispatcher:
 def test_event_module():
     graph = Graph()
 
-    assert ['tomate.events'] == EventModule.providers.keys()
+    assert ['tomate.events'] == list(EventModule.providers.keys())
 
     EventModule().add_to(graph)
 

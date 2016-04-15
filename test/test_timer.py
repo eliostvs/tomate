@@ -108,7 +108,7 @@ def test_should_trigger_changed_event(timer):
 
 
 def test_module():
-    assert ['tomate.timer'] == TimerModule.providers.keys()
+    assert ['tomate.timer'] == list(TimerModule.providers.keys())
 
     TimerModule().add_to(graph)
 

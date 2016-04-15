@@ -216,7 +216,7 @@ def test_should_trigger_changed_event_when_task_change(session):
 def test_module():
     graph = Graph()
 
-    assert SessionModule.providers.keys() == ['tomate.session']
+    assert ['tomate.session'] == list(SessionModule.providers.keys())
 
     SessionModule().add_to(graph)
 
