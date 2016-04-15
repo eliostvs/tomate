@@ -1,7 +1,9 @@
 from __future__ import unicode_literals
 
 import logging
+import os
 
+import six
 import wrapt
 
 logger = logging.getLogger(__name__)
@@ -12,14 +14,21 @@ def format_time_left(seconds):
     return '{0:0>2}:{1:0>2}'.format(minutes, seconds)
 
 
+def in_debug_mode():
+    return 'TOMATE_DEBUG' in os.environ.keys()
+
+
 @wrapt.decorator
 def suppress_errors(wrapped, instance, args, kwargs):
     try:
         return wrapped(*args, **kwargs)
 
-    except Exception as e:
+    except Exception as ex:
+        if in_debug_mode():
+            six.raise_from(Exception, ex)
+
         log = logging.getLogger(__name__)
-        log.error(e, exc_info=True)
+        log.error(ex, exc_info=True)
 
     return None
 

@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 import pytest
+import os
 
 from tomate.utils import format_time_left, suppress_errors
 
@@ -15,10 +16,19 @@ def test_format_seconds_in_string_with_minutes_and_seconds(seconds, time_formate
 
 
 def test_not_raise_exception_when_block_has_decorator_supress_errors():
-    exception = Exception('error')
+    @suppress_errors
+    def raise_exception():
+        raise Exception()
+
+    assert not raise_exception()
+
+
+def test_should_raise_exception_when_debug_flag_is_set():
+    os.environ.setdefault('TOMATE_DEBUG', '1')
 
     @suppress_errors
     def raise_exception():
-        raise exception
+        raise Exception()
 
-    assert not raise_exception()
+    with pytest.raises(Exception):
+        raise_exception()

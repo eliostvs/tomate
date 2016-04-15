@@ -14,6 +14,10 @@ Bugs and suggestions should be reported [here][2].
 Changelog
 ---------
 
+### v0.5.1
+- Using py.test
+- Skip supress_error decorator with environment variable
+
 ### v0.5.0
 
 - Remove linux package metadata
