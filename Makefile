@@ -2,8 +2,8 @@ PACKAGE = tomate
 AUTHOR = eliostvs
 PACKAGE_ROOT = $(CURDIR)
 DOCKER_IMAGE_NAME= $(AUTHOR)/$(PACKAGE)
-PROJECT = home:eliostvs:tomate
 PYTHONPATH = PYTHONPATH=$(CURDIR)
+PROJECT = home:eliostvs:tomate
 OBS_API_URL = https://api.opensuse.org:443/trigger/runservice?project=$(PROJECT)&package=$(PACKAGE)
 
 clean:
