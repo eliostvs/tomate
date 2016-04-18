@@ -33,6 +33,13 @@ def suppress_errors(wrapped, instance, args, kwargs):
     return None
 
 
+def rounded_percent(percent):
+    """
+    The icons show 5% steps, so we have to round.
+    """
+    return percent - percent % 5
+
+
 class fsm(object):
 
     def __init__(self, target, **kwargs):
