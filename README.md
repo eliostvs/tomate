@@ -14,7 +14,7 @@ Bugs and suggestions should be reported [here][2].
 Changelog
 ---------
 
-### v0.5.1
+### v0.6.0
 - Using py.test
 - Skip supress\_error decorator with environment variable
 
