@@ -16,7 +16,7 @@ Changelog
 
 - Using py.test
 - Skip supress\_error decorator with environment variable
-- Add rounded_percent function
+- Add rounded\_percent function
 
 ### v0.5.0
 
