@@ -8,7 +8,7 @@ from tomate.proxy import LazyProxy, lazy_proxy, ProxyModule
 def test_lazy_proxy():
     graph = Graph()
     graph.register_instance('dict', {'a': 1, 'b': 2})
-    new_proxy = LazyProxy(graph, 'dict')
+    new_proxy = LazyProxy('dict', graph)
 
     assert new_proxy.keys() == ['a', 'b']
     assert new_proxy.values() == [1, 2]
