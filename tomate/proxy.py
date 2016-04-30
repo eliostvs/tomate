@@ -23,11 +23,11 @@ class LazyProxy(object):
         return self.__graph.get(self.__specification)
 
 
-def proxy(specification, graph=injected(Graph)):
+def lazy_proxy(specification, graph=injected(Graph)):
     return LazyProxy(specification, graph)
 
 
 class ProxyModule(Module):
     functions = {
-        'tomate.proxy': proxy
+        'tomate.proxy': lazy_proxy
     }

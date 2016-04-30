@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 from wiring import FunctionProvider, Graph
 
-from tomate.proxy import LazyProxy, proxy, ProxyModule
+from tomate.proxy import LazyProxy, lazy_proxy, ProxyModule
 
 
 def test_lazy_proxy():
@@ -18,7 +18,7 @@ def test_lazy_proxy_function():
     graph = Graph()
     graph.register_instance(Graph, graph)
 
-    new_proxy = proxy('foo', graph=graph)
+    new_proxy = lazy_proxy('foo', graph=graph)
 
     assert isinstance(new_proxy, LazyProxy)
 
