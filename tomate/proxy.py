@@ -6,8 +6,8 @@ from wiring import injected, Graph, Module
 class LazyProxy(object):
 
     def __init__(self, graph, specification):
-        self.__graph = graph
         self.__specification = specification
+        self.__graph = graph
 
     def __getattribute__(self, item):
         try:
@@ -19,7 +19,7 @@ class LazyProxy(object):
         return obj
 
     @property
-    def __target(self):
+    def
         return self.__graph.get(self.__specification)
 
 
