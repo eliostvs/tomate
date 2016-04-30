@@ -17,7 +17,6 @@ Changelog
 - Using py.test
 - Skip supress\_error decorator with environment variable
 - Add rounded_percent function
-- Add lazy proxy function provider
 
 ### v0.5.0
 
