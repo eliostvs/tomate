@@ -9,8 +9,8 @@ Bugs and Suggetions
 
 Bugs and suggestions should be reported [here][2].
 
-Changelog
----------
+Change Logs
+-----------
 
 ### v0.6.0
 
