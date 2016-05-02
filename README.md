@@ -12,18 +12,18 @@ Bugs and suggestions should be reported [here][2].
 Change Logs
 -----------
 
-### v0.6.0
+### 0.6.0
 
 - Using py.test
 - Skip supress\_error decorator with environment variable
 - Add rounded\_percent function
-- Add lazy proxy function provider
+- Add lazy proxy function
 
-### v0.5.0
+### 0.5.0
 
 - Remove linux package metadata
 
-### v0.4.0
+### 0.4.0
 
 - Create a new event system
 - Python 2/3 compatible
