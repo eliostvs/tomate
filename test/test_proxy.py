@@ -10,8 +10,8 @@ def test_lazy_proxy():
     graph.register_instance('dict', {'a': 1, 'b': 2})
     new_proxy = LazyProxy('dict', graph)
 
-    assert new_proxy.keys() == ['a', 'b']
-    assert new_proxy.values() == [1, 2]
+    assert sorted(new_proxy.keys()) == ['a', 'b']
+    assert sorted(new_proxy.values()) == [1, 2]
 
 
 def test_lazy_proxy_function():
