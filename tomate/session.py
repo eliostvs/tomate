@@ -15,11 +15,11 @@ class Session(Subscriber):
         self.timer = timer
         self.event = events.Session
 
-    def timer_is_running(self):
+    def is_running(self):
         return self.timer.state == State.started
 
-    def timer_is_not_running(self):
-        return not self.timer_is_running()
+    def is_not_running(self):
+        return not self.is_running()
 
     @fsm(target=State.started,
          source=[State.stopped, State.finished])
@@ -30,7 +30,7 @@ class Session(Subscriber):
 
     @fsm(target=State.stopped,
          source=[State.started],
-         conditions=[timer_is_running])
+         conditions=[is_running])
     def stop(self):
         self.timer.stop()
 
@@ -46,7 +46,7 @@ class Session(Subscriber):
 
     @fsm(target=State.finished,
          source=[State.started],
-         conditions=[timer_is_not_running])
+         conditions=[is_not_running])
     @on(Events.Timer, [State.finished])
     def end(self, sender=None, **kwargs):
         if self.current_task_is(Task.pomodoro):
