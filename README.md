@@ -4,21 +4,26 @@ Tomate
 A pomodoro timer written in Python. This project has only the core classes.
 [Here][1] is the repository of the Gtk version.
 
-
 Bugs and Suggetions
 -------------------
 
 Bugs and suggestions should be reported [here][2].
 
+Change Logs
+-----------
 
-Changelog
----------
+### 0.6.0
 
-### v0.5.0
+- Using py.test
+- Skip supress\_error decorator with environment variable
+- Add rounded\_percent function
+- Add lazy proxy function
+
+### 0.5.0
 
 - Remove linux package metadata
 
-### v0.4.0
+### 0.4.0
 
 - Create a new event system
 - Python 2/3 compatible

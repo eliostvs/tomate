@@ -24,6 +24,6 @@ class State(Base):
     started = 1
     finished = 3
     changed = 4
-    showing = 5
-    hiding = 6
+    showed = 5
+    hid = 6
     reset = 7

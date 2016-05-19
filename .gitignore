@@ -21,3 +21,4 @@ dist
 docs/*
 sdist
 *.sublime-*
+.cache
