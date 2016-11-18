@@ -1,17 +1,6 @@
 from __future__ import division, unicode_literals
 
-import pytest
-from mock import Mock
-from wiring import FactoryProvider, SingletonScope
-
 from tomate.constant import State
-from tomate.graph import graph
-from tomate.timer import Timer, TimerModule
-
-
-@pytest.fixture()
-def timer():
-    return Timer(events=Mock())
 
 
 def test_default_timer_values(timer):
@@ -107,17 +96,5 @@ def test_should_trigger_changed_event(timer):
     timer.event.send.assert_called_with(State.changed, time_left=9, time_ratio=0.1)
 
 
-def test_module():
-    assert ['tomate.timer'] == list(TimerModule.providers.keys())
-
-    TimerModule().add_to(graph)
-
-    provider = graph.providers['tomate.timer']
-
-    assert isinstance(provider, FactoryProvider)
-    assert provider.scope == SingletonScope
-
-    assert {'events': 'tomate.events'} == provider.dependencies
-
-    graph.register_instance('tomate.events', Mock())
-    assert isinstance(graph.get('tomate.timer'), Timer)
+def test_module(graph):
+    assert 'tomate.timer' in graph.providers

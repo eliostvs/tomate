@@ -3,7 +3,9 @@ from __future__ import unicode_literals
 import logging
 import os
 
-from wiring import inject, Module, provides, scope, SingletonScope
+from six.moves import configparser
+from wiring import inject
+from wiring.scanning import register
 from xdg import BaseDirectory, IconTheme
 
 logger = logging.getLogger(__name__)
@@ -16,14 +18,14 @@ DEFAULTS = {
 }
 
 
+@register.factory('tomate.config')
 class Config(object):
-
     app_name = 'tomate'
 
-    @inject(parser='config.parser', events='tomate.events')
-    def __init__(self, parser, events):
+    @inject(parser='config.parser', event='tomate.events.setting')
+    def __init__(self, parser, event):
         self.parser = parser
-        self.event = events.Setting
+        self.event = event
 
         self.load()
 
@@ -115,15 +117,4 @@ class Config(object):
         return name.replace(' ', '_').lower()
 
 
-class ConfigModule(Module):
-
-    factories = {
-        'tomate.config': (Config, SingletonScope)
-    }
-
-    @provides('config.parser')
-    @scope(SingletonScope)
-    def provide_parser(self):
-        from six.moves import configparser
-
-        return configparser.SafeConfigParser(DEFAULTS)
+register.instance('config.parser', configparser.SafeConfigParser(DEFAULTS))

@@ -1,13 +1,14 @@
 from __future__ import unicode_literals
 
 import dbus.service
-from wiring import inject, SingletonScope, Module
+from wiring import inject
+from wiring.scanning import register
 
 from .constant import State
 
 
+@register.factory('tomate.app')
 class Application(dbus.service.Object):
-
     bus_name = 'com.github.Tomate'
     bus_object_path = '/'
     bus_interface_name = 'com.github.Tomate'
@@ -62,9 +63,3 @@ class Application(dbus.service.Object):
             instance = dbus.Interface(bus_object, cls.bus_interface_name)
 
         return instance
-
-
-class ApplicationModule(Module):
-    factories = {
-        'tomate.app': (Application, SingletonScope)
-    }

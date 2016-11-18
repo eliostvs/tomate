@@ -4,7 +4,6 @@ import os
 
 import pytest
 from mock import Mock, mock_open, patch
-from wiring import FactoryProvider, Graph, SingletonScope
 
 BaseDirectory_attrs = {
     'xdg_config_home': '/home/mock/.config',
@@ -21,7 +20,6 @@ def config():
 
 @patch('tomate.config.BaseDirectory', spec_set=True, **BaseDirectory_attrs)
 class TestConfig:
-
     def test_get_config_path(self, base_directory, config):
         assert config.get_config_path() == '/home/mock/.config/tomate/tomate.conf'
 
@@ -43,7 +41,6 @@ class TestConfig:
         config.get_media_uri('alarm.mp3') == 'file:///usr/mock/tomate/media/alarm.mp3'
 
     def test_get_resource_path_should_raise_exception(self, base_directory, config):
-
         with pytest.raises(EnvironmentError):
             config.get_resource_path('/file/not/exist/')
 
@@ -57,7 +54,7 @@ class TestConfig:
         get_icon_path.side_effect = (
             lambda name, size, theme, extensions:
             '/usr/mock/icons/hicolor/{size}x{size}/apps/{name}.png'
-            .format(name=name, size=size)
+                .format(name=name, size=size)
         )
 
         assert config.get_icon_path('tomate', 22) == '/usr/mock/icons/hicolor/22x22/apps/tomate.png'
@@ -113,22 +110,5 @@ def test_should_emit_setting_changed(base_directory, config):
                                                   value=4)
 
 
-def test_module():
-    from tomate.config import Config, ConfigModule
-
-    graph = Graph()
-
-    assert ['tomate.config'] == list(ConfigModule.providers.keys())
-
-    ConfigModule().add_to(graph)
-
-    assert 'config.parser' in graph.providers.keys()
-
-    provider = graph.providers['tomate.config']
-
-    assert isinstance(provider, FactoryProvider)
-    assert provider.scope == SingletonScope
-    assert provider.dependencies == dict(parser='config.parser', events='tomate.events')
-
-    graph.register_instance('tomate.events', Mock())
-    assert isinstance(graph.get('tomate.config'), Config)
+def test_module(graph):
+    assert 'tomate.config' in graph.providers

@@ -1,7 +1,10 @@
 from __future__ import unicode_literals
 
-from wiring import Module, provides, scope, SingletonScope
+from wiring.scanning import register
+from yapsy.ConfigurablePluginManager import ConfigurablePluginManager
 from yapsy.IPlugin import IPlugin
+from yapsy.PluginManager import PluginManagerSingleton
+from yapsy.VersionedPluginManager import VersionedPluginManager
 
 from .event import connect_events, disconnect_events
 
@@ -16,18 +19,11 @@ class Plugin(IPlugin):
         disconnect_events(self)
 
 
-class PluginModule(Module):
+@register.function('tomate.plugin')
+def provide_plugin_manager():
+    PluginManagerSingleton.setBehaviour([
+        ConfigurablePluginManager,
+        VersionedPluginManager,
+    ])
 
-    @provides('tomate.plugin')
-    @scope(SingletonScope)
-    def provide_plugin_manager(self):
-        from yapsy.ConfigurablePluginManager import ConfigurablePluginManager
-        from yapsy.PluginManager import PluginManagerSingleton
-        from yapsy.VersionedPluginManager import VersionedPluginManager
-
-        PluginManagerSingleton.setBehaviour([
-            ConfigurablePluginManager,
-            VersionedPluginManager,
-        ])
-
-        return PluginManagerSingleton.get()
+    return PluginManagerSingleton.get()

@@ -1,8 +1,8 @@
 from __future__ import unicode_literals
 
-from wiring import FunctionProvider, Graph
+from wiring import Graph
 
-from tomate.proxy import LazyProxy, lazy_proxy, ProxyModule
+from tomate.proxy import LazyProxy, lazy_proxy
 
 
 def test_lazy_proxy():
@@ -23,23 +23,5 @@ def test_lazy_proxy_function():
     assert isinstance(new_proxy, LazyProxy)
 
 
-def test_proxy_module():
-    graph = Graph()
-
-    assert list(ProxyModule.providers.keys()) == ['tomate.proxy']
-
-    ProxyModule().add_to(graph)
-
-    provider = graph.providers['tomate.proxy']
-
-    assert isinstance(provider, FunctionProvider)
-    assert provider.scope is None
-
-    assert provider.dependencies == {'graph': Graph}
-
-    graph.register_instance(Graph, graph)
-
-    func = graph.get('tomate.proxy')
-    new_proxy = func(Graph)
-
-    assert isinstance(new_proxy, LazyProxy)
+def test_module(graph):
+    assert 'tomate.proxy' in graph.providers

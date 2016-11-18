@@ -5,21 +5,11 @@ import logging
 
 import six
 from blinker import Namespace
-from wiring import Module
+from wiring.scanning import register
 
 logger = logging.getLogger(__name__)
 
-
-class Dispatcher(Namespace):
-
-    def __getattr__(self, attr):
-        if attr == '__bases__':  # Prevent yapsy break when a plugin is imported
-            return []
-
-        return self[attr]
-
-
-Events = Dispatcher()
+Events = Namespace()
 Session = Events.signal('Session')
 Timer = Events.signal('Timer')
 Setting = Events.signal('Setting')
@@ -38,7 +28,9 @@ def on(event, senders):
         @functools.wraps(func)
         def wrapped(*args, **kwargs):
             return func(*args, **kwargs)
+
         return wrapped
+
     return wrapper
 
 
@@ -68,9 +60,7 @@ def disconnect_events(obj):
 class SubscriberMeta(type):
     def __call__(cls, *args, **kwargs):
         obj = type.__call__(cls, *args, **kwargs)
-
         connect_events(obj)
-
         return obj
 
 
@@ -79,7 +69,6 @@ class Subscriber(six.with_metaclass(SubscriberMeta, object)):
 
 
 class EventState(object):
-
     def __init__(self, initial, callback, attr='_state', event=None):
         self.initial = initial
         self.callback = callback
@@ -101,8 +90,8 @@ class EventState(object):
         self.callback(instance, event)
 
 
-class EventModule(Module):
-
-    instances = {
-        'tomate.events': Events
-    }
+register.instance('tomate.events')(Events)
+register.instance('tomate.events.session')(Session)
+register.instance('tomate.events.timer')(Timer)
+register.instance('tomate.events.setting')(Timer)
+register.instance('tomate.events.view')(View)

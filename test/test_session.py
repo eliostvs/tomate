@@ -1,18 +1,6 @@
 from __future__ import unicode_literals
 
-import pytest
-from mock import Mock
-from wiring import FactoryProvider, Graph, SingletonScope
-
 from tomate.constant import State, Task
-from tomate.session import Session, SessionModule
-
-
-@pytest.fixture()
-def session():
-    return Session(timer=Mock(),
-                   config=Mock(**{'get_int.return_value': 25}),
-                   events=Mock())
 
 
 def test_should_not_be_able_to_start_when_state_is_not_valid(session):
@@ -213,24 +201,5 @@ def test_should_trigger_changed_event_when_task_change(session):
                                           time_left=900)
 
 
-def test_module():
-    graph = Graph()
-
-    assert ['tomate.session'] == list(SessionModule.providers.keys())
-
-    SessionModule().add_to(graph)
-
-    provider = graph.providers['tomate.session']
-
-    assert isinstance(provider, FactoryProvider)
-    assert provider.scope == SingletonScope
-
-    assert provider.dependencies == dict(events='tomate.events',
-                                         config='tomate.config',
-                                         timer='tomate.timer')
-
-    graph.register_instance('tomate.events', Mock())
-    graph.register_instance('tomate.timer', Mock())
-    graph.register_instance('tomate.config', Mock(**{'get_int.return_value': 25}))
-
-    assert isinstance(graph.get('tomate.session'), Session)
+def test_module(graph):
+    assert 'tomate.session' in graph.providers

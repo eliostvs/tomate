@@ -10,6 +10,9 @@ clean:
 	find . \( -iname "*.pyc" -o -iname "__pycache__" \) -print0 | xargs -0 rm -rf
 	rm -rf *.egg-info/ .coverage build/
 
+lint:
+	flake8
+
 test: clean
 	$(PYTHONPATH) py.test --cov-report term-missing --cov=$(PACKAGE) --flake8 -v
 
@@ -21,6 +24,9 @@ docker-build:
 
 docker-test:
 	docker run --rm -v $(PACKAGE_ROOT):/code $(DOCKER_IMAGE_NAME)
+
+docker-lint:
+	docker run --rm -v $(PACKAGE_ROOT):/code $(DOCKER_IMAGE_NAME) lint
 
 docker-all: docker-clean docker-build docker-test
 
