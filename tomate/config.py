@@ -117,4 +117,4 @@ class Config(object):
         return name.replace(' ', '_').lower()
 
 
-register.instance('config.parser', configparser.SafeConfigParser(DEFAULTS))
+register.instance('config.parser')(configparser.SafeConfigParser(DEFAULTS))

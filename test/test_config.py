@@ -5,6 +5,8 @@ import os
 import pytest
 from mock import Mock, mock_open, patch
 
+from tomate.config import Config
+
 BaseDirectory_attrs = {
     'xdg_config_home': '/home/mock/.config',
     'load_data_paths.side_effect': lambda *args: [os.path.join('/usr/mock/', *args)],
@@ -13,8 +15,6 @@ BaseDirectory_attrs = {
 
 @pytest.fixture()
 def config():
-    from tomate.config import Config
-
     return Config(Mock(), Mock())
 
 
@@ -112,3 +112,8 @@ def test_should_emit_setting_changed(base_directory, config):
 
 def test_module(graph):
     assert 'tomate.config' in graph.providers
+
+    graph.register_instance('config.parser', Mock())
+    graph.register_instance('tomate.events.setting', Mock())
+
+    assert isinstance(graph.get('tomate.config'), Config)
