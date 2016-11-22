@@ -4,6 +4,7 @@ import os
 
 import pytest
 from mock import Mock, mock_open, patch
+from wiring import SingletonScope
 
 from tomate.config import Config
 
@@ -112,6 +113,10 @@ def test_should_emit_setting_changed(base_directory, config):
 
 def test_module(graph):
     assert 'tomate.config' in graph.providers
+
+    provider = graph.providers['tomate.config']
+
+    assert provider.scope == SingletonScope
 
     graph.register_instance('config.parser', Mock())
     graph.register_instance('tomate.events.setting', Mock())

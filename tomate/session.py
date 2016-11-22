@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from wiring import inject
+from wiring import inject, SingletonScope
 from wiring.scanning import register
 
 from .constant import State, Task
@@ -8,7 +8,7 @@ from .event import EventState, Subscriber, on, Events
 from .utils import fsm
 
 
-@register.factory('tomate.session')
+@register.factory('tomate.session', scope=SingletonScope)
 class Session(Subscriber):
     @inject(timer='tomate.timer', config='tomate.config', event='tomate.events.session')
     def __init__(self, timer, config, event):

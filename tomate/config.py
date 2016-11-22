@@ -4,7 +4,7 @@ import logging
 import os
 
 from six.moves import configparser
-from wiring import inject
+from wiring import inject, SingletonScope
 from wiring.scanning import register
 from xdg import BaseDirectory, IconTheme
 
@@ -22,7 +22,7 @@ CONFIG_PARSER = configparser.SafeConfigParser(DEFAULTS)
 register.instance('config.parser')(CONFIG_PARSER)
 
 
-@register.factory('tomate.config')
+@register.factory('tomate.config', scope=SingletonScope)
 class Config(object):
     app_name = 'tomate'
 

@@ -31,6 +31,8 @@ def session(timer, config):
 def graph():
     from tomate.graph import graph
 
+    graph.providers.clear()
+
     scan_to_graph(['tomate'], graph)
 
     return graph

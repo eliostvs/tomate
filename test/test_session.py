@@ -1,6 +1,8 @@
 from __future__ import unicode_literals
 
 from mock import Mock
+from wiring import SingletonScope
+
 from tomate.constant import State, Task
 from tomate.session import Session
 
@@ -205,6 +207,9 @@ def test_should_trigger_changed_event_when_task_change(session):
 
 def test_module(graph, config):
     assert 'tomate.session' in graph.providers
+
+    provider = graph.providers['tomate.session']
+    assert provider.scope == SingletonScope
 
     graph.register_instance('tomate.timer', Mock())
     graph.register_instance('tomate.config', config)

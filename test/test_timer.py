@@ -1,6 +1,10 @@
 from __future__ import division, unicode_literals
 
+from mock import Mock
+from wiring import SingletonScope
+
 from tomate.constant import State
+from tomate.timer import Timer
 
 
 def test_default_timer_values(timer):
@@ -98,3 +102,11 @@ def test_should_trigger_changed_event(timer):
 
 def test_module(graph):
     assert 'tomate.timer' in graph.providers
+
+    provider = graph.providers['tomate.timer']
+
+    assert provider.scope == SingletonScope
+
+    graph.register_instance('tomate.events.timer', Mock())
+
+    assert isinstance(graph.get('tomate.timer'), Timer)

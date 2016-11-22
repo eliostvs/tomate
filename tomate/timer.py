@@ -1,7 +1,7 @@
 from __future__ import division, unicode_literals
 
 from gi.repository import GObject
-from wiring import inject
+from wiring import inject, SingletonScope
 from wiring.scanning import register
 
 from .constant import State
@@ -12,9 +12,10 @@ from .utils import fsm
 # Borrowed from Tomatoro create by Pierre Quillery.
 # https://github.com/dandelionmood/Tomatoro
 # Thanks Pierre!
+DEFAULT_INTERVAL = 1000
 
 
-@register.factory('tomate.timer')
+@register.factory('tomate.timer', scope=SingletonScope)
 class Timer(object):
     @inject(event='tomate.events.timer')
     def __init__(self, event):
@@ -26,7 +27,7 @@ class Timer(object):
     def start(self, seconds):
         self.__seconds = self.time_left = seconds
 
-        GObject.timeout_add(1000, self._update)
+        GObject.timeout_add(DEFAULT_INTERVAL, self._update)
 
         return True
 
