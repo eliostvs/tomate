@@ -10,7 +10,7 @@ from .utils import fsm
 
 @register.factory('tomate.session')
 class Session(Subscriber):
-    @inject(timer='tomate.timer', config='tomate.config', event='tomate.events.Session')
+    @inject(timer='tomate.timer', config='tomate.config', event='tomate.events.session')
     def __init__(self, timer, config, event):
         self.config = config
         self.timer = timer

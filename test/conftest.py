@@ -13,13 +13,18 @@ def timer():
 
 
 @pytest.fixture()
-def session(timer):
+def config():
+    return Mock(**{'get_int.return_value': 25})
+
+
+@pytest.fixture()
+def session(timer, config):
     from tomate.session import Session
     from tomate.event import Setting
 
     Setting.receivers.clear()
 
-    return Session(timer=timer, config=Mock(**{'get_int.return_value': 25}), event=Mock())
+    return Session(timer=timer, config=config, event=Mock())
 
 
 @pytest.fixture

@@ -17,6 +17,10 @@ DEFAULTS = {
     'long_break_interval': '4',
 }
 
+CONFIG_PARSER = configparser.SafeConfigParser(DEFAULTS)
+
+register.instance('config.parser')(CONFIG_PARSER)
+
 
 @register.factory('tomate.config')
 class Config(object):
@@ -115,6 +119,3 @@ class Config(object):
     @staticmethod
     def normalize(name):
         return name.replace(' ', '_').lower()
-
-
-register.instance('config.parser')(configparser.SafeConfigParser(DEFAULTS))

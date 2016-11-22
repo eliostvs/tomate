@@ -2,11 +2,10 @@ from __future__ import unicode_literals
 
 import pytest
 from mock import Mock
-from yapsy.PluginManagerDecorator import PluginManagerDecorator
-
 from tomate.constant import State
 from tomate.event import on
-from tomate.plugin import Plugin, provide_plugin_manager
+from tomate.plugin import Plugin
+from yapsy.PluginManagerDecorator import PluginManagerDecorator
 
 
 @pytest.fixture()
@@ -50,6 +49,4 @@ def test_should_connect_events_when_plugin_active(foo, timer):
 def test_module(graph):
     assert 'tomate.plugin' in graph.providers
 
-
-def test_provider_plugin_manager():
-    assert isinstance(provide_plugin_manager(), PluginManagerDecorator)
+    assert isinstance(graph.get('tomate.plugin'), PluginManagerDecorator)

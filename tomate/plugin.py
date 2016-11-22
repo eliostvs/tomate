@@ -19,11 +19,10 @@ class Plugin(IPlugin):
         disconnect_events(self)
 
 
-@register.function('tomate.plugin')
-def provide_plugin_manager():
-    PluginManagerSingleton.setBehaviour([
-        ConfigurablePluginManager,
-        VersionedPluginManager,
-    ])
+PluginManagerSingleton.setBehaviour([
+    ConfigurablePluginManager,
+    VersionedPluginManager,
+])
 
-    return PluginManagerSingleton.get()
+plugin_manager = PluginManagerSingleton.get()
+register.instance('tomate.plugin')(plugin_manager)
