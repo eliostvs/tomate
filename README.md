@@ -15,6 +15,7 @@ Change Logs
 ### 0.7.0
 
 - Using wiring.scanning
+- New event api
 
 ### 0.6.0
 

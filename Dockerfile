@@ -1,6 +1,6 @@
 FROM eliostvs/tomate
 
-WORKDIR /code/
+WORKDIR /code
 
 ENTRYPOINT ["make"]
 

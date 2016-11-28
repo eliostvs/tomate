@@ -4,6 +4,7 @@ PACKAGE_ROOT = $(CURDIR)
 DOCKER_IMAGE_NAME= $(AUTHOR)/$(PACKAGE)
 PYTHONPATH = PYTHONPATH=$(CURDIR)
 PROJECT = home:eliostvs:tomate
+DEBUG = TOMATE_DEBUG=true
 OBS_API_URL = https://api.opensuse.org:443/trigger/runservice?project=$(PROJECT)&package=$(PACKAGE)
 
 clean:
@@ -14,7 +15,7 @@ lint:
 	flake8
 
 test: clean
-	$(PYTHONPATH) py.test --cov-report term-missing --cov=$(PACKAGE) --flake8 -v
+	$(PYTHONPATH) py.test tests --cov=$(PACKAGE)
 
 docker-clean:
 	docker rmi --force $(DOCKER_IMAGE_NAME) 2> /dev/null || echo Image $(DOCKER_IMAGE_NAME) not found
@@ -23,7 +24,7 @@ docker-build:
 	docker build -t $(DOCKER_IMAGE_NAME) .
 
 docker-test:
-	docker run --rm -v $(PACKAGE_ROOT):/code $(DOCKER_IMAGE_NAME)
+	docker run --rm -v $(PACKAGE_ROOT):/code $(DOCKER_IMAGE_NAME) test
 
 docker-lint:
 	docker run --rm -v $(PACKAGE_ROOT):/code $(DOCKER_IMAGE_NAME) lint

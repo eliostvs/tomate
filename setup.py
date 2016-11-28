@@ -12,7 +12,7 @@ setup(
     license='GPL-3',
     long_description=open('README.md').read(),
     name='tomate',
-    packages=find_packages(exclude=['*test']),
+    packages=find_packages(exclude=['*tests']),
     url='https://github.com/eliostvs/tomate',
     version='0.6.0',
     zip_safe=False,
