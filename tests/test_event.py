@@ -65,6 +65,20 @@ def test_should_disconnect_bind_events(session, timer, foo):
     timer.disconnect.assert_any_call(foo.spam, sender=State.finished)
 
 
+def should_raise_attribute_error_when_key_not_found_in_the_namespace():
+    from tomate.event import Events
+
+    with pytest.raises(AttributeError):
+        Events.Foo
+
+
+def test_should_events_be_acessiable_as_dictionary_and_attributes():
+    import tomate.event as e
+
+    assert e.Session == e.Events['Session']
+    assert e.Session == e.Events.Session
+
+
 def test_module(graph):
     assert 'tomate.events' in graph.providers
     assert 'tomate.events.setting' in graph.providers

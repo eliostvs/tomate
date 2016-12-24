@@ -48,7 +48,7 @@ class Session(Subscriber):
     @fsm(target=State.finished,
          source=[State.started],
          conditions=[is_not_running])
-    @on(Events['Timer'], [State.finished])
+    @on(Events.Timer, [State.finished])
     def end(self, sender=None, **kwargs):
         if self.current_task_is(Task.pomodoro):
             self.count += 1
@@ -63,7 +63,7 @@ class Session(Subscriber):
 
     @fsm(target=State.stopped,
          source=[State.stopped, State.finished])
-    @on(Events['Setting'], ['timer'])
+    @on(Events.Setting, ['timer'])
     def change_task(self, sender=None, **kwargs):
         self.task = kwargs.get('task', self.task)
 

@@ -9,7 +9,16 @@ from wiring.scanning import register
 
 logger = logging.getLogger(__name__)
 
-Events = Namespace()
+
+class Dispatcher(Namespace):
+    def __getattr__(self, attr):
+        try:
+            return self[attr]
+        except KeyError:
+            raise AttributeError
+
+
+Events = Dispatcher()
 Session = Events.signal('Session')
 Timer = Events.signal('Timer')
 Setting = Events.signal('Setting')
