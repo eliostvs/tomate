@@ -80,8 +80,10 @@ def test_should_events_be_acessiable_as_dictionary_and_attributes():
 
 
 def test_module(graph):
-    assert 'tomate.events' in graph.providers
-    assert 'tomate.events.setting' in graph.providers
-    assert 'tomate.events.session' in graph.providers
-    assert 'tomate.events.timer' in graph.providers
-    assert 'tomate.events.view' in graph.providers
+    import tomate.event as e
+
+    assert e.Events is graph.get('tomate.events')
+    assert e.Events.Setting is graph.get('tomate.events.setting')
+    assert e.Events.Session is graph.get('tomate.events.session')
+    assert e.Events.Timer is graph.get('tomate.events.timer')
+    assert e.Events.View is graph.get('tomate.events.view')

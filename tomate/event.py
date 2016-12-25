@@ -102,5 +102,5 @@ class EventState(object):
 register.instance('tomate.events')(Events)
 register.instance('tomate.events.session')(Session)
 register.instance('tomate.events.timer')(Timer)
-register.instance('tomate.events.setting')(Timer)
+register.instance('tomate.events.setting')(Setting)
 register.instance('tomate.events.view')(View)
