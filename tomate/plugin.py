@@ -18,6 +18,9 @@ class Plugin(IPlugin):
         super(Plugin, self).deactivate()
         disconnect_events(self)
 
+    def has_settings(self):
+        return False
+
     def open_settings(self):
         pass
 
