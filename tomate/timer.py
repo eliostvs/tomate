@@ -8,7 +8,6 @@ from .constant import State
 from .event import EventState
 from .utils import fsm
 
-
 # Borrowed from Tomatoro create by Pierre Quillery.
 # https://github.com/dandelionmood/Tomatoro
 # Thanks Pierre!

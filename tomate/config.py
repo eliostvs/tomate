@@ -2,7 +2,6 @@ from __future__ import unicode_literals
 
 import logging
 import os
-
 from six.moves import configparser
 from wiring import inject, SingletonScope
 from wiring.scanning import register

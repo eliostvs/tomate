@@ -2,9 +2,8 @@ from __future__ import unicode_literals
 
 import logging
 import os
-import sys
-
 import six
+import sys
 import wrapt
 
 logger = logging.getLogger(__name__)
@@ -42,7 +41,6 @@ def rounded_percent(percent):
 
 
 class fsm(object):
-
     def __init__(self, target, **kwargs):
         self.target = target
         self.source = kwargs.pop('source', '*')

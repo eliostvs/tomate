@@ -2,7 +2,6 @@ from __future__ import unicode_literals
 
 import functools
 import logging
-
 import six
 from blinker import Namespace
 from wiring.scanning import register
