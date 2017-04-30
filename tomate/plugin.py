@@ -21,7 +21,7 @@ class Plugin(IPlugin):
     def has_settings(self):
         return False
 
-    def show_settings(self):
+    def settings_window(self):
         pass
 
 
