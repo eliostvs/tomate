@@ -19,7 +19,7 @@ clean:
 	rm -rf .eggs *.egg-info/ .coverage build/ .cache
 
 test: clean
-	$(PYTHONPATH) $(PYTEST) tests --cov=$(PACKAGE) --cov-report=term-missing
+	$(PYTHONPATH) $(PYTEST) tests --cov=$(PACKAGE) --cov-report=term-missing --flake8
 
 docker-clean:
 	docker rmi --force $(DOCKER_IMAGE_NAME) 2> /dev/null || echo Image $(DOCKER_IMAGE_NAME) not found
