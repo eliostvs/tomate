@@ -16,7 +16,7 @@ DEFAULTS = {
     'long_break_interval': '4',
 }
 
-CONFIG_PARSER = configparser.SafeConfigParser(DEFAULTS)
+CONFIG_PARSER = configparser.ConfigParser(defaults=DEFAULTS)
 
 register.instance('config.parser')(CONFIG_PARSER)
 
