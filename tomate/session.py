@@ -37,7 +37,7 @@ class Session(Subscriber):
 
         return True
 
-    @fsm(target=State.stopped,
+    @fsm(target='self',
          source=[State.stopped, State.finished],
          exit=lambda self: self._trigger(State.reset))
     def reset(self):
@@ -61,7 +61,7 @@ class Session(Subscriber):
 
         return True
 
-    @fsm(target=State.stopped,
+    @fsm(target='self',
          source=[State.stopped, State.finished])
     @on(Events.Setting, ['timer'])
     def change_task(self, sender=None, **kwargs):

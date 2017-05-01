@@ -24,10 +24,10 @@ docker-build:
 	docker build -t $(DOCKER_IMAGE_NAME) .
 
 docker-test:
-	docker run --rm -v $(PACKAGE_ROOT):/code $(DOCKER_IMAGE_NAME) test
+	docker run --rm -v $(PACKAGE_ROOT):/code --workdir /code $(DOCKER_IMAGE_NAME) test
 
 docker-lint:
-	docker run --rm -v $(PACKAGE_ROOT):/code $(DOCKER_IMAGE_NAME) lint
+	docker run --rm -v $(PACKAGE_ROOT):/code --workdir /code $(DOCKER_IMAGE_NAME) lint
 
 docker-all: docker-clean docker-build docker-test
 

@@ -2,8 +2,9 @@ from __future__ import unicode_literals
 
 import logging
 import os
-import six
 import sys
+
+import six
 import wrapt
 
 logger = logging.getLogger(__name__)
@@ -65,7 +66,7 @@ class fsm(object):
         logger.debug('Changing %s %s to %s',
                      instance.__class__.__name__, self.attr, self.target)
 
-        if getattr(instance, self.attr, None) != self.target:
+        if self.target != 'self' and getattr(instance, self.attr, None) != self.target:
             setattr(instance, self.attr, self.target)
 
     def call_exit_action(self, instance):
