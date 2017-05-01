@@ -64,26 +64,27 @@ class TestConfig:
         assert config.get_icon_paths() == ['/usr/mock/icons']
 
     def test_get_option(self, base_directory, config):
-        config.parser.has_section.return_value = False
-        config.parser.has_option.return_value = False
-        config.parser.get.return_value = '25'
-        config.parser.getint.return_value = 25
-
-        assert config.get_int('Timer', 'pomodoro duration') == 25
-
-        config.parser.has_section.assert_called_once_with('timer')
-        config.parser.add_section.assert_called_once_with('timer')
-        config.parser.has_option.assert_called_once_with('timer', 'pomodoro_duration')
-        config.parser.get.assert_called_once_with('timer', 'pomodoro_duration')
-        config.parser.set.assert_called_once_with('timer', 'pomodoro_duration', '25')
-
-    def test_get_options(self, base_directory, config):
         config.get('section', 'option')
 
-        config.parser.get.assert_called_with('section', 'option')
+        config.parser.get.assert_called_with('section', 'option', fallback=None)
 
         config.get_int('section', 'option')
-        config.parser.getint.assert_called_with('section', 'option')
+        config.parser.getint.assert_called_with('section', 'option', fallback=None)
+
+    def test_set_option_when_has_no_section(self, based_directory, config):
+        config.parser.has_section.side_effect = lambda section: True if section == 'section' else False
+        mo = mock_open()
+
+        with patch('tomate.config.open', mo, create=True):
+            config.remove('section', 'option')
+
+            config.parser.remove_option.assert_called_with('section', 'option')
+            config.parser.write.assert_called_once_with(mo())
+            config.event.send.assert_called_once_with('section',
+                                                      section='section',
+                                                      option='option',
+                                                      value=None,
+                                                      action='remove')
 
     def test_set_option(self, base_directory, config):
         config.parser.has_section.return_value = False
@@ -108,7 +109,8 @@ def test_should_emit_setting_changed(base_directory, config):
         config.event.send.assert_called_once_with('timer',
                                                   section='timer',
                                                   option='pomodoro',
-                                                  value=4)
+                                                  value=4,
+                                                  action='set')
 
 
 def test_module(graph):

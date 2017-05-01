@@ -33,12 +33,12 @@ class Config(object):
         self.load()
 
     def load(self):
-        logger.debug('load config file %s', self.get_config_path())
+        logger.debug('action=loadConfig uri=%s', self.get_config_path())
 
         self.parser.read(self.get_config_path())
 
     def save(self):
-        logger.debug('writing config file %s', self.get_config_path())
+        logger.debug('action=writeConfig uri=%s', self.get_config_path())
 
         with open(self.get_config_path(), 'w') as f:
             self.parser.write(f)
@@ -61,9 +61,9 @@ class Config(object):
             if os.path.exists(resource):
                 return resource
 
-            logger.debug('resource not found: %s', resource)
+            logger.debug('action=resourceNotFound uri=%s', resource)
 
-        raise EnvironmentError('resource with path %s not found!' % os.path.join(*resources))
+        raise EnvironmentError('Resource with path %s not found!' % os.path.join(*resources))
 
     @staticmethod
     def get_resource_paths(*resources):
@@ -88,20 +88,13 @@ class Config(object):
         section = Config.normalize(section)
         option = Config.normalize(option)
 
-        if not self.parser.has_section(section):
-            self.parser.add_section(section)
-
-        if not self.parser.has_option(section, option):
-            value = self.parser.get(section, option)
-            self.parser.set(section, option, value)
-
-        return getattr(self.parser, method)(section, option)
+        return getattr(self.parser, method)(section, option, fallback=None)
 
     def set(self, section, option, value):
         section = Config.normalize(section)
         option = Config.normalize(option)
 
-        logger.debug('change setting: s=%s o=%s v=%s', section, option, value)
+        logger.debug('action=setOption section=%s option=%s value=%s', section, option, value)
 
         if not self.parser.has_section(section):
             self.parser.add_section(section)
@@ -113,7 +106,25 @@ class Config(object):
         self.event.send(section,
                         section=section,
                         option=option,
-                        value=value)
+                        value=value,
+                        action='set')
+
+    def remove(self, section, option):
+        section = Config.normalize(section)
+        option = Config.normalize(option)
+
+        logger.debug('action=removeOption section=%s option=%s', section, option)
+
+        if self.parser.has_section(section):
+            self.parser.remove_option(section, option)
+
+        self.save()
+
+        self.event.send(section,
+                        section=section,
+                        option=option,
+                        value=None,
+                        action='remove')
 
     @staticmethod
     def normalize(name):
