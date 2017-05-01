@@ -16,6 +16,7 @@ Change Logs
 
 - Using wiring.scanning
 - Plugin settings
+- Python 3 only (packages)
 
 ### 0.6.0
 
