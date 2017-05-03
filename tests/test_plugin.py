@@ -1,13 +1,11 @@
 from __future__ import unicode_literals
 
 import pytest
-
 from mock import Mock
-from wiring import FactoryProvider, SingletonScope
-
 from tomate.constant import State
 from tomate.event import on
 from tomate.plugin import Plugin
+from yapsy.PluginManagerDecorator import PluginManagerDecorator
 
 
 @pytest.fixture()
@@ -48,20 +46,7 @@ def test_should_connect_events_when_plugin_active(foo, timer):
     timer.connect.assert_any_call(foo.spam, sender=State.finished, weak=False)
 
 
-def test_module():
-    from yapsy.PluginManagerDecorator import PluginManagerDecorator
-    from tomate.plugin import PluginModule
-    from tomate.graph import graph
+def test_module(graph):
+    assert 'tomate.plugin' in graph.providers
 
-    PluginModule().add_to(graph)
-
-    provider = graph.providers['tomate.plugin']
-
-    assert 'tomate.plugin' in graph.providers.keys()
-
-    assert isinstance(provider, FactoryProvider)
-    assert provider.scope == SingletonScope
-    assert provider.dependencies == {}
-
-    plugin_manager = graph.get('tomate.plugin')
-    assert isinstance(plugin_manager, PluginManagerDecorator)
+    assert isinstance(graph.get('tomate.plugin'), PluginManagerDecorator)

@@ -4,7 +4,9 @@ import os
 
 import pytest
 from mock import Mock, mock_open, patch
-from wiring import FactoryProvider, Graph, SingletonScope
+from wiring import SingletonScope
+
+from tomate.config import Config
 
 BaseDirectory_attrs = {
     'xdg_config_home': '/home/mock/.config',
@@ -14,14 +16,11 @@ BaseDirectory_attrs = {
 
 @pytest.fixture()
 def config():
-    from tomate.config import Config
-
     return Config(Mock(), Mock())
 
 
 @patch('tomate.config.BaseDirectory', spec_set=True, **BaseDirectory_attrs)
 class TestConfig:
-
     def test_get_config_path(self, base_directory, config):
         assert config.get_config_path() == '/home/mock/.config/tomate/tomate.conf'
 
@@ -43,7 +42,6 @@ class TestConfig:
         config.get_media_uri('alarm.mp3') == 'file:///usr/mock/tomate/media/alarm.mp3'
 
     def test_get_resource_path_should_raise_exception(self, base_directory, config):
-
         with pytest.raises(EnvironmentError):
             config.get_resource_path('/file/not/exist/')
 
@@ -57,7 +55,7 @@ class TestConfig:
         get_icon_path.side_effect = (
             lambda name, size, theme, extensions:
             '/usr/mock/icons/hicolor/{size}x{size}/apps/{name}.png'
-            .format(name=name, size=size)
+                .format(name=name, size=size)
         )
 
         assert config.get_icon_path('tomate', 22) == '/usr/mock/icons/hicolor/22x22/apps/tomate.png'
@@ -66,26 +64,27 @@ class TestConfig:
         assert config.get_icon_paths() == ['/usr/mock/icons']
 
     def test_get_option(self, base_directory, config):
-        config.parser.has_section.return_value = False
-        config.parser.has_option.return_value = False
-        config.parser.get.return_value = '25'
-        config.parser.getint.return_value = 25
-
-        assert config.get_int('Timer', 'pomodoro duration') == 25
-
-        config.parser.has_section.assert_called_once_with('timer')
-        config.parser.add_section.assert_called_once_with('timer')
-        config.parser.has_option.assert_called_once_with('timer', 'pomodoro_duration')
-        config.parser.get.assert_called_once_with('timer', 'pomodoro_duration')
-        config.parser.set.assert_called_once_with('timer', 'pomodoro_duration', '25')
-
-    def test_get_options(self, base_directory, config):
         config.get('section', 'option')
 
-        config.parser.get.assert_called_with('section', 'option')
+        config.parser.get.assert_called_with('section', 'option', fallback=None)
 
         config.get_int('section', 'option')
-        config.parser.getint.assert_called_with('section', 'option')
+        config.parser.getint.assert_called_with('section', 'option', fallback=None)
+
+    def test_set_option_when_has_no_section(self, based_directory, config):
+        config.parser.has_section.side_effect = lambda section: True if section == 'section' else False
+        mo = mock_open()
+
+        with patch('tomate.config.open', mo, create=True):
+            config.remove('section', 'option')
+
+            config.parser.remove_option.assert_called_with('section', 'option')
+            config.parser.write.assert_called_once_with(mo())
+            config.event.send.assert_called_once_with('section',
+                                                      section='section',
+                                                      option='option',
+                                                      value=None,
+                                                      action='remove')
 
     def test_set_option(self, base_directory, config):
         config.parser.has_section.return_value = False
@@ -110,25 +109,18 @@ def test_should_emit_setting_changed(base_directory, config):
         config.event.send.assert_called_once_with('timer',
                                                   section='timer',
                                                   option='pomodoro',
-                                                  value=4)
+                                                  value=4,
+                                                  action='set')
 
 
-def test_module():
-    from tomate.config import Config, ConfigModule
-
-    graph = Graph()
-
-    assert ['tomate.config'] == list(ConfigModule.providers.keys())
-
-    ConfigModule().add_to(graph)
-
-    assert 'config.parser' in graph.providers.keys()
+def test_module(graph):
+    assert 'tomate.config' in graph.providers
 
     provider = graph.providers['tomate.config']
 
-    assert isinstance(provider, FactoryProvider)
     assert provider.scope == SingletonScope
-    assert provider.dependencies == dict(parser='config.parser', events='tomate.events')
 
-    graph.register_instance('tomate.events', Mock())
+    graph.register_instance('config.parser', Mock())
+    graph.register_instance('tomate.events.setting', Mock())
+
     assert isinstance(graph.get('tomate.config'), Config)

@@ -42,7 +42,6 @@ def rounded_percent(percent):
 
 
 class fsm(object):
-
     def __init__(self, target, **kwargs):
         self.target = target
         self.source = kwargs.pop('source', '*')
@@ -67,7 +66,7 @@ class fsm(object):
         logger.debug('Changing %s %s to %s',
                      instance.__class__.__name__, self.attr, self.target)
 
-        if getattr(instance, self.attr, None) != self.target:
+        if self.target != 'self' and getattr(instance, self.attr, None) != self.target:
             setattr(instance, self.attr, self.target)
 
     def call_exit_action(self, instance):

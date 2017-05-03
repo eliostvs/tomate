@@ -5,7 +5,6 @@ import enum
 
 @enum.unique
 class Base(enum.Enum):
-
     @classmethod
     def by_index(cls, number):
         for (index, attr) in enumerate(cls):

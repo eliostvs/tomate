@@ -4,13 +4,19 @@ Tomate
 A pomodoro timer written in Python. This project has only the core classes.
 [Here][1] is the repository of the Gtk version.
 
-Bugs and Suggetions
--------------------
+Bugs and Suggestions
+--------------------
 
 Bugs and suggestions should be reported [here][2].
 
 Change Logs
 -----------
+
+### 0.7.0
+
+- Using wiring.scanning
+- Plugin settings
+- Python 3 only (packages)
 
 ### 0.6.0
 

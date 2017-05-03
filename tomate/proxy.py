@@ -1,12 +1,11 @@
 from __future__ import unicode_literals
 
-from wiring import injected, Graph, Module
+from wiring import injected, Graph
+from wiring.scanning import register
 
 
 class LazyProxy(object):
-
     def __init__(self, specification, graph):
-
         self.__specification = specification
         self.__graph = graph
 
@@ -21,11 +20,6 @@ class LazyProxy(object):
         return obj
 
 
+@register.function('tomate.proxy')
 def lazy_proxy(specification, graph=injected(Graph)):
     return LazyProxy(specification, graph)
-
-
-class ProxyModule(Module):
-    functions = {
-        'tomate.proxy': lazy_proxy
-    }

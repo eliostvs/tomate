@@ -1,14 +1,10 @@
 from __future__ import unicode_literals
 
 import pytest
-
-from blinker import Namespace
 from mock import Mock
-from wiring import Graph, InstanceProvider
 
 from tomate.constant import State
-from tomate.event import (on, EventModule, Subscriber, SubscriberMeta, Dispatcher,
-                          methods_with_events, disconnect_events)
+from tomate.event import (on, Subscriber, SubscriberMeta, methods_with_events, disconnect_events)
 
 
 @pytest.fixture()
@@ -23,7 +19,6 @@ def timer():
 
 @pytest.fixture()
 def foo(session, timer):
-
     class Foo(object):
         @on(session, [State.finished])
         def bar(self, sender):
@@ -70,39 +65,25 @@ def test_should_disconnect_bind_events(session, timer, foo):
     timer.disconnect.assert_any_call(foo.spam, sender=State.finished)
 
 
-@pytest.fixture()
-def dispatcher():
-    return Dispatcher()
+def should_raise_attribute_error_when_key_not_found_in_the_namespace():
+    from tomate.event import Events
+
+    with pytest.raises(AttributeError):
+        Events.Foo
 
 
-@pytest.fixture()
-def event(dispatcher):
-    return dispatcher.signal('event')
+def test_should_events_be_acessiable_as_dictionary_and_attributes():
+    import tomate.event as e
+
+    assert e.Session == e.Events.Session
+    assert e.Session == e.Events.Session
 
 
-class TestDispatcher:
+def test_module(graph):
+    import tomate.event as e
 
-    def test_should_return_event_by_key(self, dispatcher, event):
-        assert event == dispatcher['event']
-
-    def test_should_return_event_by_attribute(self, dispatcher, event):
-        assert event == dispatcher.event
-
-    def test_should_return_a_empty_list(self, dispatcher):
-        assert dispatcher.__bases__ == []
-
-
-def test_event_module():
-    graph = Graph()
-
-    assert ['tomate.events'] == list(EventModule.providers.keys())
-
-    EventModule().add_to(graph)
-
-    provider = graph.providers['tomate.events']
-
-    assert isinstance(provider, InstanceProvider)
-    assert provider.scope is None
-    assert provider.dependencies == {}
-
-    assert isinstance(graph.get('tomate.events'), Namespace)
+    assert e.Events is graph.get('tomate.events')
+    assert e.Events.Setting is graph.get('tomate.events.setting')
+    assert e.Events.Session is graph.get('tomate.events.session')
+    assert e.Events.Timer is graph.get('tomate.events.timer')
+    assert e.Events.View is graph.get('tomate.events.view')

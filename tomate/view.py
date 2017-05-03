@@ -4,7 +4,6 @@ from wiring import Interface
 
 
 class TrayIcon(Interface):
-
     def show(*args, **kwargs):
         pass
 

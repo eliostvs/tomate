@@ -1,19 +1,20 @@
 from __future__ import unicode_literals
 
-from wiring import inject, Module, SingletonScope
+from wiring import inject, SingletonScope
+from wiring.scanning import register
 
 from .constant import State, Task
 from .event import EventState, Subscriber, on, Events
 from .utils import fsm
 
 
+@register.factory('tomate.session', scope=SingletonScope)
 class Session(Subscriber):
-
-    @inject(timer='tomate.timer', config='tomate.config', events='tomate.events')
-    def __init__(self, timer, config, events):
+    @inject(timer='tomate.timer', config='tomate.config', event='tomate.events.session')
+    def __init__(self, timer, config, event):
         self.config = config
         self.timer = timer
-        self.event = events.Session
+        self.event = event
 
     def is_running(self):
         return self.timer.state == State.started
@@ -36,7 +37,7 @@ class Session(Subscriber):
 
         return True
 
-    @fsm(target=State.stopped,
+    @fsm(target='self',
          source=[State.stopped, State.finished],
          exit=lambda self: self._trigger(State.reset))
     def reset(self):
@@ -60,7 +61,7 @@ class Session(Subscriber):
 
         return True
 
-    @fsm(target=State.stopped,
+    @fsm(target='self',
          source=[State.stopped, State.finished])
     @on(Events.Setting, ['timer'])
     def change_task(self, sender=None, **kwargs):
@@ -101,10 +102,3 @@ class Session(Subscriber):
                       callback=_trigger,
                       attr='_task',
                       event=State.changed)
-
-
-class SessionModule(Module):
-
-    factories = {
-        'tomate.session': (Session, SingletonScope)
-    }
