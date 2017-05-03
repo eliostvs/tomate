@@ -11,7 +11,7 @@ from tomate.event import Events, Setting
 def timer():
     from tomate.timer import Timer
 
-    return Timer(event=Events['Timer'])
+    return Timer(event=Events.Timer)
 
 
 @pytest.fixture()
@@ -20,7 +20,7 @@ def session(timer):
 
     Setting.receivers.clear()
 
-    return Session(timer=timer, config=Mock(**{'get_int.return_value': 0.01}), event=Events['Session'])
+    return Session(timer=timer, config=Mock(**{'get_int.return_value': 0.01}), event=Events.Session)
 
 
 def test_should_change_state_to_finished(timer, session):

@@ -75,7 +75,7 @@ def should_raise_attribute_error_when_key_not_found_in_the_namespace():
 def test_should_events_be_acessiable_as_dictionary_and_attributes():
     import tomate.event as e
 
-    assert e.Session == e.Events['Session']
+    assert e.Session == e.Events.Session
     assert e.Session == e.Events.Session
 
 
