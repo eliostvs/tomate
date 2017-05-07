@@ -16,7 +16,7 @@ DEFAULTS = {
     'long_break_interval': '4',
 }
 
-CONFIG_PARSER = configparser.ConfigParser(defaults=DEFAULTS)
+CONFIG_PARSER = configparser.ConfigParser(defaults=DEFAULTS, strict=True)
 
 register.instance('config.parser')(CONFIG_PARSER)
 
@@ -87,6 +87,9 @@ class Config(object):
     def _get(self, section, option, method='get'):
         section = Config.normalize(section)
         option = Config.normalize(option)
+
+        if not self.parser.has_section(section):
+            self.parser.add_section(section)
 
         return getattr(self.parser, method)(section, option, fallback=None)
 

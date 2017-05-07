@@ -71,6 +71,13 @@ class TestConfig:
         config.get_int('section', 'option')
         config.parser.getint.assert_called_with('section', 'option', fallback=None)
 
+    def test_get_option_using_defaults(self, based_directory):
+        from tomate.config import CONFIG_PARSER, Config, DEFAULTS
+
+        config = Config(CONFIG_PARSER, Mock())
+
+        assert int(DEFAULTS['pomodoro_duration']) == config.get_int('timer', 'pomodoro_duration')
+
     def test_set_option_when_has_no_section(self, based_directory, config):
         config.parser.has_section.side_effect = lambda section: True if section == 'section' else False
         mo = mock_open()
