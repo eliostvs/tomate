@@ -26,5 +26,5 @@ class UI(Interface):
     def hide(*args, **kwargs):
         pass
 
-    def show_message(self, message, level):
+    def show_message(message, level):
         pass
