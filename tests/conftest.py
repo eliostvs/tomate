@@ -1,5 +1,5 @@
+from unittest.mock import Mock
 import pytest
-from mock import Mock
 from wiring.scanning import scan_to_graph
 
 

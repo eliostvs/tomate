@@ -24,7 +24,7 @@ def test_should_be_able_to_stop_when_timer_is_running(timer):
     assert timer.state == State.stopped
 
 
-def test_should_not_be_able_to_start_when_timer_is_alread_running(timer):
+def test_should_not_be_able_to_start_when_timer_is_already_running(timer):
     timer.state = State.started
 
     assert not timer.start(1)

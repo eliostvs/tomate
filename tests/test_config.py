@@ -1,7 +1,7 @@
 import os
 
 import pytest
-from mock import Mock, mock_open, patch
+from unittest.mock import Mock, mock_open, patch
 from wiring import SingletonScope
 
 from tomate.config import Config
