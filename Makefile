@@ -7,6 +7,7 @@ PROJECT = home:eliostvs:tomate
 DEBUG = TOMATE_DEBUG=true
 OBS_API_URL = https://api.opensuse.org:443/trigger/runservice?project=$(PROJECT)&package=$(PACKAGE)
 WORK_DIR = /code
+CURRENT_VERSION = `cat .bumpversion.cfg | grep current_version | awk '{print $$3}'`
 
 clean:
 	find . \( -iname "*.pyc" -o -iname "__pycache__" \) -print0 | xargs -0 rm -rf
@@ -34,5 +35,6 @@ trigger-build:
 
 release-%:
 	docker run --rm -v $(PACKAGE_ROOT):$(WORK_DIR) --entrypoint="bumpversion" --workdir $(WORK_DIR) $(DOCKER_IMAGE_NAME) --verbose $*
-	git flow release finish "$(cat .bumpversion.cfg | grep current_version | awk '{print $3}')"
+	git flow release start $(CURRENT_VERSION)
+	git flow release finish $(CURRENT_VERSION)
 	git push --tags
