@@ -2,7 +2,7 @@ from unittest.mock import Mock
 from wiring import SingletonScope
 
 from tomate.constant import State, Task
-from tomate.session import Session
+from tomate.session import Session, SECONDS_IN_A_MINUTE
 
 
 def test_should_not_be_able_to_start_when_state_is_not_valid(session):
@@ -134,7 +134,8 @@ def test_session_status(session):
     expected = dict(task=Task.shortbreak,
                     sessions=2,
                     state=State.started,
-                    time_left=5 * 60)
+                    time_left=5 * SECONDS_IN_A_MINUTE,
+                    task_name='')
 
     assert session.status() == expected
 
@@ -142,7 +143,7 @@ def test_session_status(session):
 def test_should_call_config(session):
     session.config.reset_mock()
 
-    assert session.duration == 25 * 60
+    assert session.duration == 25 * SECONDS_IN_A_MINUTE
     session.config.get_int.assert_called_once_with('Timer', 'pomodoro_duration')
 
 
@@ -153,7 +154,8 @@ def test_should_trigger_start_event_when_session_start(session):
                                                task=Task.pomodoro,
                                                sessions=0,
                                                state=State.started,
-                                               time_left=1500)
+                                               time_left=1500,
+                                               task_name='')
 
 
 def test_should_trigger_stop_event_when_session_stop(session):
@@ -165,7 +167,8 @@ def test_should_trigger_stop_event_when_session_stop(session):
                                           task=Task.pomodoro,
                                           sessions=0,
                                           state=State.stopped,
-                                          time_left=1500)
+                                          time_left=1500,
+                                          task_name='')
 
 
 def test_should_trigger_changed_event_when_session_reset(session):
@@ -176,7 +179,8 @@ def test_should_trigger_changed_event_when_session_reset(session):
                                           task=Task.pomodoro,
                                           sessions=0,
                                           state=State.stopped,
-                                          time_left=1500)
+                                          time_left=1500,
+                                          task_name='')
 
 
 def test_should_trigger_finished_event(session):
@@ -189,7 +193,8 @@ def test_should_trigger_finished_event(session):
                                           task=Task.shortbreak,
                                           sessions=1,
                                           state=State.finished,
-                                          time_left=300)
+                                          time_left=300,
+                                          task_name='')
 
 
 def test_should_trigger_changed_event_when_task_change(session):
@@ -200,7 +205,8 @@ def test_should_trigger_changed_event_when_task_change(session):
                                           task=Task.longbreak,
                                           sessions=0,
                                           state=State.stopped,
-                                          time_left=900)
+                                          time_left=900,
+                                          task_name='')
 
 
 def test_initial_task_name(session):

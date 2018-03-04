@@ -77,10 +77,12 @@ class Session(Subscriber):
         return seconds * SECONDS_IN_A_MINUTE
 
     def status(self):
-        return dict(task=self.task,
-                    sessions=self.count,
-                    state=self.state,
-                    time_left=self.duration)
+        return dict(
+            task=self.task,
+            sessions=self.count,
+            state=self.state,
+            time_left=self.duration,
+            task_name=self.task_name)
 
     def current_task_is(self, task_type):
         return self.task == task_type
