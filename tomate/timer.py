@@ -16,13 +16,13 @@ DEFAULT_INTERVAL = 1000
 class Timer(object):
     @inject(event='tomate.events.timer')
     def __init__(self, event):
-        self.__seconds = self.time_left = 0
+        self.duration = self.time_left = 0
         self.event = event
 
     @fsm(target=State.started,
          source=[State.finished, State.stopped])
     def start(self, seconds):
-        self.__seconds = self.time_left = seconds
+        self.duration = self.time_left = seconds
 
         GObject.timeout_add(DEFAULT_INTERVAL, self._update)
 
@@ -49,7 +49,7 @@ class Timer(object):
     @property
     def time_ratio(self):
         try:
-            ratio = round(1.0 - self.time_left / self.__seconds, 1)
+            ratio = round(1.0 - self.time_left / self.duration, 1)
 
         except ZeroDivisionError:
             ratio = 0
@@ -75,6 +75,6 @@ class Timer(object):
                         time_ratio=self.time_ratio)
 
     def _reset(self):
-        self.__seconds = self.time_left = 0
+        self.duration = self.time_left = 0
 
     state = EventState(initial=State.stopped, callback=_trigger)

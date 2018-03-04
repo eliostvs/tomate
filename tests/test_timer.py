@@ -48,7 +48,7 @@ def test_should_update_seconds_when_timer_start(timer):
     timer.start(1)
 
     assert timer.time_left == 1
-    assert timer._Timer__seconds == 1
+    assert timer.duration == 1
 
 
 def test_should_increase_the_time_ratio_after_update(timer):
