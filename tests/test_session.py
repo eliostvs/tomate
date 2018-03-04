@@ -76,7 +76,7 @@ def test_should_be_able_to_end_when_state_is_valid_and_timer_is_not_running(sess
     assert session.state == State.finished
 
 
-def test_shoud_not_be_able_to_change_task_when_state_is_not_valid(session):
+def test_should_not_be_able_to_change_task_when_state_is_not_valid(session):
     session.state = State.started
 
     assert not session.change_task(task=None)
