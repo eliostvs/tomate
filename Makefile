@@ -31,3 +31,6 @@ docker-enter:
 
 trigger-build:
 	curl -X POST -H "Authorization: Token $(TOKEN)" $(OBS_API_URL)
+
+release-%:
+	docker run --rm -v $(PACKAGE_ROOT):$(WORK_DIR) --entrypoint="bumpversion" --workdir $(WORK_DIR) $(DOCKER_IMAGE_NAME) --verbose $*
