@@ -19,13 +19,13 @@ def test_should_be_able_to_start_when_state_is_valid(session):
         assert session.state
 
 
-def test_shoud_not_be_able_to_stop_when_state_is_not_valid(session):
+def test_should_not_be_able_to_stop_when_state_is_not_valid(session):
     session.state = State.stopped
 
     assert not session.stop()
 
 
-def test_shoud_not_be_able_to_stop_when_state_is_valid_and_timer_is_not_running(session):
+def test_should_not_be_able_to_stop_when_state_is_valid_and_timer_is_not_running(session):
     session.timer.state = State.stopped
     session.state = State.stopped
 
