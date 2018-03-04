@@ -3,7 +3,7 @@ from wiring import inject, SingletonScope
 from wiring.scanning import register
 
 from .constant import State
-from .event import EventState
+from .event import ObservableProperty
 from .utils import fsm
 
 # Borrowed from Tomatoro create by Pierre Quillery.
@@ -77,4 +77,4 @@ class Timer(object):
     def _reset(self):
         self.duration = self.time_left = 0
 
-    state = EventState(initial=State.stopped, callback=_trigger)
+    state = ObservableProperty(initial=State.stopped, callback=_trigger)

@@ -1,14 +1,14 @@
 import pytest
 from mock import Mock
 
-from tomate.event import EventState
+from tomate.event import ObservableProperty
 
 
 class Foo(object):
     function = Mock()
 
-    state = EventState('a', function, event='spam')
-    other_state = EventState('b', function, '_hide')
+    state = ObservableProperty('a', function, event='spam')
+    other_state = ObservableProperty('b', function, '_hide')
 
 
 @pytest.fixture()

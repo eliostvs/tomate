@@ -74,7 +74,7 @@ class Subscriber(six.with_metaclass(SubscriberMeta, object)):
     pass
 
 
-class EventState(object):
+class ObservableProperty(object):
     def __init__(self, initial, callback, attr='_state', event=None):
         self.initial = initial
         self.callback = callback

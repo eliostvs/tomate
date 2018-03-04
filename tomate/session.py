@@ -2,7 +2,7 @@ from wiring import inject, SingletonScope
 from wiring.scanning import register
 
 from .constant import State, Task
-from .event import EventState, Subscriber, on, Events
+from .event import ObservableProperty, Subscriber, on, Events
 from .utils import fsm
 
 SECONDS_IN_A_MINUTE = 60
@@ -91,14 +91,14 @@ class Session(Subscriber):
     def _is_time_to_long_break(self):
         return not self.count % self.config.get_int('Timer', 'Long Break Interval')
 
-    state = EventState(initial=State.stopped, callback=_trigger)
+    state = ObservableProperty(initial=State.stopped, callback=_trigger)
 
-    count = EventState(initial=0,
-                       callback=_trigger,
-                       attr='_count',
-                       event=State.changed)
+    count = ObservableProperty(initial=0,
+                               callback=_trigger,
+                               attr='_count',
+                               event=State.changed)
 
-    task = EventState(initial=Task.pomodoro,
-                      callback=_trigger,
-                      attr='_task',
-                      event=State.changed)
+    task = ObservableProperty(initial=Task.pomodoro,
+                              callback=_trigger,
+                              attr='_task',
+                              event=State.changed)
