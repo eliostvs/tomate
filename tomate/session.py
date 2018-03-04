@@ -1,11 +1,11 @@
-from __future__ import unicode_literals
-
 from wiring import inject, SingletonScope
 from wiring.scanning import register
 
 from .constant import State, Task
 from .event import EventState, Subscriber, on, Events
 from .utils import fsm
+
+SECONDS_IN_A_MINUTE = 60
 
 
 @register.factory('tomate.session', scope=SingletonScope)
@@ -72,8 +72,8 @@ class Session(Subscriber):
     @property
     def duration(self):
         option_name = self.task.name + '_duration'
-        minutes = self.config.get_int('Timer', option_name)
-        return minutes * 60
+        seconds = self.config.get_int('Timer', option_name)
+        return seconds * SECONDS_IN_A_MINUTE
 
     def status(self):
         return dict(task=self.task,

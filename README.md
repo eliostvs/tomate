@@ -12,6 +12,16 @@ Bugs and suggestions should be reported [here][2].
 Change Logs
 -----------
 
+### 0.8.0
+
+#### Added
+
+- **show\_message** method to view interface
+
+#### Fix
+
+- Values with space in settings (ex: alarm file path)
+
 ### 0.7.0
 
 - Using wiring.scanning
