@@ -15,6 +15,7 @@ class Session(Subscriber):
         self.config = config
         self.timer = timer
         self.event = event
+        self.__task_name = ''
 
     def is_running(self):
         return self.timer.state == State.started
@@ -86,6 +87,15 @@ class Session(Subscriber):
 
     def _trigger(self, event_type):
         self.event.send(event_type, **self.status())
+
+    @property
+    def task_name(self):
+        return self.__task_name
+
+    @task_name.setter
+    def task_name(self, task_name):
+        if self.state in [State.stopped, State.finished]:
+            self.__task_name = task_name
 
     @property
     def _is_time_to_long_break(self):

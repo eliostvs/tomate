@@ -203,6 +203,32 @@ def test_should_trigger_changed_event_when_task_change(session):
                                           time_left=900)
 
 
+def test_initial_task_name(session):
+    assert session.task_name == ''
+
+
+def test_change_task_name_when_session_is_stopped_should_work(session):
+    session.state = State.stopped
+    session.task_name = 'new task name'
+
+    assert session.task_name == 'new task name'
+
+
+def test_change_task_name_when_session_is_finished_should_work(session):
+    session.state = State.finished
+    session.task_name = 'new task name'
+
+    assert session.task_name == 'new task name'
+
+
+def test_change_task_name_when_session_is_running_should_not_work(session):
+    session.state = State.started
+
+    session.task_name = 'new task name'
+
+    assert session.task_name == ''
+
+
 def test_module(graph, config):
     assert 'tomate.session' in graph.providers
 
