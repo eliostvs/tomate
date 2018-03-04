@@ -1,6 +1,5 @@
 import functools
 import logging
-import six
 from blinker import Namespace
 from wiring.scanning import register
 
@@ -70,7 +69,7 @@ class SubscriberMeta(type):
         return obj
 
 
-class Subscriber(six.with_metaclass(SubscriberMeta, object)):
+class Subscriber(metaclass=SubscriberMeta):
     pass
 
 

@@ -1,8 +1,6 @@
 import logging
 import os
-import sys
 
-import six
 import wrapt
 
 logger = logging.getLogger(__name__)
@@ -24,7 +22,7 @@ def suppress_errors(wrapped, instance, args, kwargs):
 
     except Exception as ex:
         if in_debug_mode():
-            six.reraise(*sys.exc_info())
+            raise ex
 
         log = logging.getLogger(__name__)
         log.error(ex, exc_info=True)

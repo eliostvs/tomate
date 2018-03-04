@@ -1,6 +1,6 @@
 import logging
 import os
-from six.moves import configparser
+import configparser
 from wiring import inject, SingletonScope
 from wiring.scanning import register
 from xdg import BaseDirectory, IconTheme
