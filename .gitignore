@@ -22,3 +22,4 @@ docs/*
 sdist
 *.sublime-*
 .cache
+.envrc
