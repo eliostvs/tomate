@@ -1,5 +1,3 @@
-from __future__ import division, unicode_literals
-
 from gi.repository import GObject
 from wiring import inject, SingletonScope
 from wiring.scanning import register

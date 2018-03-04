@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from wiring import Graph
 
 from tomate.proxy import LazyProxy, lazy_proxy

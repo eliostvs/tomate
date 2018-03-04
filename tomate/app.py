@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import dbus.service
 from wiring import inject
 from wiring.scanning import register

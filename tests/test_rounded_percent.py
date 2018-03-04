@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import pytest
 
 from tomate.utils import rounded_percent

@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from wiring import injected, Graph
 from wiring.scanning import register
 
