@@ -34,5 +34,5 @@ trigger-build:
 
 release-%:
 	docker run --rm -v $(PACKAGE_ROOT):$(WORK_DIR) --entrypoint="bumpversion" --workdir $(WORK_DIR) $(DOCKER_IMAGE_NAME) --verbose $*
-	git flow release finish $(cat .bumpversion.cfg | grep current_version | awk '{print $3}')
+	git flow release finish "$(cat .bumpversion.cfg | grep current_version | awk '{print $3}')"
 	git push --tags
