@@ -9,22 +9,22 @@ from .utils import fsm
 # Borrowed from Tomatoro create by Pierre Quillery.
 # https://github.com/dandelionmood/Tomatoro
 # Thanks Pierre!
-DEFAULT_INTERVAL = 1000
+ONE_SECOND = 1000
 
 
 @register.factory('tomate.timer', scope=SingletonScope)
 class Timer(object):
     @inject(event='tomate.events.timer')
     def __init__(self, event):
-        self.duration = self.time_left = 0
+        self.total_seconds = self.seconds_left = 0
         self.event = event
 
     @fsm(target=State.started,
          source=[State.finished, State.stopped])
     def start(self, seconds):
-        self.duration = self.time_left = seconds
+        self.total_seconds = self.seconds_left = seconds
 
-        GObject.timeout_add(DEFAULT_INTERVAL, self._update)
+        GObject.timeout_add(ONE_SECOND, self._update)
 
         return True
 
@@ -36,7 +36,7 @@ class Timer(object):
         return True
 
     def timer_is_up(self):
-        return self.time_left <= 0
+        return self.seconds_left <= 0
 
     @fsm(target=State.finished,
          source=[State.started],
@@ -49,7 +49,7 @@ class Timer(object):
     @property
     def time_ratio(self):
         try:
-            ratio = round(1.0 - self.time_left / self.duration, 1)
+            ratio = round(1.0 - self.seconds_left / self.total_seconds, 1)
 
         except ZeroDivisionError:
             ratio = 0
@@ -60,10 +60,10 @@ class Timer(object):
         if self.state != State.started:
             return False
 
-        if self.time_left <= 0:
+        if self.seconds_left <= 0:
             return self.end()
 
-        self.time_left -= 1
+        self.seconds_left -= 1
 
         self._trigger(State.changed)
 
@@ -71,10 +71,10 @@ class Timer(object):
 
     def _trigger(self, event_type):
         self.event.send(event_type,
-                        time_left=self.time_left,
+                        time_left=self.seconds_left,
                         time_ratio=self.time_ratio)
 
     def _reset(self):
-        self.duration = self.time_left = 0
+        self.total_seconds = self.seconds_left = 0
 
     state = ObservableProperty(initial=State.stopped, callback=_trigger)

@@ -8,7 +8,7 @@ from tomate.timer import Timer
 def test_default_timer_values(timer):
     assert timer.state == State.stopped
     assert timer.time_ratio == 0
-    assert timer.time_left == 0
+    assert timer.seconds_left == 0
 
 
 def test_should_not_be_able_to_stop_when_timer_is_not_running(timer):
@@ -47,8 +47,8 @@ def test_should_update_seconds_when_timer_start(timer):
 
     timer.start(1)
 
-    assert timer.time_left == 1
-    assert timer.duration == 1
+    assert timer.seconds_left == 1
+    assert timer.total_seconds == 1
 
 
 def test_should_increase_the_time_ratio_after_update(timer):
@@ -69,7 +69,7 @@ def test_should_decrease_the_time_left_after_update(timer):
     timer.start(2)
 
     assert timer._update()
-    assert timer.time_left == 1
+    assert timer.seconds_left == 1
 
 
 def test_should_finished_when_the_time_ends(timer):
