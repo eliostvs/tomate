@@ -53,12 +53,12 @@ class Session(Subscriber):
     def end(self, sender=None, **kwargs):
         if self.current_task_is(Sessions.pomodoro):
             self.count += 1
-            self.task = (Sessions.longbreak
-                         if self._is_time_to_long_break
-                         else Sessions.shortbreak)
+            self.current = (Sessions.longbreak
+                            if self._is_time_to_long_break
+                            else Sessions.shortbreak)
 
         else:
-            self.task = Sessions.pomodoro
+            self.current = Sessions.pomodoro
 
         return True
 
@@ -66,26 +66,26 @@ class Session(Subscriber):
          source=[State.stopped, State.finished])
     @on(Events.Setting, ['timer'])
     def change_task(self, sender=None, **kwargs):
-        self.task = kwargs.get('task', self.task)
+        self.current = kwargs.get('task', self.current)
 
         return True
 
     @property
     def duration(self):
-        option_name = self.task.name + '_duration'
+        option_name = self.current.name + '_duration'
         seconds = self._config.get_int('Timer', option_name)
         return seconds * SECONDS_IN_A_MINUTE
 
     def status(self):
         return dict(
-            task=self.task,
+            current=self.current,
             sessions=self.count,
             state=self.state,
             time_left=self.duration,
             task_name=self.task_name)
 
-    def current_task_is(self, task_type):
-        return self.task == task_type
+    def current_task_is(self, session_type):
+        return self.current == session_type
 
     def _trigger(self, event_type):
         self._dispatcher.send(event_type, **self.status())
@@ -110,7 +110,7 @@ class Session(Subscriber):
                                attr='_count',
                                event=State.changed)
 
-    task = ObservableProperty(initial=Sessions.pomodoro,
-                              callback=_trigger,
-                              attr='_task',
-                              event=State.changed)
+    current = ObservableProperty(initial=Sessions.pomodoro,
+                                 callback=_trigger,
+                                 attr='_current',
+                                 event=State.changed)
