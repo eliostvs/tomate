@@ -7,7 +7,7 @@ from wiring.scanning import scan_to_graph
 def timer():
     from tomate.timer import Timer
 
-    return Timer(event=Mock())
+    return Timer(dispatcher=Mock())
 
 
 @pytest.fixture()

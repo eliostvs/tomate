@@ -14,10 +14,10 @@ ONE_SECOND = 1000
 
 @register.factory('tomate.timer', scope=SingletonScope)
 class Timer(object):
-    @inject(event='tomate.events.timer')
-    def __init__(self, event):
+    @inject(dispatcher='tomate.events.timer')
+    def __init__(self, dispatcher):
         self.total_seconds = self.seconds_left = 0
-        self.event = event
+        self._dispatcher = dispatcher
 
     @fsm(target=State.started,
          source=[State.finished, State.stopped])
@@ -70,9 +70,9 @@ class Timer(object):
         return True
 
     def _trigger(self, event_type):
-        self.event.send(event_type,
-                        time_left=self.seconds_left,
-                        time_ratio=self.time_ratio)
+        self._dispatcher.send(event_type,
+                              time_left=self.seconds_left,
+                              time_ratio=self.time_ratio)
 
     def _reset(self):
         self.total_seconds = self.seconds_left = 0

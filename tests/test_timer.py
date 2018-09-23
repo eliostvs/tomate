@@ -88,7 +88,7 @@ def test_should_trigger_finished_event(timer):
     timer._update()
     timer._update()
 
-    timer.event.send.assert_called_with(State.finished, time_left=0, time_ratio=0)
+    timer._dispatcher.send.assert_called_with(State.finished, time_left=0, time_ratio=0)
 
 
 def test_should_trigger_changed_event(timer):
@@ -96,7 +96,7 @@ def test_should_trigger_changed_event(timer):
 
     timer._update()
 
-    timer.event.send.assert_called_with(State.changed, time_left=9, time_ratio=0.1)
+    timer._dispatcher.send.assert_called_with(State.changed, time_left=9, time_ratio=0.1)
 
 
 def test_module(graph):
