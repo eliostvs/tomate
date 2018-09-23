@@ -1,4 +1,5 @@
-from mock import Mock
+from unittest.mock import Mock
+
 from wiring import SingletonScope
 
 from tomate.constant import State
