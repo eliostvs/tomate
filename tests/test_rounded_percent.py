@@ -13,5 +13,4 @@ from tomate.utils import rounded_percent
     (16, 15),
 ])
 def test_rounded_percent(input, expected):
-
     assert rounded_percent(input) == expected
