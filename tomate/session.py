@@ -1,7 +1,7 @@
 from wiring import inject, SingletonScope
 from wiring.scanning import register
 
-from .constant import State, Task
+from .constant import State, Sessions
 from .event import ObservableProperty, Subscriber, on, Events
 from .utils import fsm
 
@@ -51,14 +51,14 @@ class Session(Subscriber):
          conditions=[is_not_running])
     @on(Events.Timer, [State.finished])
     def end(self, sender=None, **kwargs):
-        if self.current_task_is(Task.pomodoro):
+        if self.current_task_is(Sessions.pomodoro):
             self.count += 1
-            self.task = (Task.longbreak
+            self.task = (Sessions.longbreak
                          if self._is_time_to_long_break
-                         else Task.shortbreak)
+                         else Sessions.shortbreak)
 
         else:
-            self.task = Task.pomodoro
+            self.task = Sessions.pomodoro
 
         return True
 
@@ -110,7 +110,7 @@ class Session(Subscriber):
                                attr='_count',
                                event=State.changed)
 
-    task = ObservableProperty(initial=Task.pomodoro,
+    task = ObservableProperty(initial=Sessions.pomodoro,
                               callback=_trigger,
                               attr='_task',
                               event=State.changed)

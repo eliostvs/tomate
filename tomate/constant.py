@@ -10,7 +10,7 @@ class Base(enum.Enum):
                 return attr
 
 
-class Task(Base):
+class Sessions(Base):
     pomodoro = 0
     shortbreak = 1
     longbreak = 2
