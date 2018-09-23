@@ -1,5 +1,6 @@
-import pytest
 import os
+
+import pytest
 
 from tomate.utils import format_time_left, suppress_errors
 

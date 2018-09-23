@@ -1,9 +1,11 @@
-import pytest
 from unittest.mock import Mock
+
+import pytest
+from yapsy.PluginManagerDecorator import PluginManagerDecorator
+
 from tomate.constant import State
 from tomate.event import on
 from tomate.plugin import Plugin
-from yapsy.PluginManagerDecorator import PluginManagerDecorator
 
 
 @pytest.fixture()

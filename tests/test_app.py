@@ -1,6 +1,7 @@
+from unittest.mock import Mock, patch
+
 import dbus
 import pytest
-from unittest.mock import Mock, patch
 from wiring import Graph
 
 from tomate.constant import State

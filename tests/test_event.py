@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import Mock
+
+import pytest
 
 from tomate.constant import State
 from tomate.event import (on, Subscriber, SubscriberMeta, methods_with_events, disconnect_events)
