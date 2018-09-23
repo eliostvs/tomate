@@ -10,11 +10,11 @@ SECONDS_IN_A_MINUTE = 60
 
 @register.factory('tomate.session', scope=SingletonScope)
 class Session(Subscriber):
-    @inject(timer='tomate.timer', config='tomate.config', event='tomate.events.session')
-    def __init__(self, timer, config, event):
+    @inject(timer='tomate.timer', config='tomate.config', dispatcher='tomate.events.session')
+    def __init__(self, timer, config, dispatcher):
         self.config = config
         self.timer = timer
-        self.event = event
+        self._dispatcher = dispatcher
         self.__task_name = ''
 
     def is_running(self):
@@ -88,7 +88,7 @@ class Session(Subscriber):
         return self.task == task_type
 
     def _trigger(self, event_type):
-        self.event.send(event_type, **self.status())
+        self._dispatcher.send(event_type, **self.status())
 
     @property
     def task_name(self):

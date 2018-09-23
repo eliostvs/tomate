@@ -1,4 +1,5 @@
 from unittest.mock import Mock
+
 from wiring import SingletonScope
 
 from tomate.constant import State, Task
@@ -150,12 +151,12 @@ def test_should_call_config(session):
 def test_should_trigger_start_event_when_session_start(session):
     session.start()
 
-    session.event.send.assert_called_once_with(State.started,
-                                               task=Task.pomodoro,
-                                               sessions=0,
-                                               state=State.started,
-                                               time_left=1500,
-                                               task_name='')
+    session._dispatcher.send.assert_called_once_with(State.started,
+                                                     task=Task.pomodoro,
+                                                     sessions=0,
+                                                     state=State.started,
+                                                     time_left=1500,
+                                                     task_name='')
 
 
 def test_should_trigger_stop_event_when_session_stop(session):
@@ -163,24 +164,24 @@ def test_should_trigger_stop_event_when_session_stop(session):
     session.timer.state = State.started
     session.stop()
 
-    session.event.send.assert_called_with(State.stopped,
-                                          task=Task.pomodoro,
-                                          sessions=0,
-                                          state=State.stopped,
-                                          time_left=1500,
-                                          task_name='')
+    session._dispatcher.send.assert_called_with(State.stopped,
+                                                task=Task.pomodoro,
+                                                sessions=0,
+                                                state=State.stopped,
+                                                time_left=1500,
+                                                task_name='')
 
 
 def test_should_trigger_changed_event_when_session_reset(session):
     session.count = 2
     session.reset()
 
-    session.event.send.assert_called_with(State.reset,
-                                          task=Task.pomodoro,
-                                          sessions=0,
-                                          state=State.stopped,
-                                          time_left=1500,
-                                          task_name='')
+    session._dispatcher.send.assert_called_with(State.reset,
+                                                task=Task.pomodoro,
+                                                sessions=0,
+                                                state=State.stopped,
+                                                time_left=1500,
+                                                task_name='')
 
 
 def test_should_trigger_finished_event(session):
@@ -189,24 +190,24 @@ def test_should_trigger_finished_event(session):
     session.config.get_int.return_value = 5
     session.end()
 
-    session.event.send.assert_called_with(State.finished,
-                                          task=Task.shortbreak,
-                                          sessions=1,
-                                          state=State.finished,
-                                          time_left=300,
-                                          task_name='')
+    session._dispatcher.send.assert_called_with(State.finished,
+                                                task=Task.shortbreak,
+                                                sessions=1,
+                                                state=State.finished,
+                                                time_left=300,
+                                                task_name='')
 
 
 def test_should_trigger_changed_event_when_task_change(session):
     session.config.get_int.return_value = 15
     session.change_task(task=Task.longbreak)
 
-    session.event.send.assert_called_with(State.changed,
-                                          task=Task.longbreak,
-                                          sessions=0,
-                                          state=State.stopped,
-                                          time_left=900,
-                                          task_name='')
+    session._dispatcher.send.assert_called_with(State.changed,
+                                                task=Task.longbreak,
+                                                sessions=0,
+                                                state=State.stopped,
+                                                time_left=900,
+                                                task_name='')
 
 
 def test_initial_task_name(session):

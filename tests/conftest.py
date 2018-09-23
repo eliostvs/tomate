@@ -22,7 +22,7 @@ def session(timer, config):
 
     Setting.receivers.clear()
 
-    return Session(timer=timer, config=config, event=Mock())
+    return Session(timer=timer, config=config, dispatcher=Mock())
 
 
 @pytest.fixture
