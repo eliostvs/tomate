@@ -34,7 +34,7 @@ def test_should_change_state_to_finished(timer, session):
 def test_call_to_change_task_should_be_true_when_session_is_stopped(session):
     result = Setting.send('timer')
 
-    assert [(session.change_task, True)] == result
+    assert [(session.change, True)] == result
 
 
 def test_call_to_change_task_should_be_false_when_session_is_started(session):
@@ -42,4 +42,4 @@ def test_call_to_change_task_should_be_false_when_session_is_started(session):
 
     result = Setting.send('timer')
 
-    assert [(session.change_task, False)] == result
+    assert [(session.change, False)] == result

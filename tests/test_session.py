@@ -80,16 +80,16 @@ def test_should_be_able_to_end_when_state_is_valid_and_timer_is_not_running(sess
 def test_should_not_be_able_to_change_task_when_state_is_not_valid(session):
     session.state = State.started
 
-    assert not session.change_task(task=None)
+    assert not session.change(session=None)
 
 
 def test_should_be_able_to_change_task_when_state_is_valid(session):
     for state in (State.stopped, State.finished):
         session._timer.state = state
 
-        session.change_task(dict(task=Sessions.shortbreak))
+        session.change(dict(session=Sessions.shortbreak))
 
-        assert session.change_task(task=Sessions.shortbreak)
+        assert session.change(session=Sessions.shortbreak)
         assert session.current == Sessions.shortbreak
 
 
@@ -200,7 +200,7 @@ def test_should_trigger_finished_event(session):
 
 def test_should_trigger_changed_event_when_task_change(session):
     session._config.get_int.return_value = 15
-    session.change_task(task=Sessions.longbreak)
+    session.change(session=Sessions.longbreak)
 
     session._dispatcher.send.assert_called_with(State.changed,
                                                 current=Sessions.longbreak,

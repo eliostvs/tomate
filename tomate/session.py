@@ -51,7 +51,7 @@ class Session(Subscriber):
          conditions=[is_not_running])
     @on(Events.Timer, [State.finished])
     def end(self, sender=None, **kwargs):
-        if self.current_task_is(Sessions.pomodoro):
+        if self._current_session_is(Sessions.pomodoro):
             self.count += 1
             self.current = (Sessions.longbreak
                             if self._is_time_to_long_break
@@ -65,8 +65,8 @@ class Session(Subscriber):
     @fsm(target='self',
          source=[State.stopped, State.finished])
     @on(Events.Setting, ['timer'])
-    def change_task(self, sender=None, **kwargs):
-        self.current = kwargs.get('task', self.current)
+    def change(self, sender=None, **kwargs):
+        self.current = kwargs.get('session', self.current)
 
         return True
 
@@ -84,7 +84,7 @@ class Session(Subscriber):
             time_left=self.duration,
             task_name=self.task_name)
 
-    def current_task_is(self, session_type):
+    def _current_session_is(self, session_type):
         return self.current == session_type
 
     def _trigger(self, event_type):
