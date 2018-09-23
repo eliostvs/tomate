@@ -13,12 +13,12 @@ class Session(Subscriber):
     @inject(timer='tomate.timer', config='tomate.config', dispatcher='tomate.events.session')
     def __init__(self, timer, config, dispatcher):
         self.config = config
-        self.timer = timer
+        self._timer = timer
         self._dispatcher = dispatcher
         self.__task_name = ''
 
     def is_running(self):
-        return self.timer.state == State.started
+        return self._timer.state == State.started
 
     def is_not_running(self):
         return not self.is_running()
@@ -26,7 +26,7 @@ class Session(Subscriber):
     @fsm(target=State.started,
          source=[State.stopped, State.finished])
     def start(self):
-        self.timer.start(self.duration)
+        self._timer.start(self.duration)
 
         return True
 
@@ -34,7 +34,7 @@ class Session(Subscriber):
          source=[State.started],
          conditions=[is_running])
     def stop(self):
-        self.timer.stop()
+        self._timer.stop()
 
         return True
 

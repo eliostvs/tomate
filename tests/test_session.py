@@ -27,7 +27,7 @@ def test_should_not_be_able_to_stop_when_state_is_not_valid(session):
 
 
 def test_should_not_be_able_to_stop_when_state_is_valid_and_timer_is_not_running(session):
-    session.timer.state = State.stopped
+    session._timer.state = State.stopped
     session.state = State.stopped
 
     assert not session.stop()
@@ -35,7 +35,7 @@ def test_should_not_be_able_to_stop_when_state_is_valid_and_timer_is_not_running
 
 def test_should_be_able_to_stop_when_state_is_valid(session):
     session.state = State.started
-    session.timer.state = State.started
+    session._timer.state = State.started
 
     assert session.stop()
     assert session.state == State.stopped
@@ -64,14 +64,14 @@ def test_should_not_be_able_to_end_when_state_is_not_valid(session):
 
 def test_should_not_be_able_to_end_when_the_state_is_valid_and_timer_is_running(session):
     session.state = State.started
-    session.timer.state = State.started
+    session._timer.state = State.started
 
     assert not session.end()
 
 
 def test_should_be_able_to_end_when_state_is_valid_and_timer_is_not_running(session):
     session.state = State.started
-    session.timer.state = State.stopped
+    session._timer.state = State.stopped
 
     assert session.end()
     assert session.state == State.finished
@@ -85,7 +85,7 @@ def test_should_not_be_able_to_change_task_when_state_is_not_valid(session):
 
 def test_should_be_able_to_change_task_when_state_is_valid(session):
     for state in (State.stopped, State.finished):
-        session.timer.state = state
+        session._timer.state = state
 
         session.change_task(dict(task=Sessions.shortbreak))
 
@@ -94,7 +94,7 @@ def test_should_be_able_to_change_task_when_state_is_valid(session):
 
 
 def test_should_change_task_to_short_break(session):
-    session.timer.state = State.stopped
+    session._timer.state = State.stopped
     session.task = Sessions.pomodoro
     session.state = State.started
     session.count = 0
@@ -108,7 +108,7 @@ def test_should_change_task_to_short_break(session):
 def test_should_change_task_to_pomodoro(session):
     for task in (Sessions.longbreak, Sessions.shortbreak):
         session.task = task
-        session.timer.state = State.stopped
+        session._timer.state = State.stopped
         session.state = State.started
 
         session.end()
@@ -161,7 +161,7 @@ def test_should_trigger_start_event_when_session_start(session):
 
 def test_should_trigger_stop_event_when_session_stop(session):
     session.state = State.started
-    session.timer.state = State.started
+    session._timer.state = State.started
     session.stop()
 
     session._dispatcher.send.assert_called_with(State.stopped,
@@ -186,7 +186,7 @@ def test_should_trigger_changed_event_when_session_reset(session):
 
 def test_should_trigger_finished_event(session):
     session.state = State.started
-    session.timer.State = State.stopped
+    session._timer.State = State.stopped
     session.config.get_int.return_value = 5
     session.end()
 
