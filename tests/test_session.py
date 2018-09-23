@@ -98,7 +98,7 @@ def test_should_change_task_to_short_break(session):
     session.task = Sessions.pomodoro
     session.state = State.started
     session.count = 0
-    session.config.get_int.return_value = 4
+    session._config.get_int.return_value = 4
 
     session.end()
 
@@ -120,7 +120,7 @@ def test_should_change_task_to_long_break(session):
     session.state = State.started
     session.task = Sessions.pomodoro
     session.count = 3
-    session.config.get_int.return_value = 4
+    session._config.get_int.return_value = 4
 
     assert session.end()
     assert session.task == Sessions.longbreak
@@ -130,7 +130,7 @@ def test_session_status(session):
     session.count = 2
     session.task = Sessions.shortbreak
     session.state = State.started
-    session.config.get_int.return_value = 5
+    session._config.get_int.return_value = 5
 
     expected = dict(task=Sessions.shortbreak,
                     sessions=2,
@@ -142,10 +142,10 @@ def test_session_status(session):
 
 
 def test_should_call_config(session):
-    session.config.reset_mock()
+    session._config.reset_mock()
 
     assert session.duration == 25 * SECONDS_IN_A_MINUTE
-    session.config.get_int.assert_called_once_with('Timer', 'pomodoro_duration')
+    session._config.get_int.assert_called_once_with('Timer', 'pomodoro_duration')
 
 
 def test_should_trigger_start_event_when_session_start(session):
@@ -187,7 +187,7 @@ def test_should_trigger_changed_event_when_session_reset(session):
 def test_should_trigger_finished_event(session):
     session.state = State.started
     session._timer.State = State.stopped
-    session.config.get_int.return_value = 5
+    session._config.get_int.return_value = 5
     session.end()
 
     session._dispatcher.send.assert_called_with(State.finished,
@@ -199,7 +199,7 @@ def test_should_trigger_finished_event(session):
 
 
 def test_should_trigger_changed_event_when_task_change(session):
-    session.config.get_int.return_value = 15
+    session._config.get_int.return_value = 15
     session.change_task(task=Sessions.longbreak)
 
     session._dispatcher.send.assert_called_with(State.changed,

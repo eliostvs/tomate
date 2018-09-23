@@ -12,7 +12,7 @@ SECONDS_IN_A_MINUTE = 60
 class Session(Subscriber):
     @inject(timer='tomate.timer', config='tomate.config', dispatcher='tomate.events.session')
     def __init__(self, timer, config, dispatcher):
-        self.config = config
+        self._config = config
         self._timer = timer
         self._dispatcher = dispatcher
         self.__task_name = ''
@@ -73,7 +73,7 @@ class Session(Subscriber):
     @property
     def duration(self):
         option_name = self.task.name + '_duration'
-        seconds = self.config.get_int('Timer', option_name)
+        seconds = self._config.get_int('Timer', option_name)
         return seconds * SECONDS_IN_A_MINUTE
 
     def status(self):
@@ -101,7 +101,7 @@ class Session(Subscriber):
 
     @property
     def _is_time_to_long_break(self):
-        return not self.count % self.config.get_int('Timer', 'Long Break Interval')
+        return not self.count % self._config.get_int('Timer', 'Long Break Interval')
 
     state = ObservableProperty(initial=State.stopped, callback=_trigger)
 
