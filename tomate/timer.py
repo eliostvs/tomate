@@ -1,4 +1,4 @@
-from gi.repository import GObject
+from gi.repository import GLib
 from wiring import inject, SingletonScope
 from wiring.scanning import register
 
@@ -24,7 +24,7 @@ class Timer(object):
     def start(self, seconds):
         self.total_seconds = self.seconds_left = seconds
 
-        GObject.timeout_add(ONE_SECOND, self._update)
+        GLib.timeout_add(ONE_SECOND, self._update)
 
         return True
 
