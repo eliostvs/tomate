@@ -79,9 +79,9 @@ class Session(Subscriber):
     def status(self):
         return dict(
             current=self.current,
-            sessions=self.count,
+            count=self.count,
             state=self.state,
-            time_left=self.duration,
+            duration=self.duration,
             task_name=self.task_name)
 
     def _current_session_is(self, session_type):

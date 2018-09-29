@@ -133,9 +133,9 @@ def test_session_status(session):
     session._config.get_int.return_value = 5
 
     expected = dict(current=Sessions.shortbreak,
-                    sessions=2,
+                    count=2,
                     state=State.started,
-                    time_left=5 * SECONDS_IN_A_MINUTE,
+                    duration=5 * SECONDS_IN_A_MINUTE,
                     task_name='')
 
     assert session.status() == expected
@@ -153,9 +153,9 @@ def test_should_trigger_start_event_when_session_start(session):
 
     session._dispatcher.send.assert_called_once_with(State.started,
                                                      current=Sessions.pomodoro,
-                                                     sessions=0,
+                                                     count=0,
                                                      state=State.started,
-                                                     time_left=1500,
+                                                     duration=1500,
                                                      task_name='')
 
 
@@ -166,9 +166,9 @@ def test_should_trigger_stop_event_when_session_stop(session):
 
     session._dispatcher.send.assert_called_with(State.stopped,
                                                 current=Sessions.pomodoro,
-                                                sessions=0,
+                                                count=0,
                                                 state=State.stopped,
-                                                time_left=1500,
+                                                duration=1500,
                                                 task_name='')
 
 
@@ -178,9 +178,9 @@ def test_should_trigger_changed_event_when_session_reset(session):
 
     session._dispatcher.send.assert_called_with(State.reset,
                                                 current=Sessions.pomodoro,
-                                                sessions=0,
+                                                count=0,
                                                 state=State.stopped,
-                                                time_left=1500,
+                                                duration=1500,
                                                 task_name='')
 
 
@@ -192,9 +192,9 @@ def test_should_trigger_finished_event(session):
 
     session._dispatcher.send.assert_called_with(State.finished,
                                                 current=Sessions.shortbreak,
-                                                sessions=1,
+                                                count=1,
                                                 state=State.finished,
-                                                time_left=300,
+                                                duration=300,
                                                 task_name='')
 
 
@@ -204,9 +204,9 @@ def test_should_trigger_changed_event_when_task_change(session):
 
     session._dispatcher.send.assert_called_with(State.changed,
                                                 current=Sessions.longbreak,
-                                                sessions=0,
+                                                count=0,
                                                 state=State.stopped,
-                                                time_left=900,
+                                                duration=900,
                                                 task_name='')
 
 
