@@ -3,21 +3,29 @@ from unittest.mock import Mock
 from wiring import SingletonScope
 
 from tomate.constant import State, Sessions
-from tomate.session import Session, SECONDS_IN_A_MINUTE
+from tomate.session import Session, SECONDS_IN_A_MINUTE, LastSession
+
+DUMMY_LAST_SESSION = LastSession(None, 0)
 
 
 class TestSessionStart:
-    def test_should_not_be_able_to_start_when_state_is_not_valid(self, session):
+    def test_should_not_be_able_to_start_when_session_already_started(self, session):
         session.state = State.started
 
         assert not session.start()
 
-    def test_should_be_able_to_start_when_state_is_valid(self, session):
-        for state in (State.stopped, State.finished):
-            session.state = state
+    def test_should_be_able_to_start_when_session_is_finished(self, session):
+        session._last = DUMMY_LAST_SESSION
+        session.state = State.finished
 
-            assert session.start()
-            assert session.state
+        assert session.start()
+        assert session.state
+
+    def test_should_be_able_to_start_when_session_is_stopped(self, session):
+        session.state = State.stopped
+
+        assert session.start()
+        assert session.state
 
     def test_should_trigger_start_event_when_session_start(self, session):
         session.start()
@@ -26,7 +34,7 @@ class TestSessionStart:
                                                          current=Sessions.pomodoro,
                                                          count=0,
                                                          state=State.started,
-                                                         duration=1500,
+                                                         duration=25 * SECONDS_IN_A_MINUTE,
                                                          task_name='')
 
 
@@ -60,23 +68,30 @@ class TestSessionStop:
                                                     current=Sessions.pomodoro,
                                                     count=0,
                                                     state=State.stopped,
-                                                    duration=1500,
+                                                    duration=25 * SECONDS_IN_A_MINUTE,
                                                     task_name='')
 
 
 class TestSessionReset:
-    def test_should_no_be_able_to_reset_when_state_is_not_valid(self, session):
+    def test_should_not_be_able_to_reset_when_session_is_started(self, session):
         session.state = State.started
 
         assert not session.reset()
 
-    def test_should_be_able_to_reset_whe_state_is_valid(self, session):
-        for state in (State.stopped, State.finished):
-            session.count = 10
-            session.state = state
+    def test_should_be_able_to_reset_when_session_is_stopped(self, session):
+        session.state = State.stopped
+        session.count = 10
 
-            assert session.reset()
-            assert session.count == 0
+        assert session.reset()
+        assert session.count == 0
+
+    def test_should_be_able_to_reset_whe_session_is_finished(self, session):
+        session._last = DUMMY_LAST_SESSION
+        session.state = State.finished
+        session.count = 10
+
+        assert session.reset()
+        assert session.count == 0
 
     def test_should_trigger_changed_event_when_session_reset(self, session):
         session.count = 2
@@ -86,7 +101,7 @@ class TestSessionReset:
                                                     current=Sessions.pomodoro,
                                                     count=0,
                                                     state=State.stopped,
-                                                    duration=1500,
+                                                    duration=25 * SECONDS_IN_A_MINUTE,
                                                     task_name='')
 
 
@@ -141,15 +156,18 @@ class TestEndSession:
 
     def test_should_trigger_finished_event(self, session):
         session.state = State.started
+        session.count = 0
         session._timer.State = State.stopped
-        session._config.get_int.return_value = 5
-        session.end()
+
+        session.current = Sessions.pomodoro
+
+        session.end(time_total=25 * SECONDS_IN_A_MINUTE)
 
         session._dispatcher.send.assert_called_with(State.finished,
-                                                    current=Sessions.shortbreak,
+                                                    current=Sessions.pomodoro,
                                                     count=1,
                                                     state=State.finished,
-                                                    duration=300,
+                                                    duration=25 * SECONDS_IN_A_MINUTE,
                                                     task_name='')
 
 
@@ -174,7 +192,7 @@ class TestChangeSessionType:
                                                     current=Sessions.longbreak,
                                                     count=0,
                                                     state=State.stopped,
-                                                    duration=900,
+                                                    duration=15 * SECONDS_IN_A_MINUTE,
                                                     task_name='')
 
 
@@ -191,7 +209,7 @@ class TestSessionStatus:
                         duration=5 * SECONDS_IN_A_MINUTE,
                         task_name='')
 
-        assert session.status() == expected
+        assert session.status == expected
 
 
 class TestChangeTaskName:
@@ -205,6 +223,7 @@ class TestChangeTaskName:
         assert session.task_name == 'new task name'
 
     def test_change_task_name_when_session_is_finished_should_work(self, session):
+        session._last = DUMMY_LAST_SESSION
         session.state = State.finished
         session.task_name = 'new task name'
 
