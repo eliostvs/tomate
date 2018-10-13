@@ -42,8 +42,6 @@ class Timer(object):
          source=[State.started],
          conditions=[timer_is_up])
     def end(self):
-        self._reset()
-
         return True
 
     @property
@@ -72,6 +70,7 @@ class Timer(object):
     def _trigger(self, event_type):
         self._dispatcher.send(event_type,
                               time_left=self.seconds_left,
+                              time_total=self.total_seconds,
                               time_ratio=self.time_ratio)
 
     def _reset(self):
