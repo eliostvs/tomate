@@ -12,15 +12,14 @@ from .utils import fsm
 ONE_SECOND = 1000
 
 
-@register.factory('tomate.timer', scope=SingletonScope)
+@register.factory("tomate.timer", scope=SingletonScope)
 class Timer(object):
-    @inject(dispatcher='tomate.events.timer')
+    @inject(dispatcher="tomate.events.timer")
     def __init__(self, dispatcher):
         self.total_seconds = self.seconds_left = 0
         self._dispatcher = dispatcher
 
-    @fsm(target=State.started,
-         source=[State.finished, State.stopped])
+    @fsm(target=State.started, source=[State.finished, State.stopped])
     def start(self, seconds):
         self.total_seconds = self.seconds_left = seconds
 
@@ -28,8 +27,7 @@ class Timer(object):
 
         return True
 
-    @fsm(target=State.stopped,
-         source=[State.started])
+    @fsm(target=State.stopped, source=[State.started])
     def stop(self):
         self._reset()
 
@@ -38,9 +36,7 @@ class Timer(object):
     def timer_is_up(self):
         return self.seconds_left <= 0
 
-    @fsm(target=State.finished,
-         source=[State.started],
-         conditions=[timer_is_up])
+    @fsm(target=State.finished, source=[State.started], conditions=[timer_is_up])
     def end(self):
         return True
 
@@ -68,10 +64,12 @@ class Timer(object):
         return True
 
     def _trigger(self, event_type):
-        self._dispatcher.send(event_type,
-                              time_left=self.seconds_left,
-                              time_total=self.total_seconds,
-                              time_ratio=self.time_ratio)
+        self._dispatcher.send(
+            event_type,
+            time_left=self.seconds_left,
+            time_total=self.total_seconds,
+            time_ratio=self.time_ratio,
+        )
 
     def _reset(self):
         self.total_seconds = self.seconds_left = 0

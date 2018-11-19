@@ -19,7 +19,11 @@ def session(timer):
 
     Setting.receivers.clear()
 
-    return Session(timer=timer, config=Mock(**{'get_int.return_value': 0.01}), dispatcher=Events.Session)
+    return Session(
+        timer=timer,
+        config=Mock(**{"get_int.return_value": 0.01}),
+        dispatcher=Events.Session,
+    )
 
 
 def test_should_change_state_to_finished(timer, session):
@@ -32,7 +36,7 @@ def test_should_change_state_to_finished(timer, session):
 
 
 def test_call_to_change_task_should_be_true_when_session_is_stopped(session):
-    result = Setting.send('timer')
+    result = Setting.send("timer")
 
     assert [(session.change, True)] == result
 
@@ -40,6 +44,6 @@ def test_call_to_change_task_should_be_true_when_session_is_stopped(session):
 def test_call_to_change_task_should_be_false_when_session_is_started(session):
     session.state = State.started
 
-    result = Setting.send('timer')
+    result = Setting.send("timer")
 
     assert [(session.change, False)] == result

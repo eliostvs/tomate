@@ -13,7 +13,7 @@ def timer():
 
 @pytest.fixture()
 def config():
-    return Mock(**{'get_int.return_value': 25})
+    return Mock(**{"get_int.return_value": 25})
 
 
 @pytest.fixture()
@@ -32,6 +32,6 @@ def graph():
 
     graph.providers.clear()
 
-    scan_to_graph(['tomate'], graph)
+    scan_to_graph(["tomate"], graph)
 
     return graph

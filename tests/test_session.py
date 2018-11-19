@@ -30,22 +30,28 @@ class TestSessionStart:
     def test_should_trigger_start_event_when_session_start(self, session):
         session.start()
 
-        session._dispatcher.send.assert_called_once_with(State.started,
-                                                         current=Sessions.pomodoro,
-                                                         count=0,
-                                                         state=State.started,
-                                                         duration=25 * SECONDS_IN_A_MINUTE,
-                                                         task_name='')
+        session._dispatcher.send.assert_called_once_with(
+            State.started,
+            current=Sessions.pomodoro,
+            count=0,
+            state=State.started,
+            duration=25 * SECONDS_IN_A_MINUTE,
+            task_name="",
+        )
 
 
 class TestSessionStop:
-    def test_should_not_be_able_to_stop_when_session_is_not_started_but_time_it_is(self, session):
+    def test_should_not_be_able_to_stop_when_session_is_not_started_but_time_it_is(
+        self, session
+    ):
         session._timer.state = State.started
         session.state = State.stopped
 
         assert not session.stop()
 
-    def test_should_not_be_able_to_stop_when_session_started_but_timer_is_not(self, session):
+    def test_should_not_be_able_to_stop_when_session_started_but_timer_is_not(
+        self, session
+    ):
         session._timer.state = State.stopped
         session.state = State.started
 
@@ -64,12 +70,14 @@ class TestSessionStop:
         session._timer.state = State.started
         session.stop()
 
-        session._dispatcher.send.assert_called_with(State.stopped,
-                                                    current=Sessions.pomodoro,
-                                                    count=0,
-                                                    state=State.stopped,
-                                                    duration=25 * SECONDS_IN_A_MINUTE,
-                                                    task_name='')
+        session._dispatcher.send.assert_called_with(
+            State.stopped,
+            current=Sessions.pomodoro,
+            count=0,
+            state=State.stopped,
+            duration=25 * SECONDS_IN_A_MINUTE,
+            task_name="",
+        )
 
 
 class TestSessionReset:
@@ -97,12 +105,14 @@ class TestSessionReset:
         session.count = 2
         session.reset()
 
-        session._dispatcher.send.assert_called_with(State.reset,
-                                                    current=Sessions.pomodoro,
-                                                    count=0,
-                                                    state=State.stopped,
-                                                    duration=25 * SECONDS_IN_A_MINUTE,
-                                                    task_name='')
+        session._dispatcher.send.assert_called_with(
+            State.reset,
+            current=Sessions.pomodoro,
+            count=0,
+            state=State.stopped,
+            duration=25 * SECONDS_IN_A_MINUTE,
+            task_name="",
+        )
 
 
 class TestEndSession:
@@ -111,13 +121,17 @@ class TestEndSession:
 
         assert not session.end()
 
-    def test_should_not_be_able_to_end_when_the_state_is_valid_and_timer_is_running(self, session):
+    def test_should_not_be_able_to_end_when_the_state_is_valid_and_timer_is_running(
+        self, session
+    ):
         session.state = State.started
         session._timer.state = State.started
 
         assert not session.end()
 
-    def test_should_be_able_to_end_when_state_is_valid_and_timer_is_not_running(self, session):
+    def test_should_be_able_to_end_when_state_is_valid_and_timer_is_not_running(
+        self, session
+    ):
         session.state = State.started
         session._timer.state = State.stopped
 
@@ -163,21 +177,27 @@ class TestEndSession:
 
         session.end(time_total=25 * SECONDS_IN_A_MINUTE)
 
-        session._dispatcher.send.assert_called_with(State.finished,
-                                                    current=Sessions.pomodoro,
-                                                    count=1,
-                                                    state=State.finished,
-                                                    duration=25 * SECONDS_IN_A_MINUTE,
-                                                    task_name='')
+        session._dispatcher.send.assert_called_with(
+            State.finished,
+            current=Sessions.pomodoro,
+            count=1,
+            state=State.finished,
+            duration=25 * SECONDS_IN_A_MINUTE,
+            task_name="",
+        )
 
 
 class TestChangeSessionType:
-    def test_should_not_be_able_to_change_session_type_when_session_already_started(self, session):
+    def test_should_not_be_able_to_change_session_type_when_session_already_started(
+        self, session
+    ):
         session.state = State.started
 
         assert not session.change(session=None)
 
-    def test_should_be_able_to_change_session_type_when_session_is_not_started(self, session):
+    def test_should_be_able_to_change_session_type_when_session_is_not_started(
+        self, session
+    ):
         for state in (State.stopped, State.finished):
             session._timer.state = state
 
@@ -188,12 +208,14 @@ class TestChangeSessionType:
         session._config.get_int.return_value = 15
         session.change(session=Sessions.longbreak)
 
-        session._dispatcher.send.assert_called_with(State.changed,
-                                                    current=Sessions.longbreak,
-                                                    count=0,
-                                                    state=State.stopped,
-                                                    duration=15 * SECONDS_IN_A_MINUTE,
-                                                    task_name='')
+        session._dispatcher.send.assert_called_with(
+            State.changed,
+            current=Sessions.longbreak,
+            count=0,
+            state=State.stopped,
+            duration=15 * SECONDS_IN_A_MINUTE,
+            task_name="",
+        )
 
 
 class TestSessionStatus:
@@ -203,48 +225,50 @@ class TestSessionStatus:
         session.state = State.started
         session._config.get_int.return_value = 5
 
-        expected = dict(current=Sessions.shortbreak,
-                        count=2,
-                        state=State.started,
-                        duration=5 * SECONDS_IN_A_MINUTE,
-                        task_name='')
+        expected = dict(
+            current=Sessions.shortbreak,
+            count=2,
+            state=State.started,
+            duration=5 * SECONDS_IN_A_MINUTE,
+            task_name="",
+        )
 
         assert session.status == expected
 
 
 class TestChangeTaskName:
     def test_initial_task_name(self, session):
-        assert session.task_name == ''
+        assert session.task_name == ""
 
     def test_change_task_name_when_session_is_stopped_should_work(self, session):
         session.state = State.stopped
-        session.task_name = 'new task name'
+        session.task_name = "new task name"
 
-        assert session.task_name == 'new task name'
+        assert session.task_name == "new task name"
 
     def test_change_task_name_when_session_is_finished_should_work(self, session):
         session._last = DUMMY_LAST_SESSION
         session.state = State.finished
-        session.task_name = 'new task name'
+        session.task_name = "new task name"
 
-        assert session.task_name == 'new task name'
+        assert session.task_name == "new task name"
 
     def test_change_task_name_when_session_is_running_should_not_work(self, session):
         session.state = State.started
 
-        session.task_name = 'new task name'
+        session.task_name = "new task name"
 
-        assert session.task_name == ''
+        assert session.task_name == ""
 
 
 def test_module(graph, config):
-    assert 'tomate.session' in graph.providers
+    assert "tomate.session" in graph.providers
 
-    provider = graph.providers['tomate.session']
+    provider = graph.providers["tomate.session"]
     assert provider.scope == SingletonScope
 
-    graph.register_instance('tomate.timer', Mock())
-    graph.register_instance('tomate.config', config)
-    graph.register_instance('tomate.events.session', Mock())
+    graph.register_instance("tomate.timer", Mock())
+    graph.register_instance("tomate.config", config)
+    graph.register_instance("tomate.events.session", Mock())
 
-    assert isinstance(graph.get('tomate.session'), Session)
+    assert isinstance(graph.get("tomate.session"), Session)

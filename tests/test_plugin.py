@@ -47,6 +47,6 @@ def test_should_connect_events_when_plugin_active(foo, timer):
 
 
 def test_module(graph):
-    assert 'tomate.plugin' in graph.providers
+    assert "tomate.plugin" in graph.providers
 
-    assert isinstance(graph.get('tomate.plugin'), PluginManagerDecorator)
+    assert isinstance(graph.get("tomate.plugin"), PluginManagerDecorator)

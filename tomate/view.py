@@ -10,7 +10,7 @@ class TrayIcon(Interface):
 
 
 class UI(Interface):
-    widget = ''
+    widget = ""
 
     def run(*args, **kwargs):
         pass

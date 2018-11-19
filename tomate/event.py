@@ -15,15 +15,15 @@ class Dispatcher(Namespace):
 
 
 Events = Dispatcher()
-Session = Events.signal('Session')
-Timer = Events.signal('Timer')
-Setting = Events.signal('Setting')
-View = Events.signal('View')
+Session = Events.signal("Session")
+Timer = Events.signal("Timer")
+Setting = Events.signal("Setting")
+View = Events.signal("View")
 
 
 def on(event, senders):
     def wrapper(func):
-        if not hasattr(func, '_has_event'):
+        if not hasattr(func, "_has_event"):
             func._has_event = True
             func._events = []
 
@@ -40,25 +40,33 @@ def on(event, senders):
 
 
 def methods_with_events(obj):
-    methods = [getattr(obj, attr)
-               for attr in dir(obj)
-               if getattr(getattr(obj, attr), '_has_event', False) is True]
+    methods = [
+        getattr(obj, attr)
+        for attr in dir(obj)
+        if getattr(getattr(obj, attr), "_has_event", False) is True
+    ]
     return methods
 
 
 def connect_events(obj):
     for method in methods_with_events(obj):
         for (event, sender) in method._events:
-            logger.debug('Connecting {event} to method {method} with sender {sender}'
-                         .format(**locals()))
+            logger.debug(
+                "Connecting {event} to method {method} with sender {sender}".format(
+                    **locals()
+                )
+            )
             event.connect(method, sender=sender, weak=False)
 
 
 def disconnect_events(obj):
     for method in methods_with_events(obj):
         for (event, sender) in method._events:
-            logger.debug('Disconnecting {event} to method {method} with sender {sender}'
-                         .format(**locals()))
+            logger.debug(
+                "Disconnecting {event} to method {method} with sender {sender}".format(
+                    **locals()
+                )
+            )
             event.disconnect(method, sender=sender)
 
 
@@ -74,7 +82,7 @@ class Subscriber(metaclass=SubscriberMeta):
 
 
 class ObservableProperty(object):
-    def __init__(self, initial, callback, attr='_state', event=None):
+    def __init__(self, initial, callback, attr="_state", event=None):
         self.initial = initial
         self.callback = callback
         self.attr = attr
@@ -95,8 +103,8 @@ class ObservableProperty(object):
         self.callback(instance, event)
 
 
-register.instance('tomate.events')(Events)
-register.instance('tomate.events.session')(Session)
-register.instance('tomate.events.timer')(Timer)
-register.instance('tomate.events.setting')(Setting)
-register.instance('tomate.events.view')(View)
+register.instance("tomate.events")(Events)
+register.instance("tomate.events.session")(Session)
+register.instance("tomate.events.timer")(Timer)
+register.instance("tomate.events.setting")(Setting)
+register.instance("tomate.events.view")(View)

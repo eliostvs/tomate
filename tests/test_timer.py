@@ -52,7 +52,9 @@ class TestTimerStart:
     def test_should_trigger_started_event_when_timer_start(self, timer):
         timer.start(10)
 
-        timer._dispatcher.send.assert_called_with(State.started, time_left=10, time_ratio=0.0, time_total=10)
+        timer._dispatcher.send.assert_called_with(
+            State.started, time_left=10, time_ratio=0.0, time_total=10
+        )
 
 
 class TestTimerUpdate:
@@ -85,7 +87,9 @@ class TestTimerUpdate:
 
         timer._update()
 
-        timer._dispatcher.send.assert_called_with(State.changed, time_left=9, time_ratio=0.1, time_total=10)
+        timer._dispatcher.send.assert_called_with(
+            State.changed, time_left=9, time_ratio=0.1, time_total=10
+        )
 
 
 class TestTimerEnd:
@@ -95,16 +99,18 @@ class TestTimerEnd:
         timer._update()
         timer._update()
 
-        timer._dispatcher.send.assert_called_with(State.finished, time_left=0, time_ratio=1, time_total=1)
+        timer._dispatcher.send.assert_called_with(
+            State.finished, time_left=0, time_ratio=1, time_total=1
+        )
 
 
 def test_module(graph):
-    assert 'tomate.timer' in graph.providers
+    assert "tomate.timer" in graph.providers
 
-    provider = graph.providers['tomate.timer']
+    provider = graph.providers["tomate.timer"]
 
     assert provider.scope == SingletonScope
 
-    graph.register_instance('tomate.events.timer', Mock())
+    graph.register_instance("tomate.events.timer", Mock())
 
-    assert isinstance(graph.get('tomate.timer'), Timer)
+    assert isinstance(graph.get("tomate.timer"), Timer)

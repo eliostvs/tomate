@@ -3,7 +3,13 @@ from unittest.mock import Mock
 import pytest
 
 from tomate.constant import State
-from tomate.event import (on, Subscriber, SubscriberMeta, methods_with_events, disconnect_events)
+from tomate.event import (
+    on,
+    Subscriber,
+    SubscriberMeta,
+    methods_with_events,
+    disconnect_events,
+)
 
 
 @pytest.fixture()
@@ -37,7 +43,7 @@ def test_should_return_events_and_states_bind_with_the_method(foo, session, time
 
 
 def test_should_return_methods_that_has_events(foo):
-    SubscriberMeta(str('name'), (object,), {})
+    SubscriberMeta(str("name"), (object,), {})
 
     assert [foo.bar, foo.spam] == methods_with_events(foo)
 
@@ -81,8 +87,8 @@ def test_should_events_be_acessiable_as_dictionary_and_attributes():
 def test_module(graph):
     import tomate.event as e
 
-    assert e.Events is graph.get('tomate.events')
-    assert e.Events.Setting is graph.get('tomate.events.setting')
-    assert e.Events.Session is graph.get('tomate.events.session')
-    assert e.Events.Timer is graph.get('tomate.events.timer')
-    assert e.Events.View is graph.get('tomate.events.view')
+    assert e.Events is graph.get("tomate.events")
+    assert e.Events.Setting is graph.get("tomate.events.setting")
+    assert e.Events.Session is graph.get("tomate.events.session")
+    assert e.Events.Timer is graph.get("tomate.events.timer")
+    assert e.Events.View is graph.get("tomate.events.view")
