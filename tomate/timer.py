@@ -54,7 +54,7 @@ class Timer(object):
         if self.state != State.started:
             return False
 
-        if self.seconds_left <= 0:
+        if self.timer_is_up():
             return self.end()
 
         self.seconds_left -= 1
