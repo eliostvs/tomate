@@ -1,3 +1,4 @@
+import uuid
 from typing import List, Tuple
 
 from wiring import inject, SingletonScope
@@ -54,7 +55,7 @@ class Session(Subscriber):
     @fsm(target=State.finished, source=[State.started], conditions=[is_not_running])
     @on(Events.Timer, [State.finished])
     def end(self, sender=None, **kwargs):
-        self.sessions.append((self.current, kwargs.get("time_total")))
+        self._save_session(kwargs.get("time_total"))
 
         if self._current_session_is(Sessions.pomodoro):
             self.current = (
@@ -117,10 +118,13 @@ class Session(Subscriber):
 
         return not Session.count_pomodoros(self.sessions) % long_break_interval
 
+    def _save_session(self, total_seconds: int) -> None:
+        self.sessions.append((uuid.uuid4(), self.current, total_seconds))
+
     @staticmethod
-    def count_pomodoros(sessions: List[Tuple[Sessions, int]]) -> int:
+    def count_pomodoros(sessions: List[Tuple[uuid.uuid4, Sessions, int]]) -> int:
         return len(
-            [session for (session, _) in sessions if session is Sessions.pomodoro]
+            [session for (_, session, _) in sessions if session is Sessions.pomodoro]
         )
 
     state = ObservableProperty(initial=State.stopped, callback=_trigger)

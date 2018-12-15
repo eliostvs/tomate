@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+import uuid
 
 from wiring import SingletonScope
 
@@ -9,10 +9,10 @@ from tomate.session import Session, SECONDS_IN_A_MINUTE
 class TestCountPomodoro:
     def test_count_of_pomodoro(self):
         sessions = [
-            (Sessions.pomodoro, 0),
-            (Sessions.pomodoro, 0),
-            (Sessions.shortbreak, 0),
-            (Sessions.longbreak, 0),
+            (0, Sessions.pomodoro, 0),
+            (0, Sessions.pomodoro, 0),
+            (0, Sessions.shortbreak, 0),
+            (0, Sessions.longbreak, 0),
         ]
 
         assert Session.count_pomodoros(sessions) == 2
@@ -51,7 +51,7 @@ class TestSessionStart:
 
 class TestSessionStop:
     def test_should_not_be_able_to_stop_when_session_is_not_started_but_time_it_is(
-        self, session
+            self, session
     ):
         session._timer.state = State.started
         session.state = State.stopped
@@ -59,7 +59,7 @@ class TestSessionStop:
         assert not session.stop()
 
     def test_should_not_be_able_to_stop_when_session_started_but_timer_is_not(
-        self, session
+            self, session
     ):
         session._timer.state = State.stopped
         session.state = State.started
@@ -132,7 +132,7 @@ class TestEndSession:
         assert not session.end()
 
     def test_should_not_be_able_to_end_when_the_state_is_valid_and_timer_is_running(
-        self, session
+            self, session
     ):
         session.state = State.started
         session._timer.state = State.started
@@ -140,7 +140,7 @@ class TestEndSession:
         assert not session.end()
 
     def test_should_be_able_to_end_when_state_is_valid_and_timer_is_not_running(
-        self, session
+            self, session
     ):
         session.state = State.started
         session._timer.state = State.stopped
@@ -162,7 +162,7 @@ class TestEndSession:
     def test_should_automatically_change_session_to_long_break(self, session):
         session.state = State.started
         session.current = Sessions.pomodoro
-        session.sessions = [(Sessions.pomodoro, 0)] * 3
+        session.sessions = [(uuid.uuid4(), Sessions.pomodoro, 0)] * 3
         session._config.get_int.return_value = 4
 
         assert session.end()
@@ -178,7 +178,7 @@ class TestEndSession:
 
             assert session.current == Sessions.pomodoro
 
-    def test_should_trigger_finished_event(self, session):
+    def test_should_trigger_finished_event(self, session, mocker):
         time_total = 25 * SECONDS_IN_A_MINUTE
         session.state = State.started
         session._timer.State = State.stopped
@@ -190,7 +190,7 @@ class TestEndSession:
         session._dispatcher.send.assert_called_with(
             State.finished,
             current=Sessions.shortbreak,
-            sessions=[(Sessions.pomodoro, time_total)],
+            sessions=[(mocker.ANY, Sessions.pomodoro, time_total)],
             state=State.finished,
             duration=25 * SECONDS_IN_A_MINUTE,
             task_name="",
@@ -199,14 +199,14 @@ class TestEndSession:
 
 class TestChangeSessionType:
     def test_should_not_be_able_to_change_session_type_when_session_already_started(
-        self, session
+            self, session
     ):
         session.state = State.started
 
         assert not session.change(session=None)
 
     def test_should_be_able_to_change_session_type_when_session_is_not_started(
-        self, session
+            self, session
     ):
         for state in (State.stopped, State.finished):
             session._timer.state = state
@@ -269,14 +269,14 @@ class TestChangeTaskName:
         assert session.task_name == ""
 
 
-def test_module(graph, config):
+def test_module(graph, config, mocker):
     assert "tomate.session" in graph.providers
 
     provider = graph.providers["tomate.session"]
     assert provider.scope == SingletonScope
 
-    graph.register_instance("tomate.timer", Mock())
+    graph.register_instance("tomate.timer", mocker.Mock())
     graph.register_instance("tomate.config", config)
-    graph.register_instance("tomate.events.session", Mock())
+    graph.register_instance("tomate.events.session", mocker.Mock())
 
     assert isinstance(graph.get("tomate.session"), Session)
