@@ -51,7 +51,7 @@ class TestSessionStart:
 
 class TestSessionStop:
     def test_should_not_be_able_to_stop_when_session_is_not_started_but_time_it_is(
-            self, session
+        self, session
     ):
         session._timer.state = State.started
         session.state = State.stopped
@@ -59,7 +59,7 @@ class TestSessionStop:
         assert not session.stop()
 
     def test_should_not_be_able_to_stop_when_session_started_but_timer_is_not(
-            self, session
+        self, session
     ):
         session._timer.state = State.stopped
         session.state = State.started
@@ -132,7 +132,7 @@ class TestEndSession:
         assert not session.end()
 
     def test_should_not_be_able_to_end_when_the_state_is_valid_and_timer_is_running(
-            self, session
+        self, session
     ):
         session.state = State.started
         session._timer.state = State.started
@@ -140,7 +140,7 @@ class TestEndSession:
         assert not session.end()
 
     def test_should_be_able_to_end_when_state_is_valid_and_timer_is_not_running(
-            self, session
+        self, session
     ):
         session.state = State.started
         session._timer.state = State.stopped
@@ -199,14 +199,14 @@ class TestEndSession:
 
 class TestChangeSessionType:
     def test_should_not_be_able_to_change_session_type_when_session_already_started(
-            self, session
+        self, session
     ):
         session.state = State.started
 
         assert not session.change(session=None)
 
     def test_should_be_able_to_change_session_type_when_session_is_not_started(
-            self, session
+        self, session
     ):
         for state in (State.stopped, State.finished):
             session._timer.state = state
