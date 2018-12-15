@@ -12,6 +12,13 @@ Bugs and suggestions should be reported [here][2].
 Change Logs
 -----------
 
+### 0.9.0
+
+#### Changed
+
+- Rename domain class **Task** to **Session**
+- Keep in memory all past sessions instead of only the count of pomodoros 
+
 ### 0.8.0
 
 #### Added
