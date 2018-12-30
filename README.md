@@ -22,6 +22,10 @@ Changelog
 - Change the Timer events payload
 - Rename EventState to ObservableProperty
 
+#### Removed
+
+- **show\_message** method from view interface
+
 ### 0.8.0
 
 #### Added
