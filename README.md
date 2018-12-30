@@ -9,8 +9,22 @@ Bugs and Suggestions
 
 Bugs and suggestions should be reported [here][2].
 
-Change Logs
------------
+Changelog
+---------
+
+### 0.9.0
+
+#### Changed
+
+- Rename enum **Task** to **Sessions**
+- Keep in memory all past sessions instead of only the count of pomodoros
+- Change the Session events payload
+- Change the Timer events payload
+- Rename EventState to ObservableProperty
+
+#### Removed
+
+- **show\_message** method from view interface
 
 ### 0.8.0
 
@@ -20,7 +34,7 @@ Change Logs
 
 #### Fix
 
-- Values with space in settings (ex: alarm file path)
+- Settings values with spaces
 
 ### 0.7.0
 

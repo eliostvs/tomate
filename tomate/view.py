@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from wiring import Interface
 
 
@@ -12,7 +10,7 @@ class TrayIcon(Interface):
 
 
 class UI(Interface):
-    widget = ''
+    widget = ""
 
     def run(*args, **kwargs):
         pass
@@ -26,5 +24,3 @@ class UI(Interface):
     def hide(*args, **kwargs):
         pass
 
-    def show_message(message, level):
-        pass

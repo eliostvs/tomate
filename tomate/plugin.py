@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from wiring.scanning import register
 from yapsy.ConfigurablePluginManager import ConfigurablePluginManager
 from yapsy.IPlugin import IPlugin
@@ -24,10 +22,7 @@ class Plugin(IPlugin):
         pass
 
 
-PluginManagerSingleton.setBehaviour([
-    ConfigurablePluginManager,
-    VersionedPluginManager,
-])
+PluginManagerSingleton.setBehaviour([ConfigurablePluginManager, VersionedPluginManager])
 
 plugin_manager = PluginManagerSingleton.get()
-register.instance('tomate.plugin')(plugin_manager)
+register.instance("tomate.plugin")(plugin_manager)

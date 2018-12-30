@@ -1,8 +1,6 @@
-from __future__ import unicode_literals
-
 import logging
 import os
-from six.moves import configparser
+import configparser
 from wiring import inject, SingletonScope
 from wiring.scanning import register
 from xdg import BaseDirectory, IconTheme
@@ -10,22 +8,22 @@ from xdg import BaseDirectory, IconTheme
 logger = logging.getLogger(__name__)
 
 DEFAULTS = {
-    'pomodoro_duration': '25',
-    'shortbreak_duration': '5',
-    'longbreak_duration': '15',
-    'long_break_interval': '4',
+    "pomodoro_duration": "25",
+    "shortbreak_duration": "5",
+    "longbreak_duration": "15",
+    "long_break_interval": "4",
 }
 
 CONFIG_PARSER = configparser.RawConfigParser(defaults=DEFAULTS, strict=True)
 
-register.instance('config.parser')(CONFIG_PARSER)
+register.instance("config.parser")(CONFIG_PARSER)
 
 
-@register.factory('tomate.config', scope=SingletonScope)
+@register.factory("tomate.config", scope=SingletonScope)
 class Config(object):
-    app_name = 'tomate'
+    app_name = "tomate"
 
-    @inject(parser='config.parser', event='tomate.events.setting')
+    @inject(parser="config.parser", event="tomate.events.setting")
     def __init__(self, parser, event):
         self.parser = parser
         self.event = event
@@ -33,37 +31,41 @@ class Config(object):
         self.load()
 
     def load(self):
-        logger.debug('action=loadConfig uri=%s', self.get_config_path())
+        logger.debug("action=loadConfig uri=%s", self.get_config_path())
 
         self.parser.read(self.get_config_path())
 
     def save(self):
-        logger.debug('action=writeConfig uri=%s', self.get_config_path())
+        logger.debug("action=writeConfig uri=%s", self.get_config_path())
 
-        with open(self.get_config_path(), 'w') as f:
+        with open(self.get_config_path(), "w") as f:
             self.parser.write(f)
 
     def get_config_path(self):
         BaseDirectory.save_config_path(self.app_name)
-        return os.path.join(BaseDirectory.xdg_config_home, self.app_name, self.app_name + '.conf')
+        return os.path.join(
+            BaseDirectory.xdg_config_home, self.app_name, self.app_name + ".conf"
+        )
 
     def get_media_uri(self, *resources):
-        return 'file://' + self.get_resource_path(self.app_name, 'media', *resources)
+        return "file://" + self.get_resource_path(self.app_name, "media", *resources)
 
     def get_plugin_paths(self):
-        return self.get_resource_paths(self.app_name, 'plugins')
+        return self.get_resource_paths(self.app_name, "plugins")
 
     def get_icon_paths(self):
-        return self.get_resource_paths('icons')
+        return self.get_resource_paths("icons")
 
     def get_resource_path(self, *resources):
         for resource in self.get_resource_paths(*resources):
             if os.path.exists(resource):
                 return resource
 
-            logger.debug('action=resourceNotFound uri=%s', resource)
+            logger.debug("action=resourceNotFound uri=%s", resource)
 
-        raise EnvironmentError('Resource with path %s not found!' % os.path.join(*resources))
+        raise EnvironmentError(
+            "Resource with path %s not found!" % os.path.join(*resources)
+        )
 
     @staticmethod
     def get_resource_paths(*resources):
@@ -71,20 +73,22 @@ class Config(object):
 
     @staticmethod
     def get_icon_path(iconname, size=None, theme=None):
-        iconpath = IconTheme.getIconPath(iconname, size, theme, extensions=['png', 'svg', 'xpm'])
+        iconpath = IconTheme.getIconPath(
+            iconname, size, theme, extensions=["png", "svg", "xpm"]
+        )
 
         if iconpath is not None:
             return iconpath
 
-        raise EnvironmentError('Icon %s not found!' % iconpath)
+        raise EnvironmentError("Icon %s not found!" % iconpath)
 
     def get_int(self, section, option):
-        return self._get(section, option, 'getint')
+        return self._get(section, option, "getint")
 
     def get(self, section, option):
         return self._get(section, option)
 
-    def _get(self, section, option, method='get'):
+    def _get(self, section, option, method="get"):
         section = Config.normalize(section)
         option = Config.normalize(option)
 
@@ -97,7 +101,9 @@ class Config(object):
         section = Config.normalize(section)
         option = Config.normalize(option)
 
-        logger.debug('action=setOption section=%s option=%s value=%s', section, option, value)
+        logger.debug(
+            "action=setOption section=%s option=%s value=%s", section, option, value
+        )
 
         if not self.parser.has_section(section):
             self.parser.add_section(section)
@@ -106,29 +112,25 @@ class Config(object):
 
         self.save()
 
-        self.event.send(section,
-                        section=section,
-                        option=option,
-                        value=value,
-                        action='set')
+        self.event.send(
+            section, section=section, option=option, value=value, action="set"
+        )
 
     def remove(self, section, option):
         section = Config.normalize(section)
         option = Config.normalize(option)
 
-        logger.debug('action=removeOption section=%s option=%s', section, option)
+        logger.debug("action=removeOption section=%s option=%s", section, option)
 
         if self.parser.has_section(section):
             self.parser.remove_option(section, option)
 
         self.save()
 
-        self.event.send(section,
-                        section=section,
-                        option=option,
-                        value=None,
-                        action='remove')
+        self.event.send(
+            section, section=section, option=option, value=None, action="remove"
+        )
 
     @staticmethod
     def normalize(name):
-        return name.replace(' ', '_').lower()
+        return name.replace(" ", "_").lower()

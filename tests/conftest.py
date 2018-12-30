@@ -1,7 +1,6 @@
-from __future__ import unicode_literals
+from unittest.mock import Mock
 
 import pytest
-from mock import Mock
 from wiring.scanning import scan_to_graph
 
 
@@ -9,12 +8,12 @@ from wiring.scanning import scan_to_graph
 def timer():
     from tomate.timer import Timer
 
-    return Timer(event=Mock())
+    return Timer(dispatcher=Mock())
 
 
 @pytest.fixture()
 def config():
-    return Mock(**{'get_int.return_value': 25})
+    return Mock(**{"get_int.return_value": 25})
 
 
 @pytest.fixture()
@@ -24,7 +23,7 @@ def session(timer, config):
 
     Setting.receivers.clear()
 
-    return Session(timer=timer, config=config, event=Mock())
+    return Session(timer=timer, config=config, dispatcher=Mock())
 
 
 @pytest.fixture
@@ -33,6 +32,6 @@ def graph():
 
     graph.providers.clear()
 
-    scan_to_graph(['tomate'], graph)
+    scan_to_graph(["tomate"], graph)
 
     return graph
