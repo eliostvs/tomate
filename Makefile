@@ -5,9 +5,10 @@ DOCKER_IMAGE_NAME= $(AUTHOR)/$(PACKAGE)
 PYTHONPATH = PYTHONPATH=$(CURDIR)
 PROJECT = home:eliostvs:tomate
 DEBUG = TOMATE_DEBUG=true
-OBS_API_URL = https://api.opensuse.org:443/trigger/runservice?project=$(PROJECT)&package=$(PACKAGE)
+OBS_API_URL = https://api.opensuse.org:443/trigger/runservice?project=$(PROJECT)&package=python-$(PACKAGE)
 WORK_DIR = /code
 CURRENT_VERSION = `cat .bumpversion.cfg | grep current_version | awk '{print $$3}'`
+.PHONY: trigger-build
 
 clean:
 	find . \( -iname "*.pyc" -o -iname "__pycache__" \) -print0 | xargs -0 rm -rf
