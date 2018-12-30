@@ -27,7 +27,7 @@ Change Logs
 
 #### Fix
 
-- Values with space in settings (ex: alarm file path)
+- Settings values with spaces
 
 ### 0.7.0
 
