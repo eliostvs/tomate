@@ -16,8 +16,11 @@ Changelog
 
 #### Changed
 
-- Rename domain class **Task** to **Session**
-- Keep in memory all past sessions instead of only the count of pomodoros 
+- Rename enum **Task** to **Sessions**
+- Keep in memory all past sessions instead of only the count of pomodoros
+- Change the Session events payload
+- Change the Timer events payload
+- Rename EventState to ObservableProperty
 
 ### 0.8.0
 
