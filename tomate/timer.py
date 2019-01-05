@@ -9,7 +9,7 @@ from .utils import fsm
 # Borrowed from Tomatoro create by Pierre Quillery.
 # https://github.com/dandelionmood/Tomatoro
 # Thanks Pierre!
-ONE_SECOND = 1000
+ONE_SECOND = 1
 
 
 @register.factory("tomate.timer", scope=SingletonScope)
@@ -23,7 +23,7 @@ class Timer(object):
     def start(self, seconds):
         self.total_seconds = self.seconds_left = seconds
 
-        GLib.timeout_add(ONE_SECOND, self._update)
+        GLib.timeout_add_seconds(ONE_SECOND, self._update)
 
         return True
 
