@@ -12,7 +12,7 @@ Bugs and suggestions should be reported [here][2].
 Changelog
 ---------
 
-### [Unreleased]
+### 0.10.0
 
 #### Fixed
 
