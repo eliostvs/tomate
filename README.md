@@ -12,6 +12,12 @@ Bugs and suggestions should be reported [here][2].
 Changelog
 ---------
 
+### [Unreleased]
+
+#### Fixed
+
+- GLib.timeout_add_seconds is more recommended for full seconds
+
 ### 0.9.0
 
 #### Changed
