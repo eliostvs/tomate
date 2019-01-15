@@ -1,21 +1,29 @@
-import uuid
-
+import pytest
+from tomate.constant import State, Sessions
+from tomate.session import Session, SECONDS_IN_A_MINUTE, EventPayload, FinishedSession
 from wiring import SingletonScope
 
-from tomate.constant import State, Sessions
-from tomate.session import Session, SECONDS_IN_A_MINUTE
+
+@pytest.fixture
+def timer_payload(mocker):
+    return mocker.Mock(duration=0)
 
 
 class TestCountPomodoro:
     def test_count_of_pomodoro(self):
-        sessions = [
-            (0, Sessions.pomodoro, 0),
-            (0, Sessions.pomodoro, 0),
-            (0, Sessions.shortbreak, 0),
-            (0, Sessions.longbreak, 0),
-        ]
-
-        assert Session.count_pomodoros(sessions) == 2
+        payload = EventPayload(
+            duration=0,
+            state=None,
+            task="",
+            type=None,
+            sessions=[
+                FinishedSession(0, Sessions.pomodoro, 0),
+                FinishedSession(0, Sessions.pomodoro, 0),
+                FinishedSession(0, Sessions.shortbreak, 0),
+                FinishedSession(0, Sessions.longbreak, 0),
+            ],
+        )
+        assert len(payload.finished_pomodoros) == 2
 
 
 class TestSessionStart:
@@ -39,19 +47,20 @@ class TestSessionStart:
     def test_should_trigger_start_event_when_session_start(self, session):
         session.start()
 
-        session._dispatcher.send.assert_called_once_with(
-            State.started,
-            current=Sessions.pomodoro,
+        payload = EventPayload(
+            duration=25 * SECONDS_IN_A_MINUTE,
             sessions=[],
             state=State.started,
-            duration=25 * SECONDS_IN_A_MINUTE,
-            task_name="",
+            task="",
+            type=Sessions.pomodoro,
         )
+
+        session._dispatcher.send.assert_called_once_with(State.started, payload=payload)
 
 
 class TestSessionStop:
     def test_should_not_be_able_to_stop_when_session_is_not_started_but_time_it_is(
-            self, session
+        self, session
     ):
         session._timer.state = State.started
         session.state = State.stopped
@@ -59,7 +68,7 @@ class TestSessionStop:
         assert not session.stop()
 
     def test_should_not_be_able_to_stop_when_session_started_but_timer_is_not(
-            self, session
+        self, session
     ):
         session._timer.state = State.stopped
         session.state = State.started
@@ -79,14 +88,15 @@ class TestSessionStop:
         session._timer.state = State.started
         session.stop()
 
-        session._dispatcher.send.assert_called_with(
-            State.stopped,
-            current=Sessions.pomodoro,
+        payload = EventPayload(
+            duration=25 * SECONDS_IN_A_MINUTE,
             sessions=[],
             state=State.stopped,
-            duration=25 * SECONDS_IN_A_MINUTE,
-            task_name="",
+            task="",
+            type=Sessions.pomodoro,
         )
+
+        session._dispatcher.send.assert_called_with(State.stopped, payload=payload)
 
 
 class TestSessionReset:
@@ -115,14 +125,15 @@ class TestSessionReset:
 
         session.reset()
 
-        session._dispatcher.send.assert_called_with(
-            State.reset,
-            current=Sessions.pomodoro,
+        payload = EventPayload(
+            duration=25 * SECONDS_IN_A_MINUTE,
             sessions=[],
             state=State.finished,
-            duration=25 * SECONDS_IN_A_MINUTE,
-            task_name="",
+            task="",
+            type=Sessions.pomodoro,
         )
+
+        session._dispatcher.send.assert_called_with(State.reset, payload=payload)
 
 
 class TestEndSession:
@@ -132,7 +143,7 @@ class TestEndSession:
         assert not session.end()
 
     def test_should_not_be_able_to_end_when_the_state_is_valid_and_timer_is_running(
-            self, session
+        self, session
     ):
         session.state = State.started
         session._timer.state = State.started
@@ -140,73 +151,86 @@ class TestEndSession:
         assert not session.end()
 
     def test_should_be_able_to_end_when_state_is_valid_and_timer_is_not_running(
-            self, session
+        self, session, timer_payload
     ):
         session.state = State.started
         session._timer.state = State.stopped
 
-        assert session.end()
+        assert session.end(None, payload=timer_payload)
         assert session.state == State.finished
 
-    def test_should_automatically_change_session_to_short_break(self, session):
+    def test_should_automatically_change_session_to_short_break(
+        self, session, timer_payload
+    ):
         session._timer.state = State.stopped
         session.current = Sessions.pomodoro
         session.state = State.started
         session.count = 0
         session._config.get_int.return_value = 4
 
-        session.end()
+        session.end(None, timer_payload)
 
         assert session.current == Sessions.shortbreak
 
-    def test_should_automatically_change_session_to_long_break(self, session):
+    def test_should_automatically_change_session_to_long_break(
+        self, session, timer_payload
+    ):
         session.state = State.started
         session.current = Sessions.pomodoro
-        session.sessions = [(uuid.uuid4(), Sessions.pomodoro, 0)] * 3
+        session.sessions = [
+            FinishedSession(id=0, type=Sessions.pomodoro, duration=0)
+        ] * 3
         session._config.get_int.return_value = 4
 
-        assert session.end()
+        assert session.end(None, payload=timer_payload)
         assert session.current == Sessions.longbreak
 
-    def test_should_automatically_change_session_to_pomodoro(self, session):
+    def test_should_automatically_change_session_to_pomodoro(
+        self, session, timer_payload
+    ):
         for session_type in (Sessions.longbreak, Sessions.shortbreak):
             session.current = session_type
             session._timer.state = State.stopped
             session.state = State.started
 
-            session.end()
+            session.end(None, timer_payload)
 
             assert session.current == Sessions.pomodoro
 
     def test_should_trigger_finished_event(self, session, mocker):
-        time_total = 25 * SECONDS_IN_A_MINUTE
+        duration = 25 * SECONDS_IN_A_MINUTE
         session.state = State.started
         session._timer.State = State.stopped
 
         session.current = Sessions.pomodoro
 
-        session.end(time_total=time_total)
+        session.end(None, payload=mocker.Mock(duration=duration))
 
-        session._dispatcher.send.assert_called_with(
-            State.finished,
-            current=Sessions.shortbreak,
-            sessions=[(mocker.ANY, Sessions.pomodoro, time_total)],
+        payload = EventPayload(
+            type=Sessions.shortbreak,
+            sessions=[
+                FinishedSession(
+                    id=mocker.ANY, type=Sessions.pomodoro, duration=duration
+                )
+            ],
             state=State.finished,
             duration=25 * SECONDS_IN_A_MINUTE,
-            task_name="",
+            task="",
         )
+
+        session._dispatcher.send.assert_called_with(State.finished, payload=payload)
 
 
 class TestChangeSessionType:
     def test_should_not_be_able_to_change_session_type_when_session_already_started(
-            self, session
+        self, session
     ):
         session.state = State.started
 
         assert not session.change(session=None)
 
     def test_should_be_able_to_change_session_type_when_session_is_not_started(
-            self, session
+        self, session
     ):
         for state in (State.stopped, State.finished):
             session._timer.state = state
@@ -218,55 +242,39 @@ class TestChangeSessionType:
         session._config.get_int.return_value = 15
         session.change(session=Sessions.longbreak)
 
-        session._dispatcher.send.assert_called_with(
-            State.changed,
-            current=Sessions.longbreak,
+        payload = EventPayload(
+            type=Sessions.longbreak,
             sessions=[],
             state=State.stopped,
             duration=15 * SECONDS_IN_A_MINUTE,
-            task_name="",
+            task="",
         )
 
-
-class TestSessionStatus:
-    def test_session_status(self, session):
-        session.current = Sessions.shortbreak
-        session.state = State.started
-        session._config.get_int.return_value = 5
-
-        expected = dict(
-            current=Sessions.shortbreak,
-            sessions=[],
-            state=State.started,
-            duration=5 * SECONDS_IN_A_MINUTE,
-            task_name="",
-        )
-
-        assert session.status == expected
+        session._dispatcher.send.assert_called_with(State.changed, payload=payload)
 
 
-class TestChangeTaskName:
-    def test_initial_task_name(self, session):
-        assert session.task_name == ""
+class TestChangeTask:
+    def test_initial_task(self, session):
+        assert session.task == ""
 
-    def test_change_task_name_when_session_is_stopped_should_work(self, session):
+    def test_change_task_when_session_is_stopped_should_work(self, session):
         session.state = State.stopped
-        session.task_name = "new task name"
+        session.task = "new task name"
 
-        assert session.task_name == "new task name"
+        assert session.task == "new task name"
 
-    def test_change_task_name_when_session_is_finished_should_work(self, session):
+    def test_change_task_when_session_is_finished_should_work(self, session):
         session.state = State.finished
-        session.task_name = "new task name"
+        session.task = "new task name"
 
-        assert session.task_name == "new task name"
+        assert session.task == "new task name"
 
-    def test_change_task_name_when_session_is_running_should_not_work(self, session):
+    def test_change_task_when_session_is_running_should_not_work(self, session):
         session.state = State.started
 
-        session.task_name = "new task name"
+        session.task = "new task name"
 
-        assert session.task_name == ""
+        assert session.task == ""
 
 
 def test_module(graph, config, mocker):
