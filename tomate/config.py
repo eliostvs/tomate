@@ -1,6 +1,8 @@
+import configparser
 import logging
 import os
-import configparser
+from collections import namedtuple
+
 from wiring import inject, SingletonScope
 from wiring.scanning import register
 from xdg import BaseDirectory, IconTheme
@@ -18,15 +20,17 @@ CONFIG_PARSER = configparser.RawConfigParser(defaults=DEFAULTS, strict=True)
 
 register.instance("config.parser")(CONFIG_PARSER)
 
+EventPayload = namedtuple("SettingsPayload", "action section option value")
+
 
 @register.factory("tomate.config", scope=SingletonScope)
 class Config(object):
     app_name = "tomate"
 
-    @inject(parser="config.parser", event="tomate.events.setting")
-    def __init__(self, parser, event):
+    @inject(parser="config.parser", dispatcher="tomate.events.setting")
+    def __init__(self, parser, dispatcher):
         self.parser = parser
-        self.event = event
+        self._dispatcher = dispatcher
 
         self.load()
 
@@ -73,14 +77,14 @@ class Config(object):
 
     @staticmethod
     def get_icon_path(iconname, size=None, theme=None):
-        iconpath = IconTheme.getIconPath(
+        icon_path = IconTheme.getIconPath(
             iconname, size, theme, extensions=["png", "svg", "xpm"]
         )
 
-        if iconpath is not None:
-            return iconpath
+        if icon_path is not None:
+            return icon_path
 
-        raise EnvironmentError("Icon %s not found!" % iconpath)
+        raise EnvironmentError("Icon %s not found!" % icon_path)
 
     def get_int(self, section, option):
         return self._get(section, option, "getint")
@@ -112,9 +116,11 @@ class Config(object):
 
         self.save()
 
-        self.event.send(
-            section, section=section, option=option, value=value, action="set"
+        payload = EventPayload(
+            action="set", section=section, option=option, value=value
         )
+
+        self._dispatcher.send(section, payload=payload)
 
     def remove(self, section, option):
         section = Config.normalize(section)
@@ -127,9 +133,11 @@ class Config(object):
 
         self.save()
 
-        self.event.send(
-            section, section=section, option=option, value=None, action="remove"
+        payload = EventPayload(
+            action="remove", section=section, option=option, value=None
         )
+
+        self._dispatcher.send(section, payload=payload)
 
     @staticmethod
     def normalize(name):

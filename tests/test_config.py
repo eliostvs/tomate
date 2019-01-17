@@ -1,10 +1,9 @@
 import os
+from unittest.mock import Mock, mock_open, patch
 
 import pytest
-from unittest.mock import Mock, mock_open, patch
+from tomate.config import Config, EventPayload
 from wiring import SingletonScope
-
-from tomate.config import Config
 
 BaseDirectory_attrs = {
     "xdg_config_home": "/home/mock/.config",
@@ -52,9 +51,12 @@ class TestConfig:
 
     @patch("tomate.config.IconTheme.getIconPath", spec_set=True)
     def test_get_icon_path_should_success(self, get_icon_path, base_directory, config):
-        get_icon_path.side_effect = lambda name, size, theme, extensions: "/usr/mock/icons/hicolor/{size}x{size}/apps/{name}.png".format(
-            name=name, size=size
-        )
+        def side_effect(name, size, theme, extensions):
+            return "/usr/mock/icons/hicolor/{size}x{size}/apps/{name}.png".format(
+                name=name, size=size
+            )
+
+        get_icon_path.side_effect = side_effect
 
         expected_path = "/usr/mock/icons/hicolor/22x22/apps/tomate.png"
 
@@ -89,15 +91,13 @@ class TestConfig:
         with patch("tomate.config.open", mo, create=True):
             config.remove("section", "option")
 
+            payload = EventPayload(
+                section="section", option="option", value=None, action="remove"
+            )
+
             config.parser.remove_option.assert_called_with("section", "option")
             config.parser.write.assert_called_once_with(mo())
-            config.event.send.assert_called_once_with(
-                "section",
-                section="section",
-                option="option",
-                value=None,
-                action="remove",
-            )
+            config._dispatcher.send.assert_called_once_with("section", payload=payload)
 
     def test_set_option(self, base_directory, config):
         config.parser.has_section.return_value = False
@@ -119,9 +119,11 @@ def test_should_emit_setting_changed(base_directory, config):
     with patch("tomate.config.open", mock_open(), create=True):
         config.set("Timer", "Pomodoro", 4)
 
-        config.event.send.assert_called_once_with(
-            "timer", section="timer", option="pomodoro", value=4, action="set"
+        payload = EventPayload(
+            section="timer", option="pomodoro", value=4, action="set"
         )
+
+        config._dispatcher.send.assert_called_once_with("timer", payload=payload)
 
 
 def test_module(graph):
