@@ -12,6 +12,12 @@ Bugs and suggestions should be reported [here][2].
 Changelog
 ---------
 
+### [Unreleased]
+
+### Changed
+
+- The timer, session and settings now emit a payload object
+
 ### 0.10.0
 
 #### Fixed
