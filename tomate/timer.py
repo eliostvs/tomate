@@ -11,9 +11,21 @@ from .utils import fsm
 # Borrowed from Tomatoro create by Pierre Quillery.
 # https://github.com/dandelionmood/Tomatoro
 # Thanks Pierre!
-ONE_SECOND = 1000
+ONE_SECOND = 1
 
-EventPayload = namedtuple("TimerPayload", "time_left duration ratio")
+
+class EventPayload(namedtuple("TimerPayload", "time_left duration")):
+    __slots__ = ()
+
+    @property
+    def ratio(self) -> float:
+        try:
+            ratio = round(1.0 - self.time_left / self.duration, 1)
+
+        except ZeroDivisionError:
+            ratio = 0
+
+        return ratio
 
 
 @register.factory("tomate.timer", scope=SingletonScope)
@@ -27,7 +39,7 @@ class Timer(object):
     def start(self, seconds: int) -> bool:
         self.duration = self.time_left = seconds
 
-        GLib.timeout_add(ONE_SECOND, self._update)
+        GLib.timeout_add_seconds(ONE_SECOND, self._update)
 
         return True
 
@@ -44,16 +56,6 @@ class Timer(object):
     def end(self) -> bool:
         return True
 
-    @property
-    def time_ratio(self) -> float:
-        try:
-            ratio = round(1.0 - self.time_left / self.duration, 1)
-
-        except ZeroDivisionError:
-            ratio = 0
-
-        return ratio
-
     def _update(self) -> bool:
         if self.state != State.started:
             return False
@@ -68,9 +70,7 @@ class Timer(object):
         return True
 
     def _trigger(self, event_type) -> None:
-        payload = EventPayload(
-            ratio=self.time_ratio, time_left=self.time_left, duration=self.duration
-        )
+        payload = EventPayload(time_left=self.time_left, duration=self.duration)
 
         self._dispatcher.send(event_type, payload=payload)
 
