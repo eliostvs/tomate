@@ -14,7 +14,7 @@ from .utils import fsm
 ONE_SECOND = 1
 
 
-class EventPayload(namedtuple("TimerPayload", "time_left duration")):
+class TimerPayload(namedtuple("TimerEventPayload", "time_left duration")):
     __slots__ = ()
 
     @property
@@ -70,7 +70,7 @@ class Timer(object):
         return True
 
     def _trigger(self, event_type) -> None:
-        payload = EventPayload(time_left=self.time_left, duration=self.duration)
+        payload = TimerPayload(time_left=self.time_left, duration=self.duration)
 
         self._dispatcher.send(event_type, payload=payload)
 

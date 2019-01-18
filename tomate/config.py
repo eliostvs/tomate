@@ -20,7 +20,7 @@ CONFIG_PARSER = configparser.RawConfigParser(defaults=DEFAULTS, strict=True)
 
 register.instance("config.parser")(CONFIG_PARSER)
 
-EventPayload = namedtuple("SettingsPayload", "action section option value")
+SettingsPayload = namedtuple("SettingsPayload", "action section option value")
 
 
 @register.factory("tomate.config", scope=SingletonScope)
@@ -116,7 +116,7 @@ class Config(object):
 
         self.save()
 
-        payload = EventPayload(
+        payload = SettingsPayload(
             action="set", section=section, option=option, value=value
         )
 
@@ -133,7 +133,7 @@ class Config(object):
 
         self.save()
 
-        payload = EventPayload(
+        payload = SettingsPayload(
             action="remove", section=section, option=option, value=None
         )
 

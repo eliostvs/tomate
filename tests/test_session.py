@@ -1,6 +1,6 @@
 import pytest
 from tomate.constant import State, Sessions
-from tomate.session import Session, SECONDS_IN_A_MINUTE, EventPayload, FinishedSession
+from tomate.session import Session, SECONDS_IN_A_MINUTE, SessionPayload, FinishedSession
 from wiring import SingletonScope
 
 
@@ -11,7 +11,7 @@ def timer_payload(mocker):
 
 class TestCountPomodoro:
     def test_count_of_pomodoro(self):
-        payload = EventPayload(
+        payload = SessionPayload(
             duration=0,
             state=None,
             task="",
@@ -47,7 +47,7 @@ class TestSessionStart:
     def test_should_trigger_start_event_when_session_start(self, session):
         session.start()
 
-        payload = EventPayload(
+        payload = SessionPayload(
             duration=25 * SECONDS_IN_A_MINUTE,
             sessions=[],
             state=State.started,
@@ -88,7 +88,7 @@ class TestSessionStop:
         session._timer.state = State.started
         session.stop()
 
-        payload = EventPayload(
+        payload = SessionPayload(
             duration=25 * SECONDS_IN_A_MINUTE,
             sessions=[],
             state=State.stopped,
@@ -125,7 +125,7 @@ class TestSessionReset:
 
         session.reset()
 
-        payload = EventPayload(
+        payload = SessionPayload(
             duration=25 * SECONDS_IN_A_MINUTE,
             sessions=[],
             state=State.finished,
@@ -206,7 +206,7 @@ class TestEndSession:
 
         session.end(None, payload=mocker.Mock(duration=duration))
 
-        payload = EventPayload(
+        payload = SessionPayload(
             type=Sessions.shortbreak,
             sessions=[
                 FinishedSession(
@@ -242,7 +242,7 @@ class TestChangeSessionType:
         session._config.get_int.return_value = 15
         session.change(session=Sessions.longbreak)
 
-        payload = EventPayload(
+        payload = SessionPayload(
             type=Sessions.longbreak,
             sessions=[],
             state=State.stopped,

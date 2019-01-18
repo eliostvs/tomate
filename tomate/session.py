@@ -7,13 +7,13 @@ from wiring.scanning import register
 
 from .constant import State, Sessions
 from .event import ObservableProperty, Subscriber, on, Events
-from .timer import EventPayload as TimerPayload
+from .timer import TimerPayload
 from .utils import fsm
 
 SECONDS_IN_A_MINUTE = 60
 
 
-class EventPayload(namedtuple("SessionPayload", "type sessions state duration task")):
+class SessionPayload(namedtuple("SessionPayload", "type sessions state duration task")):
     __slots__ = ()
 
     @property
@@ -115,7 +115,7 @@ class Session(Subscriber):
         return self.current == session_type
 
     def _trigger(self, event_type: State) -> None:
-        payload = EventPayload(
+        payload = SessionPayload(
             duration=self.duration,
             sessions=self.sessions,
             state=self.state,

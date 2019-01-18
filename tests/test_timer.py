@@ -3,22 +3,22 @@ from unittest.mock import Mock
 from wiring import SingletonScope
 
 from tomate.constant import State
-from tomate.timer import Timer, EventPayload
+from tomate.timer import Timer, TimerPayload
 
 
 class TestEventPayload:
     def test_should_be_zero_percent_when_timer_ends(self):
-        payload = EventPayload(duration=1, time_left=1)
+        payload = TimerPayload(duration=1, time_left=1)
 
         assert payload.ratio == 0.0
 
     def test_should_be_one_hundred_percent_when_the_timer_starts(self):
-        payload = EventPayload(duration=1, time_left=0)
+        payload = TimerPayload(duration=1, time_left=0)
 
         assert payload.ratio == 1.0
 
     def test_should_be_fifty_percent_when_half_of_time_has_passed(self):
-        payload = EventPayload(duration=10, time_left=5)
+        payload = TimerPayload(duration=10, time_left=5)
 
         assert payload.ratio == 0.5
 
@@ -64,7 +64,7 @@ class TestTimerStart:
         timer.start(10)
 
         timer._dispatcher.send.assert_called_with(
-            State.started, payload=EventPayload(time_left=10, duration=10)
+            State.started, payload=TimerPayload(time_left=10, duration=10)
         )
 
 
@@ -90,7 +90,7 @@ class TestTimerUpdate:
         timer._update()
 
         timer._dispatcher.send.assert_called_with(
-            State.changed, payload=EventPayload(time_left=9, duration=10)
+            State.changed, payload=TimerPayload(time_left=9, duration=10)
         )
 
 
@@ -102,7 +102,7 @@ class TestTimerEnd:
         timer._update()
 
         timer._dispatcher.send.assert_called_with(
-            State.finished, payload=EventPayload(time_left=0, duration=1)
+            State.finished, payload=TimerPayload(time_left=0, duration=1)
         )
 
 

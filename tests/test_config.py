@@ -2,7 +2,7 @@ import os
 from unittest.mock import Mock, mock_open, patch
 
 import pytest
-from tomate.config import Config, EventPayload
+from tomate.config import Config, SettingsPayload
 from wiring import SingletonScope
 
 BaseDirectory_attrs = {
@@ -91,7 +91,7 @@ class TestConfig:
         with patch("tomate.config.open", mo, create=True):
             config.remove("section", "option")
 
-            payload = EventPayload(
+            payload = SettingsPayload(
                 section="section", option="option", value=None, action="remove"
             )
 
@@ -119,7 +119,7 @@ def test_should_emit_setting_changed(base_directory, config):
     with patch("tomate.config.open", mock_open(), create=True):
         config.set("Timer", "Pomodoro", 4)
 
-        payload = EventPayload(
+        payload = SettingsPayload(
             section="timer", option="pomodoro", value=4, action="set"
         )
 
