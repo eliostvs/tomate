@@ -18,9 +18,7 @@ class SessionPayload(namedtuple("SessionPayload", "type sessions state duration 
 
     @property
     def finished_pomodoros(self) -> List[Sessions]:
-        return [
-            session for session in self.sessions if session.type is Sessions.pomodoro
-        ]
+        return Session.finished_pomodoros(self.sessions)
 
 
 FinishedSession = namedtuple("FinishedSession", "id type duration")
@@ -129,7 +127,7 @@ class Session(Subscriber):
     def _is_time_to_long_break(self) -> bool:
         long_break_interval = self._config.get_int("Timer", "Long Break Interval")
 
-        return not self._finished_pomodoros % long_break_interval
+        return not len(Session.finished_pomodoros(self.sessions)) % long_break_interval
 
     def _save_session(self, duration: int) -> None:
         finished_session = FinishedSession(
@@ -138,10 +136,8 @@ class Session(Subscriber):
 
         self.sessions.append(finished_session)
 
-    @property
-    def _finished_pomodoros(self) -> int:
-        return len(
-            [session for session in self.sessions if session.type is Sessions.pomodoro]
-        )
+    @staticmethod
+    def finished_pomodoros(sessions: List[Sessions]) -> List[Sessions]:
+        return [session for session in sessions if session.type is Sessions.pomodoro]
 
     state = ObservableProperty(initial=State.stopped, callback=_trigger)
