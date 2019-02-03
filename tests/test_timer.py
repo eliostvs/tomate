@@ -3,13 +3,24 @@ from unittest.mock import Mock
 from wiring import SingletonScope
 
 from tomate.constant import State
-from tomate.timer import Timer
+from tomate.timer import Timer, TimerPayload
 
 
-def test_timer_initial_values(timer):
-    assert timer.state == State.stopped
-    assert timer.time_ratio == 0
-    assert timer.seconds_left == 0
+class TestEventPayload:
+    def test_should_be_zero_percent_when_timer_ends(self):
+        payload = TimerPayload(duration=1, time_left=1)
+
+        assert payload.ratio == 0.0
+
+    def test_should_be_one_hundred_percent_when_the_timer_starts(self):
+        payload = TimerPayload(duration=1, time_left=0)
+
+        assert payload.ratio == 1.0
+
+    def test_should_be_fifty_percent_when_half_of_time_has_passed(self):
+        payload = TimerPayload(duration=10, time_left=5)
+
+        assert payload.ratio == 0.5
 
 
 class TestTimerStop:
@@ -41,46 +52,37 @@ class TestTimerStart:
 
         assert timer.start(1)
 
-    def test_should_update_seconds_left_and_total_seconds_when_timer_start(self, timer):
+    def test_should_update_time_left_and_duration_when_timer_start(self, timer):
         timer.state = State.finished
 
         timer.start(5)
 
-        assert timer.seconds_left == 5
-        assert timer.total_seconds == 5
+        assert timer.time_left == 5
+        assert timer.duration == 5
 
     def test_should_trigger_started_event_when_timer_start(self, timer):
         timer.start(10)
 
         timer._dispatcher.send.assert_called_with(
-            State.started, time_left=10, time_ratio=0.0, time_total=10
+            State.started, payload=TimerPayload(time_left=10, duration=10)
         )
 
 
 class TestTimerUpdate:
-    def test_should_increase_the_time_ratio_after_update(self, timer):
-        timer.start(10)
-
-        timer._update()
-        timer._update()
-        timer._update()
-
-        assert timer.time_ratio == 0.3
-
     def test_should_decrease_the_time_left_after_update(self, timer):
         timer.start(2)
 
         assert timer._update()
-        assert timer.seconds_left == 1
+        assert timer.time_left == 1
 
-    def test_should_keep_total_seconds_after_update(self, timer):
-        total_seconds = 10
+    def test_should_keep_duration_after_update(self, timer):
+        duration = 10
 
-        timer.start(total_seconds)
+        timer.start(duration)
 
         assert timer._update()
 
-        assert timer.total_seconds == total_seconds
+        assert timer.duration == duration
 
     def test_should_trigger_changed_event_after_update(self, timer):
         timer.start(10)
@@ -88,7 +90,7 @@ class TestTimerUpdate:
         timer._update()
 
         timer._dispatcher.send.assert_called_with(
-            State.changed, time_left=9, time_ratio=0.1, time_total=10
+            State.changed, payload=TimerPayload(time_left=9, duration=10)
         )
 
 
@@ -100,7 +102,7 @@ class TestTimerEnd:
         timer._update()
 
         timer._dispatcher.send.assert_called_with(
-            State.finished, time_left=0, time_ratio=1, time_total=1
+            State.finished, payload=TimerPayload(time_left=0, duration=1)
         )
 
 

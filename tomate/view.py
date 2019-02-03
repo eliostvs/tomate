@@ -23,4 +23,3 @@ class UI(Interface):
 
     def hide(*args, **kwargs):
         pass
-

@@ -1,14 +1,27 @@
 import uuid
-from typing import List, Tuple
+from collections import namedtuple
+from typing import List
 
 from wiring import inject, SingletonScope
 from wiring.scanning import register
 
 from .constant import State, Sessions
 from .event import ObservableProperty, Subscriber, on, Events
+from .timer import TimerPayload
 from .utils import fsm
 
 SECONDS_IN_A_MINUTE = 60
+
+
+class SessionPayload(namedtuple("SessionPayload", "type sessions state duration task")):
+    __slots__ = ()
+
+    @property
+    def finished_pomodoros(self) -> List[Sessions]:
+        return Session.finished_pomodoros(self.sessions)
+
+
+FinishedSession = namedtuple("FinishedSession", "id type duration")
 
 
 @register.factory("tomate.session", scope=SingletonScope)
@@ -24,20 +37,20 @@ class Session(Subscriber):
         self.sessions = []
         self.current = Sessions.pomodoro
 
-    def is_running(self):
+    def is_running(self) -> bool:
         return self._timer.state == State.started
 
-    def is_not_running(self):
+    def is_not_running(self) -> bool:
         return not self.is_running()
 
     @fsm(target=State.started, source=[State.stopped, State.finished])
-    def start(self):
+    def start(self) -> bool:
         self._timer.start(self.duration)
 
         return True
 
     @fsm(target=State.stopped, source=[State.started], conditions=[is_running])
-    def stop(self):
+    def stop(self) -> bool:
         self._timer.stop()
 
         return True
@@ -47,15 +60,15 @@ class Session(Subscriber):
         source=[State.stopped, State.finished],
         exit=lambda self: self._trigger(State.reset),
     )
-    def reset(self):
+    def reset(self) -> bool:
         self.sessions = []
 
         return True
 
     @fsm(target=State.finished, source=[State.started], conditions=[is_not_running])
     @on(Events.Timer, [State.finished])
-    def end(self, sender=None, **kwargs):
-        self._save_session(kwargs.get("time_total"))
+    def end(self, _, payload: TimerPayload) -> bool:
+        self._save_session(payload.duration)
 
         if self._current_session_is(Sessions.pomodoro):
             self.current = (
@@ -75,56 +88,56 @@ class Session(Subscriber):
         exit=lambda self: self._trigger(State.changed),
     )
     @on(Events.Setting, ["timer"])
-    def change(self, sender=None, **kwargs):
+    def change(self, sender=None, **kwargs) -> bool:
         self.current = kwargs.get("session", self.current)
 
         return True
 
     @property
-    def duration(self):
+    def duration(self) -> int:
         option_name = self.current.name + "_duration"
         seconds = self._config.get_int("Timer", option_name)
         return seconds * SECONDS_IN_A_MINUTE
 
     @property
-    def status(self):
-        return dict(
-            current=self.current,
-            sessions=self.sessions,
-            state=self.state,
-            duration=self.duration,
-            task_name=self.task_name,
-        )
-
-    @property
-    def task_name(self):
+    def task(self) -> str:
         return self._task_name
 
-    @task_name.setter
-    def task_name(self, task_name):
+    @task.setter
+    def task(self, task_name: str) -> None:
         if self.state in [State.stopped, State.finished]:
             self._task_name = task_name
             self._trigger(State.changed)
 
-    def _current_session_is(self, session_type):
+    def _current_session_is(self, session_type: Sessions) -> bool:
         return self.current == session_type
 
-    def _trigger(self, event_type):
-        self._dispatcher.send(event_type, **self.status)
+    def _trigger(self, event_type: State) -> None:
+        payload = SessionPayload(
+            duration=self.duration,
+            sessions=self.sessions,
+            state=self.state,
+            task=self.task,
+            type=self.current,
+        )
+
+        self._dispatcher.send(event_type, payload=payload)
 
     @property
-    def _is_time_to_long_break(self):
+    def _is_time_to_long_break(self) -> bool:
         long_break_interval = self._config.get_int("Timer", "Long Break Interval")
 
-        return not Session.count_pomodoros(self.sessions) % long_break_interval
+        return not len(Session.finished_pomodoros(self.sessions)) % long_break_interval
 
-    def _save_session(self, total_seconds: int) -> None:
-        self.sessions.append((uuid.uuid4(), self.current, total_seconds))
+    def _save_session(self, duration: int) -> None:
+        finished_session = FinishedSession(
+            id=uuid.uuid4(), type=self.current, duration=duration
+        )
+
+        self.sessions.append(finished_session)
 
     @staticmethod
-    def count_pomodoros(sessions: List[Tuple[uuid.uuid4, Sessions, int]]) -> int:
-        return len(
-            [session for (_, session, _) in sessions if session is Sessions.pomodoro]
-        )
+    def finished_pomodoros(sessions: List[Sessions]) -> List[Sessions]:
+        return [session for session in sessions if session.type is Sessions.pomodoro]
 
     state = ObservableProperty(initial=State.stopped, callback=_trigger)
