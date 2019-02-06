@@ -11,7 +11,7 @@ class Dispatcher(Namespace):
         try:
             return self[attr]
         except KeyError:
-            raise AttributeError
+            raise AttributeError(attr)
 
 
 Events = Dispatcher()
