@@ -87,12 +87,9 @@ class Config(object):
         raise EnvironmentError("Icon %s not found!" % icon_path)
 
     def get_int(self, section, option):
-        return self._get(section, option, "getint")
+        return self.get(section, option, "getint")
 
-    def get(self, section, option):
-        return self._get(section, option)
-
-    def _get(self, section, option, method="get"):
+    def get(self, section, option, method="get"):
         section = Config.normalize(section)
         option = Config.normalize(option)
 
