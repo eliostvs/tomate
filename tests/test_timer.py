@@ -7,6 +7,13 @@ from tomate.timer import Timer, TimerPayload
 
 
 class TestEventPayload:
+    def test_should_be_zero_when_duration_is_zero(self):
+        # Given
+        payload = TimerPayload(duration=0, time_left=1)
+
+        # Then
+        assert payload.ratio == 0.0
+
     def test_should_be_zero_percent_when_timer_ends(self):
         payload = TimerPayload(duration=1, time_left=1)
 
@@ -69,6 +76,13 @@ class TestTimerStart:
 
 
 class TestTimerUpdate:
+    def test_should_not_update_when_timer_is_not_started(self, timer):
+        # Given
+        timer.state = State.stopped
+
+        # Then
+        assert timer._update() is False
+
     def test_should_decrease_the_time_left_after_update(self, timer):
         timer.start(2)
 
