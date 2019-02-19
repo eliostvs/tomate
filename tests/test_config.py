@@ -1,9 +1,11 @@
+import configparser
 import os
 from unittest.mock import Mock, mock_open, patch
 
 import pytest
-from tomate.config import Config, SettingsPayload
 from wiring import SingletonScope
+
+from tomate.config import Config, SettingsPayload
 
 BaseDirectory_attrs = {
     "xdg_config_home": "/home/mock/.config",
@@ -13,7 +15,7 @@ BaseDirectory_attrs = {
 
 @pytest.fixture()
 def config():
-    return Config(Mock(), Mock())
+    return Config(Mock(), Mock(configparser.RawConfigParser))
 
 
 @patch("tomate.config.BaseDirectory", spec_set=True, **BaseDirectory_attrs)
@@ -30,13 +32,13 @@ class TestConfig:
         with patch("tomate.config.open", mo, create=True):
             config.save()
 
-        assert config.parser.write.called
-
-        config.parser.write.assert_called_once_with(mo())
+        config._parser.write.assert_called_once_with(mo())
 
     @patch("tomate.config.os.path.exists", spec_set=True, return_value=True)
     def test_get_media_file(self, path, base_directory, config):
-        config.get_media_uri("alarm.mp3") == "file:///usr/mock/tomate/media/alarm.mp3"
+        file_path = "file:///usr/mock/tomate/media/alarm.mp3"
+
+        assert config.get_media_uri("alarm.mp3") == file_path
 
     def test_get_resource_path_should_raise_exception(self, base_directory, config):
         with pytest.raises(EnvironmentError):
@@ -67,51 +69,47 @@ class TestConfig:
 
     def test_get_option(self, base_directory, config):
         config.get("section", "option")
+        config._parser.get.assert_called_with("section", "option", fallback=None)
 
-        config.parser.get.assert_called_with("section", "option", fallback=None)
-
+    def test_get_in_option(self, base_directory, config):
         config.get_int("section", "option")
-        config.parser.getint.assert_called_with("section", "option", fallback=None)
+        config._parser.getint.assert_called_with("section", "option", fallback=None)
 
     def test_get_option_using_defaults(self, based_directory):
-        from tomate.config import CONFIG_PARSER, Config, DEFAULTS
+        from tomate.config import Config, DEFAULTS
 
-        config = Config(CONFIG_PARSER, Mock())
+        config = Config(Mock(), configparser.RawConfigParser(defaults=DEFAULTS))
 
         assert int(DEFAULTS["pomodoro_duration"]) == config.get_int(
             "timer", "pomodoro_duration"
         )
 
-    def test_set_option_when_has_no_section(self, based_directory, config):
-        config.parser.has_section.side_effect = (
-            lambda section: True if section == "section" else False
-        )
-        mo = mock_open()
+    def test_forward_request_to_parser(self, base_directory, config):
+        # Given
+        section = "section"
+        option = "option"
 
-        with patch("tomate.config.open", mo, create=True):
-            config.remove("section", "option")
+        # When
+        config.getboolean(section, option)
 
-            payload = SettingsPayload(
-                section="section", option="option", value=None, action="remove"
-            )
-
-            config.parser.remove_option.assert_called_with("section", "option")
-            config.parser.write.assert_called_once_with(mo())
-            config._dispatcher.send.assert_called_once_with("section", payload=payload)
+        # Then
+        config._parser.getboolean.assert_called_once_with(section, option)
 
     def test_set_option(self, base_directory, config):
-        config.parser.has_section.return_value = False
+        config._parser.has_section.return_value = False
 
         mo = mock_open()
 
         with patch("tomate.config.open", mo, create=True):
             config.set("Timer", "Shortbreak Duration", 4)
 
-            config.parser.has_section.assert_called_once_with("timer")
-            config.parser.add_section.assert_called_once_with("timer")
-            config.parser.set.assert_called_once_with("timer", "shortbreak_duration", 4)
+            config._parser.has_section.assert_called_once_with("timer")
+            config._parser.add_section.assert_called_once_with("timer")
+            config._parser.set.assert_called_once_with(
+                "timer", "shortbreak_duration", 4
+            )
 
-            config.parser.write.assert_called_once_with(mo())
+            config._parser.write.assert_called_once_with(mo())
 
 
 @patch("tomate.config.BaseDirectory", spec_set=True, **BaseDirectory_attrs)
@@ -133,7 +131,6 @@ def test_module(graph):
 
     assert provider.scope == SingletonScope
 
-    graph.register_instance("config.parser", Mock())
     graph.register_instance("tomate.events.setting", Mock())
 
     assert isinstance(graph.get("tomate.config"), Config)

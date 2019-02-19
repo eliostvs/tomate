@@ -1,7 +1,7 @@
-import configparser
 import logging
 import os
 from collections import namedtuple
+from configparser import RawConfigParser
 
 from wiring import inject, SingletonScope
 from wiring.scanning import register
@@ -16,10 +16,6 @@ DEFAULTS = {
     "long_break_interval": "4",
 }
 
-CONFIG_PARSER = configparser.RawConfigParser(defaults=DEFAULTS, strict=True)
-
-register.instance("config.parser")(CONFIG_PARSER)
-
 SettingsPayload = namedtuple("SettingsPayload", "action section option value")
 
 
@@ -27,23 +23,28 @@ SettingsPayload = namedtuple("SettingsPayload", "action section option value")
 class Config(object):
     app_name = "tomate"
 
-    @inject(parser="config.parser", dispatcher="tomate.events.setting")
-    def __init__(self, parser, dispatcher):
-        self.parser = parser
+    @inject(dispatcher="tomate.events.setting")
+    def __init__(
+        self, dispatcher, parser=RawConfigParser(defaults=DEFAULTS, strict=True)
+    ):
+        self._parser = parser
         self._dispatcher = dispatcher
 
         self.load()
 
+    def __getattr__(self, attr):
+        return getattr(self._parser, attr)
+
     def load(self):
         logger.debug("action=loadConfig uri=%s", self.get_config_path())
 
-        self.parser.read(self.get_config_path())
+        self._parser.read(self.get_config_path())
 
     def save(self):
         logger.debug("action=writeConfig uri=%s", self.get_config_path())
 
         with open(self.get_config_path(), "w") as f:
-            self.parser.write(f)
+            self._parser.write(f)
 
     def get_config_path(self):
         BaseDirectory.save_config_path(self.app_name)
@@ -73,7 +74,7 @@ class Config(object):
 
     @staticmethod
     def get_resource_paths(*resources):
-        return [p for p in BaseDirectory.load_data_paths(*resources)]
+        return [path for path in BaseDirectory.load_data_paths(*resources)]
 
     @staticmethod
     def get_icon_path(iconname, size=None, theme=None):
@@ -93,10 +94,10 @@ class Config(object):
         section = Config.normalize(section)
         option = Config.normalize(option)
 
-        if not self.parser.has_section(section):
-            self.parser.add_section(section)
+        if not self._parser.has_section(section):
+            self._parser.add_section(section)
 
-        return getattr(self.parser, method)(section, option, fallback=None)
+        return getattr(self._parser, method)(section, option, fallback=None)
 
     def set(self, section, option, value):
         section = Config.normalize(section)
@@ -106,32 +107,15 @@ class Config(object):
             "action=setOption section=%s option=%s value=%s", section, option, value
         )
 
-        if not self.parser.has_section(section):
-            self.parser.add_section(section)
+        if not self._parser.has_section(section):
+            self._parser.add_section(section)
 
-        self.parser.set(section, option, value)
+        self._parser.set(section, option, value)
 
         self.save()
 
         payload = SettingsPayload(
             action="set", section=section, option=option, value=value
-        )
-
-        self._dispatcher.send(section, payload=payload)
-
-    def remove(self, section, option):
-        section = Config.normalize(section)
-        option = Config.normalize(option)
-
-        logger.debug("action=removeOption section=%s option=%s", section, option)
-
-        if self.parser.has_section(section):
-            self.parser.remove_option(section, option)
-
-        self.save()
-
-        payload = SettingsPayload(
-            action="remove", section=section, option=option, value=None
         )
 
         self._dispatcher.send(section, payload=payload)
