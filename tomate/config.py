@@ -21,42 +21,44 @@ SettingsPayload = namedtuple("SettingsPayload", "action section option value")
 
 @register.factory("tomate.config", scope=SingletonScope)
 class Config(object):
-    app_name = "tomate"
+    APP_NAME = "tomate"
+    SECTION_SHORTCUTS = "shortcuts"
+    SECTION_TIMER = "timer"
 
     @inject(dispatcher="tomate.events.setting")
     def __init__(
         self, dispatcher, parser=RawConfigParser(defaults=DEFAULTS, strict=True)
     ):
-        self._parser = parser
+        self.parser = parser
         self._dispatcher = dispatcher
 
         self.load()
 
     def __getattr__(self, attr):
-        return getattr(self._parser, attr)
+        return getattr(self.parser, attr)
 
     def load(self):
-        logger.debug("action=loadConfig uri=%s", self.get_config_path())
+        logger.debug("component=config action=load uri=%s", self.get_config_path())
 
-        self._parser.read(self.get_config_path())
+        self.parser.read(self.get_config_path())
 
     def save(self):
-        logger.debug("action=writeConfig uri=%s", self.get_config_path())
+        logger.debug("componente=config action=write uri=%s", self.get_config_path())
 
         with open(self.get_config_path(), "w") as f:
-            self._parser.write(f)
+            self.parser.write(f)
 
     def get_config_path(self):
-        BaseDirectory.save_config_path(self.app_name)
+        BaseDirectory.save_config_path(self.APP_NAME)
         return os.path.join(
-            BaseDirectory.xdg_config_home, self.app_name, self.app_name + ".conf"
+            BaseDirectory.xdg_config_home, self.APP_NAME, self.APP_NAME + ".conf"
         )
 
     def get_media_uri(self, *resources):
-        return "file://" + self.get_resource_path(self.app_name, "media", *resources)
+        return "file://" + self.get_resource_path(self.APP_NAME, "media", *resources)
 
     def get_plugin_paths(self):
-        return self.get_resource_paths(self.app_name, "plugins")
+        return self.get_resource_paths(self.APP_NAME, "plugins")
 
     def get_icon_paths(self):
         return self.get_resource_paths("icons")
@@ -65,8 +67,6 @@ class Config(object):
         for resource in self.get_resource_paths(*resources):
             if os.path.exists(resource):
                 return resource
-
-            logger.debug("action=resourceNotFound uri=%s", resource)
 
         raise EnvironmentError(
             "Resource with path %s not found!" % os.path.join(*resources)
@@ -90,27 +90,30 @@ class Config(object):
     def get_int(self, section, option):
         return self.get(section, option, "getint")
 
-    def get(self, section, option, method="get"):
+    def get(self, section, option, method="get", fallback=None):
         section = Config.normalize(section)
         option = Config.normalize(option)
 
-        if not self._parser.has_section(section):
-            self._parser.add_section(section)
+        if not self.parser.has_section(section):
+            self.parser.add_section(section)
 
-        return getattr(self._parser, method)(section, option, fallback=None)
+        return getattr(self.parser, method)(section, option, fallback=fallback)
 
     def set(self, section, option, value):
         section = Config.normalize(section)
         option = Config.normalize(option)
 
         logger.debug(
-            "action=setOption section=%s option=%s value=%s", section, option, value
+            "action=componente=config setOption section=%s option=%s value=%s",
+            section,
+            option,
+            value,
         )
 
-        if not self._parser.has_section(section):
-            self._parser.add_section(section)
+        if not self.parser.has_section(section):
+            self.parser.add_section(section)
 
-        self._parser.set(section, option, value)
+        self.parser.set(section, option, value)
 
         self.save()
 
