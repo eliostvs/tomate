@@ -1,9 +1,11 @@
+from wiring import SingletonScope, inject
 from wiring.scanning import register
 from yapsy.ConfigurablePluginManager import ConfigurablePluginManager
 from yapsy.IPlugin import IPlugin
 from yapsy.PluginManager import PluginManagerSingleton
 from yapsy.VersionedPluginManager import VersionedPluginManager
 
+from tomate.config import Config
 from .event import connect_events, disconnect_events
 
 
@@ -22,7 +24,21 @@ class Plugin(IPlugin):
         pass
 
 
-PluginManagerSingleton.setBehaviour([ConfigurablePluginManager, VersionedPluginManager])
+@register.factory("tomate.plugin", scope=SingletonScope)
+class PluginManager:
+    @inject(config="tomate.config")
+    def __init__(self, config: Config):
+        PluginManagerSingleton.setBehaviour(
+            [ConfigurablePluginManager, VersionedPluginManager]
+        )
 
-plugin_manager = PluginManagerSingleton.get()
-register.instance("tomate.plugin")(plugin_manager)
+        self._plugin_manager = PluginManagerSingleton.get()
+        self._plugin_manager.setPluginPlaces(config.get_plugin_paths())
+        self._plugin_manager.setPluginInfoExtension("plugin")
+        self._plugin_manager.setConfigParser(config.parser, config.save)
+
+    def __getattr__(self, attr):
+        try:
+            return getattr(self._plugin_manager, attr)
+        except KeyError:
+            raise AttributeError(attr)
