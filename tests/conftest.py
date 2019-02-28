@@ -1,37 +1,43 @@
-from unittest.mock import Mock
-
 import pytest
-from wiring.scanning import scan_to_graph
 
 
 @pytest.fixture()
-def timer():
+def mock_config(mocker):
+    from tomate.config import Config
+
+    return mocker.Mock(Config, parser=mocker.Mock(), **{"get_int.return_value": 25})
+
+
+@pytest.fixture()
+def mock_session(mocker):
+    from tomate.session import Session
+
+    return mocker.Mock(Session)
+
+
+@pytest.fixture()
+def mock_timer(mocker):
     from tomate.timer import Timer
 
-    return Timer(dispatcher=Mock())
+    return mocker.Mock(Timer)
 
 
 @pytest.fixture()
-def config():
-    return Mock(**{"get_int.return_value": 25})
-
-
-@pytest.fixture()
-def session(timer, config):
-    from tomate.session import Session
-    from tomate.event import Setting
-
-    Setting.receivers.clear()
-
-    return Session(timer=timer, config=config, dispatcher=Mock())
-
-
-@pytest.fixture
 def graph():
     from tomate.graph import graph
 
     graph.providers.clear()
 
-    scan_to_graph(["tomate"], graph)
-
     return graph
+
+
+@pytest.fixture()
+def mock_plugin(mocker):
+    from yapsy.PluginManager import PluginManager
+
+    return mocker.Mock(PluginManager)
+
+
+@pytest.fixture()
+def mock_view(mocker):
+    return mocker.Mock()
