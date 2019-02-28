@@ -103,7 +103,6 @@ class ObservableProperty(object):
         self.callback(instance, event)
 
 
-register.instance("tomate.events")(Events)
 register.instance("tomate.events.session")(Session)
 register.instance("tomate.events.timer")(Timer)
 register.instance("tomate.events.setting")(Setting)
