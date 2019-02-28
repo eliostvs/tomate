@@ -12,6 +12,12 @@ Bugs and suggestions should be reported [here][2].
 Changelog
 ---------
 
+### [Unreleased]
+
+#### Added
+
+- Create constants for the config sections.
+
 ### 0.11.0
 
 ### Changed
