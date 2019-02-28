@@ -1,9 +1,16 @@
-from unittest.mock import Mock
-
+import pytest
 from wiring import SingletonScope
+from wiring.scanning import scan_to_graph
 
 from tomate.constant import State
 from tomate.timer import Timer, TimerPayload
+
+
+@pytest.fixture()
+def subject(mocker):
+    from tomate.timer import Timer
+
+    return Timer(dispatcher=mocker.Mock())
 
 
 class TestEventPayload:
@@ -31,102 +38,106 @@ class TestEventPayload:
 
 
 class TestTimerStop:
-    def test_should_not_be_able_to_stop_when_timer_is_not_running(self, timer):
-        timer.state = State.stopped
+    def test_should_not_be_able_to_stop_when_timer_is_not_running(self, subject):
+        subject.state = State.stopped
 
-        assert not timer.stop()
+        assert not subject.stop()
 
-    def test_should_be_able_to_stop_when_timer_is_running(self, timer):
-        timer.state = State.started
+    def test_should_be_able_to_stop_when_timer_is_running(self, subject):
+        subject.state = State.started
 
-        assert timer.stop()
-        assert timer.state == State.stopped
+        assert subject.stop()
+        assert subject.state == State.stopped
 
 
 class TestTimerStart:
-    def test_should_not_be_able_to_start_when_timer_is_already_running(self, timer):
-        timer.state = State.started
+    def test_should_not_be_able_to_start_when_timer_is_already_running(self, subject):
+        subject.state = State.started
 
-        assert not timer.start(1)
+        assert not subject.start(1)
 
-    def test_should_be_able_to_start_when_timer_is_stopped(self, timer):
-        timer.state = State.stopped
+    def test_should_be_able_to_start_when_timer_is_stopped(self, subject):
+        subject.state = State.stopped
 
-        assert timer.start(1)
+        assert subject.start(1)
 
-    def test_should_be_able_to_start_when_timer_is_finished(self, timer):
-        timer.state = State.finished
+    def test_should_be_able_to_start_when_timer_is_finished(self, subject):
+        subject.state = State.finished
 
-        assert timer.start(1)
+        assert subject.start(1)
 
-    def test_should_update_time_left_and_duration_when_timer_start(self, timer):
-        timer.state = State.finished
+    def test_should_update_time_left_and_duration_when_timer_start(self, subject):
+        subject.state = State.finished
 
-        timer.start(5)
+        subject.start(5)
 
-        assert timer.time_left == 5
-        assert timer.duration == 5
+        assert subject.time_left == 5
+        assert subject.duration == 5
 
-    def test_should_trigger_started_event_when_timer_start(self, timer):
-        timer.start(10)
+    def test_should_trigger_started_event_when_timer_start(self, subject):
+        subject.start(10)
 
-        timer._dispatcher.send.assert_called_with(
+        subject._dispatcher.send.assert_called_with(
             State.started, payload=TimerPayload(time_left=10, duration=10)
         )
 
 
 class TestTimerUpdate:
-    def test_should_not_update_when_timer_is_not_started(self, timer):
+    def test_should_not_update_when_timer_is_not_started(self, subject):
         # Given
-        timer.state = State.stopped
+        subject.state = State.stopped
 
         # Then
-        assert timer._update() is False
+        assert subject._update() is False
 
-    def test_should_decrease_the_time_left_after_update(self, timer):
-        timer.start(2)
+    def test_should_decrease_the_time_left_after_update(self, subject):
+        subject.start(2)
 
-        assert timer._update()
-        assert timer.time_left == 1
+        assert subject._update()
+        assert subject.time_left == 1
 
-    def test_should_keep_duration_after_update(self, timer):
+    def test_should_keep_duration_after_update(self, subject):
         duration = 10
 
-        timer.start(duration)
+        subject.start(duration)
 
-        assert timer._update()
+        assert subject._update()
 
-        assert timer.duration == duration
+        assert subject.duration == duration
 
-    def test_should_trigger_changed_event_after_update(self, timer):
-        timer.start(10)
+    def test_should_trigger_changed_event_after_update(self, subject):
+        subject.start(10)
 
-        timer._update()
+        subject._update()
 
-        timer._dispatcher.send.assert_called_with(
+        subject._dispatcher.send.assert_called_with(
             State.changed, payload=TimerPayload(time_left=9, duration=10)
         )
 
 
 class TestTimerEnd:
-    def test_should_trigger_finished_event_when_time_ends(self, timer):
-        timer.start(1)
+    def test_should_trigger_finished_event_when_time_ends(self, subject):
+        subject.start(1)
 
-        timer._update()
-        timer._update()
+        subject._update()
+        subject._update()
 
-        timer._dispatcher.send.assert_called_with(
+        subject._dispatcher.send.assert_called_with(
             State.finished, payload=TimerPayload(time_left=0, duration=1)
         )
 
 
-def test_module(graph):
-    assert "tomate.timer" in graph.providers
+def test_module(graph, mocker):
+    spec = "tomate.timer"
 
-    provider = graph.providers["tomate.timer"]
+    scan_to_graph([spec], graph)
+
+    assert spec in graph.providers
+
+    provider = graph.providers[spec]
 
     assert provider.scope == SingletonScope
 
-    graph.register_instance("tomate.events.timer", Mock())
+    graph.register_factory("tomate.events.timer", mocker.Mock)
 
-    assert isinstance(graph.get("tomate.timer"), Timer)
+    assert isinstance(graph.get(spec), Timer)
