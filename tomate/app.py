@@ -12,26 +12,14 @@ class Application(dbus.service.Object):
     bus_interface_name = "com.github.Tomate"
     specifiation = "tomate.app"
 
-    @inject(
-        bus="dbus.session",
-        view="tomate.view",
-        config="tomate.config",
-        plugin="tomate.plugin",
-    )
-    def __init__(self, bus, view, config, plugin):
+    @inject(bus="dbus.session", view="tomate.view", plugin="tomate.plugin")
+    def __init__(self, bus, view, plugin):
         dbus.service.Object.__init__(self, bus, self.bus_object_path)
         self.state = State.stopped
-        self.config = config
         self.view = view
         self.plugin = plugin
 
-        self.__setup_plugin_manager()
-
-    def __setup_plugin_manager(self):
-        self.plugin.setPluginPlaces(self.config.get_plugin_paths())
-        self.plugin.setPluginInfoExtension("plugin")
-        self.plugin.setConfigParser(self.config.parser, self.config.save)
-        self.plugin.collectPlugins()
+        plugin.collectPlugins()
 
     @dbus.service.method(bus_interface_name, out_signature="b")
     def is_running(self):

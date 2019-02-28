@@ -1,10 +1,9 @@
-from wiring import Graph
+from wiring.scanning import scan_to_graph
 
 from tomate.proxy import LazyProxy, lazy_proxy
 
 
-def test_lazy_proxy():
-    graph = Graph()
+def test_lazy_proxy(graph):
     graph.register_instance("dict", {"a": 1, "b": 2})
     new_proxy = LazyProxy("dict", graph)
 
@@ -12,14 +11,15 @@ def test_lazy_proxy():
     assert sorted(new_proxy.values()) == [1, 2]
 
 
-def test_lazy_proxy_function():
-    graph = Graph()
-    graph.register_instance(Graph, graph)
-
+def test_lazy_proxy_function(graph):
     new_proxy = lazy_proxy("foo", graph=graph)
 
     assert isinstance(new_proxy, LazyProxy)
 
 
 def test_module(graph):
-    assert "tomate.proxy" in graph.providers
+    spec = "tomate.proxy"
+
+    scan_to_graph([spec], graph)
+
+    assert spec in graph.providers

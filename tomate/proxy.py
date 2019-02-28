@@ -7,13 +7,13 @@ class LazyProxy(object):
         self.__specification = specification
         self.__graph = graph
 
-    def __getattribute__(self, item):
+    def __getattribute__(self, attr):
         try:
-            obj = object.__getattribute__(self, item)
+            obj = object.__getattribute__(self, attr)
 
         except AttributeError:
             target = self.__graph.get(self.__specification)
-            obj = object.__getattribute__(target, item)
+            obj = object.__getattribute__(target, attr)
 
         return obj
 

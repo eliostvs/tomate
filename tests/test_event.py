@@ -1,6 +1,5 @@
-from unittest.mock import Mock
-
 import pytest
+from wiring.scanning import scan_to_graph
 
 from tomate.constant import State
 from tomate.event import (
@@ -13,61 +12,72 @@ from tomate.event import (
 
 
 @pytest.fixture()
-def session():
-    return Mock()
-
-
-@pytest.fixture()
-def timer():
-    return Mock()
-
-
-@pytest.fixture()
-def foo(session, timer):
+def subject(mock_session, mock_timer):
     class Foo(object):
-        @on(session, [State.finished])
+        @on(mock_session, [State.finished])
         def bar(self, sender):
             return sender
 
-        @on(timer, [State.finished, State.changed])
+        @on(mock_timer, [State.finished, State.changed])
         def spam(self, sender):
             return sender
 
     return Foo()
 
 
-def test_should_return_events_and_states_bind_with_the_method(foo, session, timer):
-    assert foo.bar._events == [(session, State.finished)]
+def test_should_return_events_and_states_bind_with_the_method(
+    subject, mock_session, mock_timer
+):
+    assert subject.bar._events == [(mock_session, State.finished)]
 
-    assert foo.spam._events == [(timer, State.finished), (timer, State.changed)]
+    assert subject.spam._events == [
+        (mock_timer, State.finished),
+        (mock_timer, State.changed),
+    ]
 
 
-def test_should_return_methods_that_has_events(foo):
+def test_should_return_methods_that_has_events(subject):
     SubscriberMeta(str("name"), (object,), {})
 
-    assert [foo.bar, foo.spam] == methods_with_events(foo)
+    assert [subject.bar, subject.spam] == methods_with_events(subject)
 
 
-def test_should_connect_event_with_the_method(session, timer):
-    class Baz(Subscriber):
-        @on(session, [State.finished])
-        @on(timer, [State.changed])
+def test_should_connect_event_with_the_method(mocker):
+    mock_event_a = mocker.Mock()
+    mock_event_b = mocker.Mock()
+
+    class Subject(Subscriber):
+        @on(mock_event_a, [State.finished, State.stopped])
+        @on(mock_event_b, [State.changed])
         def bar(self, sender):
             return sender
 
-    baz = Baz()
+    subject = Subject()
 
-    session.connect.assert_called_with(baz.bar, sender=State.finished, weak=False)
-    timer.connect.assert_called_with(baz.bar, sender=State.changed, weak=False)
+    mock_event_a.connect.assert_any_call(subject.bar, sender=State.finished, weak=False)
+    mock_event_a.connect.assert_any_call(subject.bar, sender=State.stopped, weak=False)
+    mock_event_b.connect.assert_called_with(
+        subject.bar, sender=State.changed, weak=False
+    )
 
 
-def test_should_disconnect_bind_events(session, timer, foo):
-    disconnect_events(foo)
+def test_should_disconnect_bind_events(mocker):
+    mock_event_a = mocker.Mock()
+    mock_event_b = mocker.Mock()
 
-    session.disconnect.assert_called_with(foo.bar, sender=State.finished)
+    class Subject(Subscriber):
+        @on(mock_event_a, [State.finished, State.stopped])
+        @on(mock_event_b, [State.changed])
+        def bar(self, sender):
+            return sender
 
-    timer.disconnect.assert_any_call(foo.spam, sender=State.changed)
-    timer.disconnect.assert_any_call(foo.spam, sender=State.finished)
+    subject = Subject()
+
+    disconnect_events(subject)
+
+    mock_event_a.disconnect.assert_any_call(subject.bar, sender=State.finished)
+    mock_event_a.disconnect.assert_any_call(subject.bar, sender=State.stopped)
+    mock_event_b.disconnect.assert_called_with(subject.bar, sender=State.changed)
 
 
 def should_raise_attribute_error_when_key_not_found_in_the_namespace():
@@ -77,7 +87,7 @@ def should_raise_attribute_error_when_key_not_found_in_the_namespace():
         Events.Foo
 
 
-def test_should_events_be_acessiable_as_dictionary_and_attributes():
+def test_should_events_be_accessible_as_dictionary_and_attributes():
     import tomate.event as e
 
     assert e.Session == e.Events.Session
@@ -85,10 +95,13 @@ def test_should_events_be_acessiable_as_dictionary_and_attributes():
 
 
 def test_module(graph):
-    import tomate.event as e
+    scan_to_graph(["tomate.event"], graph)
 
-    assert e.Events is graph.get("tomate.events")
-    assert e.Events.Setting is graph.get("tomate.events.setting")
-    assert e.Events.Session is graph.get("tomate.events.session")
-    assert e.Events.Timer is graph.get("tomate.events.timer")
-    assert e.Events.View is graph.get("tomate.events.view")
+    assert sorted(list(graph.providers)) == sorted(
+        [
+            "tomate.events.setting",
+            "tomate.events.session",
+            "tomate.events.timer",
+            "tomate.events.view",
+        ]
+    )
