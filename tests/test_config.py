@@ -85,17 +85,6 @@ class TestConfig:
             "timer", "pomodoro_duration"
         )
 
-    def test_forward_request_to_parser(self, base_directory, subject):
-        # Given
-        section = "section"
-        option = "option"
-
-        # When
-        subject.getboolean(section, option)
-
-        # Then
-        subject.parser.getboolean.assert_called_once_with(section, option)
-
     def test_set_option(self, base_directory, subject):
         subject.parser.has_section.return_value = False
 

@@ -34,16 +34,13 @@ class Config(object):
 
         self.load()
 
-    def __getattr__(self, attr):
-        return getattr(self.parser, attr)
-
     def load(self):
-        logger.debug("component=config action=load uri=%s", self.get_config_path())
+        logger.debug("action=load uri=%s", self.get_config_path())
 
         self.parser.read(self.get_config_path())
 
     def save(self):
-        logger.debug("componente=config action=write uri=%s", self.get_config_path())
+        logger.debug("action=write uri=%s", self.get_config_path())
 
         with open(self.get_config_path(), "w") as f:
             self.parser.write(f)
@@ -58,13 +55,13 @@ class Config(object):
         return "file://" + self.get_resource_path(self.APP_NAME, "media", *resources)
 
     def get_plugin_paths(self):
-        return self.get_resource_paths(self.APP_NAME, "plugins")
+        return self.load_data_paths(self.APP_NAME, "plugins")
 
     def get_icon_paths(self):
-        return self.get_resource_paths("icons")
+        return self.load_data_paths("icons")
 
     def get_resource_path(self, *resources):
-        for resource in self.get_resource_paths(*resources):
+        for resource in self.load_data_paths(*resources):
             if os.path.exists(resource):
                 return resource
 
@@ -72,12 +69,10 @@ class Config(object):
             "Resource with path %s not found!" % os.path.join(*resources)
         )
 
-    @staticmethod
-    def get_resource_paths(*resources):
+    def load_data_paths(self, *resources):
         return [path for path in BaseDirectory.load_data_paths(*resources)]
 
-    @staticmethod
-    def get_icon_path(iconname, size=None, theme=None):
+    def get_icon_path(self, iconname, size=None, theme=None):
         icon_path = IconTheme.getIconPath(
             iconname, size, theme, extensions=["png", "svg", "xpm"]
         )
@@ -94,6 +89,12 @@ class Config(object):
         section = Config.normalize(section)
         option = Config.normalize(option)
 
+        logger.debug(
+            "action=set section=%s option=%s",
+            section,
+            option,
+        )
+
         if not self.parser.has_section(section):
             self.parser.add_section(section)
 
@@ -104,7 +105,7 @@ class Config(object):
         option = Config.normalize(option)
 
         logger.debug(
-            "action=componente=config setOption section=%s option=%s value=%s",
+            "action=set section=%s option=%s value=%s",
             section,
             option,
             value,
