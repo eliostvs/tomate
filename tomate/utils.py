@@ -47,9 +47,10 @@ class fsm(object):
 
     def valid_transition(self, instance):
         if self.source == "*" or getattr(instance, self.attr) in self.source:
+            logger.debug("action=valid_transition result=true")
             return True
 
-        logger.debug("Invalid transition!")
+        logger.debug("action=valid_transition result=false")
 
     def valid_conditions(self, instance):
         if not self.conditions:
@@ -59,11 +60,17 @@ class fsm(object):
             return all(map(lambda condition: condition(instance), self.conditions))
 
     def change_state(self, instance):
+        current_target = getattr(instance, self.attr, None)
+
         logger.debug(
-            "Changing %s %s to %s", instance.__class__.__name__, self.attr, self.target
+            "action=change instance=%s attr=%s from=%s to=%s",
+            instance.__class__.__name__,
+            self.attr,
+            current_target,
+            self.target,
         )
 
-        if self.target != "self" and getattr(instance, self.attr, None) != self.target:
+        if self.target != "self" and current_target != self.target:
             setattr(instance, self.attr, self.target)
 
     def call_exit_action(self, instance):
@@ -72,7 +79,11 @@ class fsm(object):
 
     @wrapt.decorator
     def __call__(self, wrapped, instance, args, kwargs):
-        logger.debug("Calling %s.%s", instance.__class__.__name__, wrapped)
+        logger.debug(
+            "action=beforeCall instance=%s method=%s",
+            instance.__class__.__name__,
+            wrapped.__name__,
+        )
 
         if self.valid_transition(instance) and self.valid_conditions(instance):
             result = wrapped(*args, **kwargs)
@@ -81,8 +92,10 @@ class fsm(object):
 
             self.call_exit_action(instance)
 
+            logger.debug("action=call result=true")
+
             return result
 
-        logger.debug("Invalid conditions!")
+        logger.debug("action=call result=false")
 
         return False

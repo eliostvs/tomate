@@ -1,3 +1,5 @@
+import logging
+
 from wiring import SingletonScope, inject
 from wiring.scanning import register
 from yapsy.ConfigurablePluginManager import ConfigurablePluginManager
@@ -7,6 +9,8 @@ from yapsy.VersionedPluginManager import VersionedPluginManager
 
 from tomate.config import Config
 from .event import connect_events, disconnect_events
+
+logger = logging.getLogger(__name__)
 
 
 class Plugin(IPlugin):
@@ -38,6 +42,7 @@ class PluginManager:
         self._plugin_manager.setConfigParser(config.parser, config.save)
 
     def __getattr__(self, attr):
+        logger.debug("action=getattr attr=%s", attr)
         try:
             return getattr(self._plugin_manager, attr)
         except KeyError:

@@ -52,9 +52,11 @@ def connect_events(obj):
     for method in methods_with_events(obj):
         for (event, sender) in method._events:
             logger.debug(
-                "Connecting {event} to method {method} with sender {sender}".format(
-                    **locals()
-                )
+                "action=connect event=%s.%s method=%s.%s",
+                event.name,
+                sender,
+                obj.__class__.__name__,
+                method.__name__,
             )
             event.connect(method, sender=sender, weak=False)
 
@@ -63,9 +65,11 @@ def disconnect_events(obj):
     for method in methods_with_events(obj):
         for (event, sender) in method._events:
             logger.debug(
-                "Disconnecting {event} to method {method} with sender {sender}".format(
-                    **locals()
-                )
+                "action=disconnect event=%s.%s method=%s.%s",
+                event.name,
+                sender,
+                obj.__class__.__name__,
+                method.__name__,
             )
             event.disconnect(method, sender=sender)
 
@@ -95,9 +99,23 @@ class ObservableProperty(object):
         else:
             value = getattr(instance, self.attr)
 
+        logger.debug(
+            "instance=%s action=get.observable attr=%s, value=%s",
+            instance.__class__.__name__,
+            self.attr,
+            value,
+        )
+
         return value
 
     def __set__(self, instance, value):
+        logger.debug(
+            "instance=%s action=set.observable attr=%s value=%s",
+            instance.__class__.__name__,
+            self.attr,
+            value,
+        )
+
         setattr(instance, self.attr, value)
         event = value if self.event is None else self.event
         self.callback(instance, event)
