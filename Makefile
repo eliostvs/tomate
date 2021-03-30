@@ -6,9 +6,12 @@ MAKEFLAGS     += --no-builtin-rules
 MAKEFLAGS     += --warn-undefined-variables
 SHELL         = bash
 
-OBS_API_URL  = https://api.opensuse.org/trigger/runservice
-TOKEN				 ?=
-VERSION      = `cat .bumpversion.cfg | grep current_version | awk '{print $$3}'`
+OBS_API_URL   = https://api.opensuse.org/trigger/runservice
+TOKEN         ?=
+VERSION       = `cat .bumpversion.cfg | grep current_version | awk '{print $$3}'`
+
+clean:
+	# nothing
 
 trigger-build:
 	curl -X POST -H "Authorization: Token $(TOKEN)" $(OBS_API_URL)
